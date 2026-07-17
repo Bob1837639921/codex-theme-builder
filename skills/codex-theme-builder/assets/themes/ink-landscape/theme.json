@@ -3,8 +3,9 @@
   "id": "ink-landscape",
   "name": "墨境",
   "subtitle": "INK LANDSCAPE · CODEX",
-  "image": "background.png",
-  "conversationImage": "conversation-background.png",
+  "image": "background.webp",
+  "conversationImage": "conversation-background.webp",
+  "sidebarImage": "sidebar-background.webp",
   "selectedLeaf": "selected-leaf.png",
   "icons": {
     "build": "icon-build.svg",

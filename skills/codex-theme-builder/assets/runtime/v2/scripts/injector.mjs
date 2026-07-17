@@ -312,6 +312,23 @@ async function loadPayload(themeDir) {
   if (!conversationStat.isFile() || conversationStat.size < 1 || conversationStat.size > MAX_ART_BYTES) {
     throw new Error("Conversation image must be non-empty and no larger than 8 MB");
   }
+  let sidebarImageDataUrl = "none";
+  if (raw.sidebarImage !== undefined) {
+    if (typeof raw.sidebarImage !== "string" || path.basename(raw.sidebarImage) !== raw.sidebarImage ||
+        !/\.(?:png|jpe?g|webp)$/i.test(raw.sidebarImage)) {
+      throw new Error("Sidebar image must be a PNG, JPEG, or WebP file inside the theme directory");
+    }
+    const sidebarImagePath = path.join(themeDir, raw.sidebarImage);
+    const sidebarImageStat = await fs.stat(sidebarImagePath);
+    if (!sidebarImageStat.isFile() || sidebarImageStat.size < 1 || sidebarImageStat.size > MAX_ART_BYTES) {
+      throw new Error("Sidebar image must be non-empty and no larger than 8 MB");
+    }
+    const sidebarImageBytes = await fs.readFile(sidebarImagePath);
+    const sidebarExtension = path.extname(raw.sidebarImage).toLowerCase();
+    const sidebarMime = sidebarExtension === ".webp" ? "image/webp" :
+      sidebarExtension === ".jpg" || sidebarExtension === ".jpeg" ? "image/jpeg" : "image/png";
+    sidebarImageDataUrl = `url("data:${sidebarMime};base64,${sidebarImageBytes.toString("base64")}")`;
+  }
   let selectedLeafDataUrl = "none";
   if (raw.selectedLeaf !== undefined) {
     if (typeof raw.selectedLeaf !== "string" || path.basename(raw.selectedLeaf) !== raw.selectedLeaf ||
@@ -358,7 +375,7 @@ async function loadPayload(themeDir) {
   const extension = path.extname(image).toLowerCase();
   const mime = extension === ".webp" ? "image/webp" : extension === ".jpg" || extension === ".jpeg"
     ? "image/jpeg" : "image/png";
-  const themeVariables = `:root.codex-dream-skin{--dream-purple:${theme.accent};--dream-pink:${theme.accentAlt};--dream-surface:${theme.surface};--dream-ink:${theme.text};--dream-selected-leaf:${selectedLeafDataUrl};}`;
+  const themeVariables = `:root.codex-dream-skin{--dream-purple:${theme.accent};--dream-pink:${theme.accentAlt};--dream-surface:${theme.surface};--dream-ink:${theme.text};--dream-sidebar-art:${sidebarImageDataUrl};--dream-selected-leaf:${selectedLeafDataUrl};}`;
   const artDataUrl = `data:${mime};base64,${art.toString("base64")}`;
   const conversationArt = conversationImagePath === imagePath ? art : await fs.readFile(conversationImagePath);
   const conversationExtension = path.extname(conversationImage).toLowerCase();

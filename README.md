@@ -4,7 +4,9 @@
 
 它不绑定某一种视觉风格。你可以给 Codex 一段文字需求、截图、设计稿或已有主题，Codex 会完成视觉方案、实现映射、主题开发、实时预览、视觉修正和最终打包。仓库内附带完整的「水墨山水」主题，既可以直接使用，也可以作为新主题的实现示例。
 
-![水墨山水主题设计稿](skills/codex-theme-builder/assets/themes/ink-landscape/design-reference.png)
+<img src="skills/codex-theme-builder/assets/themes/ink-landscape/runtime-preview.webp" alt="水墨山水主题真实运行截图" width="960">
+
+> 真实 Codex Desktop 运行截图；项目、任务和账户名称已做隐私隐藏。
 
 ## 功能
 

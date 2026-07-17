@@ -100,6 +100,7 @@ function Write-DreamSkinBytesAtomically {
   }
   $fileName = [System.IO.Path]::GetFileName($fullPath)
   $temporary = Join-Path $directory ".$fileName.$PID.$([guid]::NewGuid().ToString('N')).tmp"
+  $backup = Join-Path $directory ".$fileName.$PID.$([guid]::NewGuid().ToString('N')).bak"
 
   try {
     [System.IO.File]::WriteAllBytes($temporary, $Bytes)
@@ -107,12 +108,13 @@ function Write-DreamSkinBytesAtomically {
       Assert-DreamSkinFileUnchanged -Path $fullPath -ExpectedBytes $ExpectedBytes
     }
     if ([System.IO.File]::Exists($fullPath)) {
-      [System.IO.File]::Replace($temporary, $fullPath, $null)
+      [System.IO.File]::Replace($temporary, $fullPath, $backup)
     } else {
       [System.IO.File]::Move($temporary, $fullPath)
     }
   } finally {
     if ([System.IO.File]::Exists($temporary)) { [System.IO.File]::Delete($temporary) }
+    if ([System.IO.File]::Exists($backup)) { [System.IO.File]::Delete($backup) }
   }
 }
 

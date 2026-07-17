@@ -33,7 +33,13 @@ html.codex-dream-skin main.main-surface > header.app-header-tint {
 }
 
 html.codex-dream-skin aside.app-shell-left-panel {
-  background: #202522 !important;
+  background-color: #202522 !important;
+  background-image:
+    linear-gradient(180deg, rgba(12, 16, 14, .22) 0%, rgba(12, 16, 14, .06) 58%, rgba(5, 9, 7, .12) 100%),
+    var(--dream-sidebar-art) !important;
+  background-repeat: no-repeat !important;
+  background-position: center, center bottom !important;
+  background-size: cover, cover !important;
   border: 0 !important;
   border-radius: 0 !important;
   box-shadow: none !important;
@@ -529,6 +535,11 @@ html.codex-dream-skin [role="dialog"] a,
 html.codex-dream-skin [data-radix-popper-content-wrapper] a,
 html.codex-dream-skin [role="dialog"] button:not([class~="bg-token-foreground"]):hover {
   color: var(--dream-accent) !important;
+}
+
+html.codex-dream-skin [role="dialog"] button[class~="bg-token-foreground"],
+html.codex-dream-skin [data-radix-popper-content-wrapper] button[class~="bg-token-foreground"] {
+  color: #ffffff !important;
 }
 
 @media (max-width: 1000px) {

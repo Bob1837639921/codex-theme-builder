@@ -10,6 +10,7 @@ theme-id/
   theme.css
   home.png
   conversation.png
+  sidebar.png       # optional sidebar texture
   selected-leaf.png  # optional selected-state raster marker
   icon-build.svg
   icon-analyze.svg
@@ -29,6 +30,7 @@ The image names are configurable. `theme.css` is optional to the runtime but gen
   "subtitle": "CODEX THEME",
   "image": "home.png",
   "conversationImage": "conversation.png",
+  "sidebarImage": "sidebar.png",
   "selectedLeaf": "selected-leaf.png",
   "icons": {
     "build": "icon-build.svg",
@@ -50,6 +52,7 @@ Rules:
 - Use `schemaVersion: 1`.
 - Keep every asset filename local: no directories, URLs, data URLs, or traversal.
 - Use PNG, JPEG, or WebP raster images no larger than 8 MB each.
+- `sidebarImage` is optional. When present it must be a local PNG, JPEG, or WebP image no larger than 8 MB; the runtime exposes it as `--dream-sidebar-art`.
 - Provide all four SVG icons. Keep each below 64 KB and omit scripts, external references, event handlers, embedded images, and CSS `url()` values.
 - Use six-digit hexadecimal colors.
 - `conversationImage` may equal `image`.
@@ -68,7 +71,7 @@ Start every override from `:root.codex-dream-skin` or one of the runtime classes
 - `.dream-selected-thread` and `.dream-selected-thread-label`
 - `.dream-output-panel`
 
-The runtime exposes `--dream-art`, `--dream-conversation-art`, and the optional `--dream-selected-leaf` as data-backed CSS values, plus color tokens derived from the manifest. Keep pseudo-elements non-interactive with `pointer-events: none`.
+The runtime exposes `--dream-art`, `--dream-conversation-art`, the optional `--dream-sidebar-art`, and the optional `--dream-selected-leaf` as data-backed CSS values, plus color tokens derived from the manifest. Keep pseudo-elements non-interactive with `pointer-events: none`.
 
 Use detail marker classes only when their native surfaces are present. Scope searches to the composer, sidebar, or output region, and retain connected markers instead of rescanning the entire conversation on every mutation.
 
