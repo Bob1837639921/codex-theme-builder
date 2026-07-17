@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "ink-landscape",
+  "name": "墨境",
+  "subtitle": "INK LANDSCAPE · CODEX",
+  "image": "background.png",
+  "conversationImage": "conversation-background.png",
+  "selectedLeaf": "selected-leaf.png",
+  "icons": {
+    "build": "icon-build.svg",
+    "analyze": "icon-analyze.svg",
+    "automate": "icon-automate.svg",
+    "debug": "icon-debug.svg"
+  },
+  "colors": {
+    "accent": "#5E7770",
+    "accentAlt": "#839D94",
+    "surface": "#F4F0E7",
+    "text": "#272A29"
+  }
+}

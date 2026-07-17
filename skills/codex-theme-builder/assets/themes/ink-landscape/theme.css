@@ -1,0 +1,583 @@
+:root.codex-dream-skin {
+  --dream-ink: #252a27;
+  --dream-muted: #6d7771;
+  --dream-accent: #5f7c72;
+  --dream-accent-soft: rgba(95, 124, 114, .16);
+  --dream-paper: #f5f2e9;
+  --dream-paper-raised: #fbf9f3;
+  --dream-panel-white: #fff;
+  --dream-line: rgba(37, 42, 39, .14);
+  --dream-motion-fast: 160ms;
+  --dream-motion-panel: 200ms;
+  --dream-ease: cubic-bezier(.2, .8, .2, 1);
+}
+
+html.codex-dream-skin body,
+html.codex-dream-skin main.main-surface,
+html.codex-dream-skin [role="main"] {
+  background: var(--dream-paper) !important;
+  color: var(--dream-ink) !important;
+}
+
+html.codex-dream-skin main.main-surface {
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+html.codex-dream-skin main.main-surface > header.app-header-tint {
+  background: rgba(251, 249, 243, .96) !important;
+  border-bottom: 1px solid var(--dream-line) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+html.codex-dream-skin aside.app-shell-left-panel {
+  background: #202522 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  outline: 0 !important;
+}
+
+html.codex-dream-skin aside.app-shell-left-panel::before,
+html.codex-dream-skin aside.app-shell-left-panel::after {
+  display: none !important;
+  content: none !important;
+}
+
+html.codex-dream-skin main.main-surface.dream-conversation-shell,
+html.codex-dream-skin [role="main"].dream-conversation {
+  background-color: var(--dream-paper) !important;
+  background-image: none !important;
+}
+
+html.codex-dream-skin main.main-surface.dream-conversation-shell::before {
+  position: absolute !important;
+  z-index: 0 !important;
+  inset: 0 !important;
+  display: block !important;
+  content: "" !important;
+  pointer-events: none !important;
+  background-image: var(--dream-conversation-art) !important;
+  background-repeat: no-repeat !important;
+  background-position: right bottom !important;
+  background-size: cover !important;
+  opacity: .28 !important;
+}
+
+html.codex-dream-skin main.main-surface.dream-conversation-shell > div:nth-child(2) {
+  position: relative;
+  z-index: 1;
+}
+
+html.codex-dream-skin aside.app-shell-left-panel,
+html.codex-dream-skin aside.app-shell-left-panel * {
+  color: #d9ddd7 !important;
+  text-shadow: none !important;
+}
+
+html.codex-dream-skin aside.app-shell-left-panel nav {
+  background: transparent !important;
+}
+
+html.codex-dream-skin aside.app-shell-left-panel button {
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+html.codex-dream-skin aside.app-shell-left-panel button:hover {
+  background: rgba(255, 255, 255, .07) !important;
+}
+
+html.codex-dream-skin aside.app-shell-left-panel [aria-current="page"],
+html.codex-dream-skin aside.app-shell-left-panel [class~="bg-token-list-hover-background"] {
+  background: rgba(111, 145, 133, .24) !important;
+  border: 1px solid rgba(150, 177, 167, .18) !important;
+}
+
+html.codex-dream-skin aside.app-shell-left-panel .dream-selected-thread {
+  position: relative !important;
+  isolation: isolate;
+  overflow: hidden !important;
+  padding-left: 24px !important;
+  padding-right: 6px !important;
+  background: rgba(100, 134, 122, .22) !important;
+  border: 1px solid rgba(155, 184, 173, .34) !important;
+  box-shadow: inset 2px 0 0 rgba(131, 169, 154, .92),
+    0 4px 14px rgba(5, 12, 9, .08) !important;
+  transition: none !important;
+}
+
+html.codex-dream-skin aside.app-shell-left-panel .dream-selected-thread::before {
+  position: absolute;
+  z-index: 1;
+  left: 5px;
+  top: 50%;
+  width: 18px;
+  height: 18px;
+  content: "";
+  pointer-events: none;
+  background-image: var(--dream-selected-leaf);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  transform: translateY(-50%) rotate(-8deg);
+}
+
+html.codex-dream-skin aside.app-shell-left-panel .dream-selected-thread:hover {
+  background: rgba(100, 134, 122, .22) !important;
+  border-color: rgba(155, 184, 173, .34) !important;
+}
+
+html.codex-dream-skin aside.app-shell-left-panel .dream-selected-thread button {
+  width: 26px !important;
+  min-width: 26px !important;
+  height: 26px !important;
+  border-radius: 8px !important;
+  opacity: .78;
+  transition: opacity var(--dream-motion-fast) var(--dream-ease),
+    background-color var(--dream-motion-fast) var(--dream-ease),
+    transform var(--dream-motion-fast) var(--dream-ease) !important;
+}
+
+html.codex-dream-skin aside.app-shell-left-panel .dream-selected-thread button:hover,
+html.codex-dream-skin aside.app-shell-left-panel .dream-selected-thread button:focus-visible {
+  opacity: 1;
+  background: rgba(231, 240, 235, .12) !important;
+  transform: translateY(-1px) !important;
+}
+
+html.codex-dream-skin aside.app-shell-left-panel .dream-selected-thread button:focus-visible {
+  outline: 2px solid rgba(162, 198, 184, .72) !important;
+  outline-offset: 1px !important;
+}
+
+html.codex-dream-skin aside.app-shell-left-panel [aria-current="page"] *,
+html.codex-dream-skin aside.app-shell-left-panel [class~="bg-token-list-hover-background"] * {
+  color: #f2f3ef !important;
+}
+
+html.codex-dream-skin .dream-home {
+  --thread-content-max-width: min(1180px, calc(100cqw - 72px)) !important;
+  scrollbar-color: rgba(95, 124, 114, .42) transparent;
+}
+
+.dream-home > div:first-child {
+  padding-top: 0 !important;
+}
+
+.dream-home > div:first-child > div:first-child {
+  flex: 0 0 clamp(520px, 66vh, 680px) !important;
+  min-height: clamp(520px, 66vh, 680px) !important;
+  align-items: flex-start !important;
+  padding-bottom: 0 !important;
+}
+
+.dream-home > div:first-child > div:first-child > div:first-child {
+  position: relative !important;
+  isolation: isolate;
+  width: 100% !important;
+  max-width: none !important;
+  height: clamp(520px, 66vh, 680px) !important;
+  min-height: 520px !important;
+  flex: 0 1 auto !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background-color: #ebe7dc !important;
+  background-image: var(--dream-art) !important;
+  background-repeat: no-repeat !important;
+  background-size: cover !important;
+  background-position: center top !important;
+  box-shadow: none !important;
+}
+
+.dream-home > div:first-child > div:first-child > div:first-child::before,
+.dream-home > div:first-child > div:first-child > div:first-child::after {
+  display: none !important;
+  content: none !important;
+}
+
+.dream-home > div:first-child > div:first-child > div:first-child > div:first-child {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  align-items: flex-start !important;
+  justify-content: flex-start !important;
+  padding: clamp(150px, 22vh, 230px) 0 148px clamp(54px, 5.5vw, 82px) !important;
+}
+
+.dream-home > div:first-child > div:first-child > div:first-child > div:first-child > div:first-child {
+  width: 58% !important;
+  align-items: flex-start !important;
+  gap: 4px !important;
+}
+
+.dream-home [data-testid="home-icon"] {
+  display: none !important;
+}
+
+.dream-home [data-feature="game-source"] {
+  display: none !important;
+}
+
+.dream-home [data-feature="game-source"]::after {
+  display: none !important;
+  content: none !important;
+}
+
+.dream-title {
+  position: absolute;
+  z-index: 3;
+  left: clamp(54px, 5.5vw, 82px);
+  top: clamp(150px, 22vh, 230px);
+  pointer-events: none;
+}
+
+.dream-title h1 {
+  margin: 0;
+  color: var(--dream-ink);
+  font-family: "STSong", "Songti SC", "Noto Serif CJK SC", serif;
+  font-size: clamp(34px, 3.2vw, 48px);
+  line-height: 1.28;
+  font-weight: 600;
+  letter-spacing: .08em;
+}
+
+.dream-home [data-feature="game-source"] button {
+  color: var(--dream-accent) !important;
+  background: rgba(251, 249, 243, .72) !important;
+  border: 1px solid rgba(95, 124, 114, .24) !important;
+  border-radius: 999px !important;
+  box-shadow: none !important;
+}
+
+.dream-action-grid {
+  position: absolute;
+  z-index: 4;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 148px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  overflow: hidden;
+  padding: 12px clamp(42px, 6vw, 96px) 18px;
+  background: rgba(248, 245, 237, .90);
+  border-top: 0;
+  backdrop-filter: blur(3px);
+}
+
+.dream-action-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 10px 12px;
+  color: var(--dream-ink) !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-right: 1px solid rgba(37, 42, 39, .13) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.dream-action-button:last-child {
+  border-right: 0 !important;
+}
+
+.dream-action-button:hover {
+  background: rgba(95, 124, 114, .13) !important;
+}
+
+.dream-action-button strong {
+  color: var(--dream-ink) !important;
+  font-family: "STSong", "Songti SC", "Noto Serif CJK SC", serif;
+  font-size: 18px;
+  line-height: 1.2;
+  font-weight: 650;
+  letter-spacing: .08em;
+}
+
+.dream-action-button span {
+  overflow: hidden;
+  color: var(--dream-muted) !important;
+  font-size: 12px;
+  line-height: 1.35;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.dream-action-button img {
+  width: 42px;
+  height: 42px;
+  margin-bottom: 2px;
+  object-fit: contain;
+}
+
+.dream-home > div:first-child > div:first-child > div:first-child > div:nth-child(2) {
+  left: 0 !important;
+  right: 0 !important;
+  top: 100% !important;
+  margin-top: 12px !important;
+}
+
+.dream-home .group\/home-suggestions {
+  gap: 0 !important;
+  overflow: hidden !important;
+  border: 1px solid var(--dream-line) !important;
+  border-radius: 10px !important;
+  background: rgba(251, 249, 243, .72) !important;
+}
+
+.dream-home .group\/home-suggestions button {
+  min-height: 76px !important;
+  padding: 12px 14px !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-right: 1px solid var(--dream-line) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  color: var(--dream-ink) !important;
+  transform: none !important;
+}
+
+.dream-home .group\/home-suggestions button:last-child {
+  border-right: 0 !important;
+}
+
+.dream-home .group\/home-suggestions button:hover {
+  background: var(--dream-accent-soft) !important;
+}
+
+html.codex-dream-skin .composer-surface-chrome {
+  overflow: hidden !important;
+  background: rgba(251, 248, 240, .86) !important;
+  border: 1px solid rgba(66, 78, 71, .16) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 8px 24px rgba(31, 38, 34, .055) !important;
+  backdrop-filter: none !important;
+}
+
+html.codex-dream-skin main.dream-home-shell .composer-surface-chrome {
+  min-height: 176px !important;
+  padding-top: 20px !important;
+  padding-bottom: 16px !important;
+}
+
+html.codex-dream-skin .composer-surface-chrome::before,
+html.codex-dream-skin .composer-surface-chrome::after,
+html.codex-dream-skin div:has(> .composer-surface-chrome)::before,
+html.codex-dream-skin div:has(> .composer-surface-chrome)::after,
+.dream-home div:has(> .horizontal-scroll-fade-mask .group\/project-selector)::before {
+  display: none !important;
+  content: none !important;
+}
+
+html.codex-dream-skin .horizontal-scroll-fade-mask {
+  -webkit-mask-image: none !important;
+  mask-image: none !important;
+}
+
+/* Codex paints two separate white fades around the composer: the main bottom
+   fade and an in-progress file/plan summary fade. Both sit inside the sticky
+   composer rail, so remove the paint while keeping their controls intact. */
+html.codex-dream-skin main.dream-conversation-shell .sticky.bottom-0
+  [class~="bg-gradient-to-t"] {
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
+html.codex-dream-skin .dream-progress-pill {
+  background: rgba(251, 249, 243, .92) !important;
+  border: 1px solid rgba(95, 124, 114, .15) !important;
+  box-shadow: 0 7px 22px rgba(37, 42, 39, .07) !important;
+  backdrop-filter: none !important;
+  transition: border-color var(--dream-motion-fast) var(--dream-ease),
+    box-shadow var(--dream-motion-fast) var(--dream-ease) !important;
+}
+
+html.codex-dream-skin .dream-progress-indicator {
+  transform-origin: center;
+  animation: dream-progress-turn 1.25s linear infinite;
+  will-change: transform;
+}
+
+@keyframes dream-progress-turn {
+  to { transform: rotate(360deg); }
+}
+
+html.codex-dream-skin .dream-output-panel {
+  position: relative !important;
+  isolation: isolate;
+  overflow: hidden !important;
+  color: var(--dream-ink) !important;
+  background: rgba(255, 255, 255, .86) !important;
+  background-clip: padding-box !important;
+  border: 1px solid rgba(66, 78, 71, .13) !important;
+  border-radius: 22px !important;
+  box-shadow: inset 2px 0 0 rgba(95, 124, 114, .68),
+    0 14px 36px rgba(37, 42, 39, .09) !important;
+  backdrop-filter: none !important;
+}
+
+html.codex-dream-skin .dream-output-panel > *,
+html.codex-dream-skin .dream-output-panel [class~="bg-token-dropdown-background"] {
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
+html.codex-dream-skin .dream-output-panel::after {
+  position: absolute;
+  z-index: 0;
+  right: 4px;
+  bottom: -5px;
+  width: 78px;
+  height: 78px;
+  content: "";
+  pointer-events: none;
+  background-image: var(--dream-selected-leaf);
+  background-repeat: no-repeat;
+  background-position: right bottom;
+  background-size: contain;
+  transform: rotate(10deg);
+  opacity: .09;
+}
+
+html.codex-dream-skin .dream-output-panel > * {
+  position: relative;
+  z-index: 1;
+}
+
+html.codex-dream-skin .dream-output-panel :is(button, [role="button"]) {
+  background-color: transparent !important;
+  transition: color var(--dream-motion-fast) var(--dream-ease),
+    background-color var(--dream-motion-fast) var(--dream-ease) !important;
+}
+
+html.codex-dream-skin .dream-output-panel :is(button, [role="button"]):hover {
+  color: var(--dream-accent) !important;
+  background: rgba(95, 124, 114, .065) !important;
+}
+
+html.codex-dream-skin .dream-output-panel [aria-expanded] svg {
+  transition: transform var(--dream-motion-panel) var(--dream-ease) !important;
+}
+
+html.codex-dream-skin .dream-output-panel [aria-expanded="true"] svg {
+  transform: rotate(90deg);
+}
+
+.dream-home div:has(> .horizontal-scroll-fade-mask .group\/project-selector) {
+  padding-top: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+}
+
+.dream-home .horizontal-scroll-fade-mask:has(.group\/project-selector),
+.dream-home .group\/project-selector {
+  width: max-content !important;
+  max-width: 100% !important;
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+.dream-home-promo {
+  display: none !important;
+}
+
+html.codex-dream-skin .ProseMirror {
+  color: var(--dream-ink) !important;
+  caret-color: var(--dream-accent) !important;
+}
+
+html.codex-dream-skin button[class~="bg-token-foreground"] {
+  background: var(--dream-accent) !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
+}
+
+/* Portaled dialogs do not live under the themed main surface. Codex updates
+   can therefore leave them using dark-theme text tokens on a light card. */
+html.codex-dream-skin [role="dialog"] {
+  color: var(--dream-ink) !important;
+  background-color: rgba(251, 249, 243, .98) !important;
+  border-color: var(--dream-line) !important;
+}
+
+html.codex-dream-skin [role="dialog"] :is(h1, h2, h3, p, span, button, label) {
+  color: inherit !important;
+  text-shadow: none !important;
+}
+
+html.codex-dream-skin [data-radix-popper-content-wrapper] :is(h1, h2, h3, p, span, button, label) {
+  color: var(--dream-ink) !important;
+  text-shadow: none !important;
+}
+
+html.codex-dream-skin [role="dialog"] :is(
+  [class~="text-token-text-secondary"],
+  [class~="text-token-foreground-secondary"],
+  [class~="text-token-text-tertiary"],
+  [class~="text-token-foreground-tertiary"]
+) {
+  color: var(--dream-muted) !important;
+}
+
+html.codex-dream-skin [role="dialog"] a,
+html.codex-dream-skin [data-radix-popper-content-wrapper] a,
+html.codex-dream-skin [role="dialog"] button:not([class~="bg-token-foreground"]):hover {
+  color: var(--dream-accent) !important;
+}
+
+@media (max-width: 1000px) {
+  html.codex-dream-skin .dream-home {
+    --thread-content-max-width: min(920px, calc(100cqw - 32px)) !important;
+  }
+
+  .dream-home > div:first-child > div:first-child > div:first-child {
+    width: 100% !important;
+  }
+
+  .dream-action-grid { padding-inline: 24px; }
+}
+
+@media (max-height: 900px) {
+  .dream-home > div:first-child > div:first-child {
+    flex-basis: 470px !important;
+    min-height: 470px !important;
+  }
+
+  .dream-home > div:first-child > div:first-child > div:first-child {
+    height: 470px !important;
+    min-height: 470px !important;
+  }
+
+  .dream-title { top: 150px; }
+  .dream-action-grid { height: 136px; padding-block: 8px 14px; }
+  html.codex-dream-skin main.dream-home-shell .composer-surface-chrome {
+    min-height: 148px !important;
+    padding-top: 14px !important;
+    padding-bottom: 12px !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.codex-dream-skin .dream-progress-indicator {
+    animation: none !important;
+    will-change: auto;
+  }
+
+  html.codex-dream-skin aside.app-shell-left-panel .dream-selected-thread button:hover,
+  html.codex-dream-skin aside.app-shell-left-panel .dream-selected-thread button:focus-visible {
+    transform: none !important;
+  }
+}

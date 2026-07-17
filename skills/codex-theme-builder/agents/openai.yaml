@@ -1,0 +1,4 @@
+interface:
+  display_name: "Codex Theme Builder"
+  short_description: "Design and build Codex themes end to end"
+  default_prompt: "Use $codex-theme-builder to autonomously design, implement, visually verify, and package a Codex Desktop theme from my requirements."

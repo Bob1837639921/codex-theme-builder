@@ -1,0 +1,30 @@
+:root.codex-dream-skin {
+  color-scheme: light !important;
+  --dream-art: none;
+  --dream-ink: #252a27;
+  --dream-accent: #5f7c72;
+  --dream-paper: #f5f2e9;
+}
+
+html.codex-dream-skin body {
+  font-family: "Microsoft YaHei UI", "Noto Sans CJK SC", system-ui, sans-serif !important;
+}
+
+html.codex-dream-skin body::before,
+#codex-dream-skin-chrome {
+  display: none !important;
+}
+
+html.codex-dream-skin .dream-home {
+  overflow-x: hidden !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.codex-dream-skin *,
+  html.codex-dream-skin *::before,
+  html.codex-dream-skin *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
