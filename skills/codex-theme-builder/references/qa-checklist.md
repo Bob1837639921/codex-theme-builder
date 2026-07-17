@@ -27,6 +27,7 @@
 - Model, microphone, access mode, attachment, and submit/stop controls remain usable.
 - Running progress uses only small-area motion and stops under reduced-motion preferences.
 - Current thread remains legible when pin/archive controls appear; controls do not shift the title.
+- Selected-state artwork stays attached to the title label, ahead of its text, when thread action controls appear or disappear.
 - Trigger conversation mutations while the current thread is selected; its marker must not be removed and re-added or visibly flash.
 - Output/environment panels preserve links, expanders, source rows, and pointer behavior.
 - Inspect the output panel's outer container and sticky child headers. They must resolve to one intended surface color rather than mixed white and cream layers.

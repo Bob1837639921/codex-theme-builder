@@ -42,6 +42,7 @@
     document.querySelectorAll(".dream-progress-pill").forEach((node) => node.classList.remove("dream-progress-pill"));
     document.querySelectorAll(".dream-progress-indicator").forEach((node) => node.classList.remove("dream-progress-indicator"));
     document.querySelectorAll(".dream-selected-thread").forEach((node) => node.classList.remove("dream-selected-thread"));
+    document.querySelectorAll(".dream-selected-thread-label").forEach((node) => node.classList.remove("dream-selected-thread-label"));
     document.querySelectorAll(".dream-output-panel").forEach((node) => node.classList.remove("dream-output-panel"));
   };
 
@@ -103,6 +104,28 @@
       markedThreads.filter((node) => node !== selected).forEach((node) =>
         node.classList.remove("dream-selected-thread"));
       selected?.classList.add("dream-selected-thread");
+
+      const markedLabels = [...sidebar.querySelectorAll(".dream-selected-thread-label")];
+      const selectedLabel = selected ? [...selected.querySelectorAll("span, p, div")].filter((node) => {
+        if (node.closest("button") || node.querySelector("button")) return false;
+        const directText = [...node.childNodes]
+          .filter((child) => child.nodeType === Node.TEXT_NODE)
+          .map((child) => child.textContent || "")
+          .join("")
+          .trim();
+        const text = directText || (node.children.length === 0 ? (node.textContent || "").trim() : "");
+        const rect = node.getBoundingClientRect();
+        const row = selected.getBoundingClientRect();
+        return Boolean(text) && rect.width >= 12 && rect.height >= 14 && rect.height <= 32 &&
+          rect.left >= row.left && rect.right <= row.right + 1;
+      }).sort((left, right) => {
+        const a = left.getBoundingClientRect();
+        const b = right.getBoundingClientRect();
+        return a.left - b.left || a.width - b.width;
+      })[0] : null;
+      markedLabels.filter((node) => node !== selectedLabel).forEach((node) =>
+        node.classList.remove("dream-selected-thread-label"));
+      selectedLabel?.classList.add("dream-selected-thread-label");
     }
 
     const findOutputContainer = (seed) => {

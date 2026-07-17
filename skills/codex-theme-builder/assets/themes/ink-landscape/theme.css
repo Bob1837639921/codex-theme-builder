@@ -102,7 +102,7 @@ html.codex-dream-skin aside.app-shell-left-panel .dream-selected-thread {
   position: relative !important;
   isolation: isolate;
   overflow: hidden !important;
-  padding-left: 24px !important;
+  padding-left: 3px !important;
   padding-right: 6px !important;
   background: rgba(100, 134, 122, .22) !important;
   border: 1px solid rgba(155, 184, 173, .34) !important;
@@ -111,20 +111,13 @@ html.codex-dream-skin aside.app-shell-left-panel .dream-selected-thread {
   transition: none !important;
 }
 
-html.codex-dream-skin aside.app-shell-left-panel .dream-selected-thread::before {
-  position: absolute;
-  z-index: 1;
-  left: 5px;
-  top: 50%;
-  width: 18px;
-  height: 18px;
-  content: "";
-  pointer-events: none;
+html.codex-dream-skin aside.app-shell-left-panel .dream-selected-thread-label {
+  min-width: 0;
+  padding-left: 21px !important;
   background-image: var(--dream-selected-leaf);
   background-repeat: no-repeat;
-  background-position: center;
-  background-size: contain;
-  transform: translateY(-50%) rotate(-8deg);
+  background-position: left center;
+  background-size: 18px 18px;
 }
 
 html.codex-dream-skin aside.app-shell-left-panel .dream-selected-thread:hover {

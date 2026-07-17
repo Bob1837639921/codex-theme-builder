@@ -65,7 +65,7 @@ Start every override from `:root.codex-dream-skin` or one of the runtime classes
 - `#codex-dream-skin-title`
 - `#codex-dream-skin-actions`
 - `.dream-progress-pill` and `.dream-progress-indicator`
-- `.dream-selected-thread`
+- `.dream-selected-thread` and `.dream-selected-thread-label`
 - `.dream-output-panel`
 
 The runtime exposes `--dream-art`, `--dream-conversation-art`, and the optional `--dream-selected-leaf` as data-backed CSS values, plus color tokens derived from the manifest. Keep pseudo-elements non-interactive with `pointer-events: none`.

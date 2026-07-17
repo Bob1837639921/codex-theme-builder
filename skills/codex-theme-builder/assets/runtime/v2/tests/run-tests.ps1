@@ -69,7 +69,8 @@ if ($runtimeJs -notmatch 'markDetailSurfaces' -or
 if ($themeCss -notmatch '@keyframes\s+dream-progress-turn' -or
   $themeCss -notmatch '(?s)\.dream-progress-indicator\s*\{[^}]*animation:' -or
   $themeCss -notmatch '(?s)@media\s*\(prefers-reduced-motion:\s*reduce\).*?\.dream-progress-indicator\s*\{[^}]*animation:\s*none' -or
-  $themeCss -notmatch '\.dream-selected-thread::before' -or
+  $runtimeJs -notmatch 'dream-selected-thread-label' -or
+  $themeCss -notmatch '(?s)\.dream-selected-thread-label\s*\{[^}]*background-image:\s*var\(--dream-selected-leaf\)' -or
   $themeCss -notmatch '--dream-selected-leaf' -or
   $themeCss -notmatch '--dream-panel-white' -or
   $themeCss -notmatch '(?s)\.dream-output-panel\s*>\s*\*.*?background-color:\s*transparent') {
