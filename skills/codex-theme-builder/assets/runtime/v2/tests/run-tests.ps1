@@ -63,7 +63,8 @@ if ($runtimeJs -notmatch 'markDetailSurfaces' -or
   $runtimeJs -notmatch 'requestAnimationFrame' -or
   $runtimeJs -match 'setTimeout\(\(\) => \{\s*scheduler\.timeout = null;\s*ensure\(\);\s*\}, 180\)' -or
   $runtimeJs -notmatch 'dream-selected-thread' -or
-  $runtimeJs -notmatch 'dream-output-panel') {
+  $runtimeJs -notmatch 'dream-output-panel' -or
+  $runtimeJs -notmatch 'classList\?\.contains\("bg-token-dropdown-background"\)') {
   throw 'Detail-surface markers must remain scoped, stable, frame-coalesced, and available for theme polish.'
 }
 if ($themeCss -notmatch '@keyframes\s+dream-progress-turn' -or

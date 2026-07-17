@@ -134,6 +134,9 @@
       while (node && node !== document.body) {
         const rect = node.getBoundingClientRect();
         const style = getComputedStyle(node);
+        const isDropdownSurface = node.classList?.contains("bg-token-dropdown-background") &&
+          rect.width >= 240 && rect.width <= 560 && rect.height >= 80 && rect.height <= 720;
+        if (isDropdownSurface) return node;
         const isFloatingShell = style.position === "absolute" || style.position === "fixed" ||
           style.pointerEvents === "none";
         if (!isFloatingShell && rect.width >= 240 && rect.width <= 560 &&
