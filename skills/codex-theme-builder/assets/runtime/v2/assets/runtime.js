@@ -147,17 +147,23 @@
       }
       return candidate;
     };
-    const markedOutput = document.querySelector(".dream-output-panel");
-    const outputSearchRoot = markedOutput?.isConnected ? markedOutput : document;
-    const outputText = [...outputSearchRoot.querySelectorAll("span, p, div")].find((node) => {
+    const outputTexts = [...document.querySelectorAll("span, p, div")].filter((node) => {
         const value = (node.textContent || "").trim();
         return (value === "\u8f93\u51fa" || value === "\u73af\u5883\u4fe1\u606f" ||
           /^(?:output|environment information)$/i.test(value)) && node.children.length === 0;
       });
-    const output = findOutputContainer(outputText);
-    if (markedOutput && markedOutput !== output) {
-      markedOutput.classList.remove("dream-output-panel");
-    }
+    const outputCandidates = [...new Set(outputTexts.map(findOutputContainer).filter(Boolean))];
+    const intersectsViewport = (node) => {
+      const rect = node.getBoundingClientRect();
+      const style = getComputedStyle(node);
+      return rect.right > 0 && rect.bottom > 0 && rect.left < innerWidth && rect.top < innerHeight &&
+        rect.width >= 240 && rect.height >= 80 && style.display !== "none" &&
+        style.visibility !== "hidden" && Number.parseFloat(style.opacity || "1") > 0;
+    };
+    const output = outputCandidates.find(intersectsViewport) || outputCandidates[0] || null;
+    document.querySelectorAll(".dream-output-panel").forEach((node) => {
+      if (node !== output) node.classList.remove("dream-output-panel");
+    });
     output?.classList.add("dream-output-panel");
   };
 

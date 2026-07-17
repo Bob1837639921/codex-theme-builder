@@ -29,4 +29,5 @@ A Codex update ends the hidden watcher, so the theme disappears. Start the selec
 - “A V2 session already exists”: run the restore script first.
 - “Access is denied”: do not kill arbitrary processes; run the normal shortcut without elevation and check Windows package permissions.
 - Theme missing after update: restart through the theme launcher; the standard Codex shortcut does not inject a theme.
+- Output panel stays native white while diagnostics report themed styles: Codex can retain an off-screen output-panel node while rendering a second visible node. Detail-surface discovery must scan all candidates, prefer one intersecting the current viewport, and remove stale `.dream-output-panel` markers from off-screen nodes.
 - Logs live at `%LOCALAPPDATA%\CodexDreamSkinV2\injector.log` and `injector-error.log` while a session is active.
