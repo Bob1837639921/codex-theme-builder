@@ -7,8 +7,10 @@ $skill = Join-Path $repositoryRoot 'skills\codex-theme-builder'
 $manifest = Join-Path $skill 'SKILL.md'
 $agentMetadata = Join-Path $skill 'agents\openai.yaml'
 $theme = Join-Path $skill 'assets\themes\ink-landscape'
+$setupScript = Join-Path $PSScriptRoot 'setup-windows.ps1'
+$shortcutInstaller = Join-Path $skill 'scripts\install-desktop-shortcut.ps1'
 
-foreach ($required in @($manifest, $agentMetadata, $theme)) {
+foreach ($required in @($manifest, $agentMetadata, $theme, $setupScript, $shortcutInstaller)) {
   if (-not (Test-Path -LiteralPath $required)) {
     throw "Required repository item is missing: $required"
   }
@@ -27,7 +29,10 @@ foreach ($key in @('display_name:', 'short_description:', 'default_prompt:')) {
 }
 
 $parseErrors = @()
-Get-ChildItem -LiteralPath (Join-Path $skill 'scripts') -Filter '*.ps1' -File | ForEach-Object {
+@(
+  Get-ChildItem -LiteralPath $PSScriptRoot -Filter '*.ps1' -File
+  Get-ChildItem -LiteralPath (Join-Path $skill 'scripts') -Filter '*.ps1' -File
+) | ForEach-Object {
   $tokens = $null
   $errors = $null
   [void][System.Management.Automation.Language.Parser]::ParseFile($_.FullName, [ref]$tokens, [ref]$errors)

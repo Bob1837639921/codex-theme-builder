@@ -1,4 +1,4 @@
-. (Join-Path $PSScriptRoot 'config-utf8.ps1')
+﻿. (Join-Path $PSScriptRoot 'config-utf8.ps1')
 
 function Enter-DreamSkinOperationLock {
   $sid = [System.Security.Principal.WindowsIdentity]::GetCurrent().User.Value
@@ -11,7 +11,7 @@ function Enter-DreamSkinOperationLock {
   }
   if (-not $acquired) {
     $mutex.Dispose()
-    throw 'Another Codex Dream Skin install, start, restore, or verify operation is already running.'
+    throw '另一个 Codex 主题安装、启动、恢复或验证操作正在运行，请稍后再试。'
   }
   return $mutex
 }
@@ -23,7 +23,7 @@ function Exit-DreamSkinOperationLock {
 
 function Assert-DreamSkinPort {
   param([Parameter(Mandatory = $true)][int]$Port)
-  if ($Port -lt 1024 -or $Port -gt 65535) { throw "Port must be between 1024 and 65535: $Port" }
+  if ($Port -lt 1024 -or $Port -gt 65535) { throw "端口必须在 1024 到 65535 之间：$Port" }
 }
 
 function Test-DreamSkinPathEqual {
@@ -57,7 +57,7 @@ function Test-DreamSkinCommandLineToken {
 
 function ConvertTo-DreamSkinProcessArgument {
   param([Parameter(Mandatory = $true)][AllowEmptyString()][string]$Value)
-  if ($Value.Contains('"')) { throw 'Process arguments containing a double quote are not supported.' }
+  if ($Value.Contains('"')) { throw '不支持包含双引号的进程参数。' }
   if ($Value -notmatch '\s') { return $Value }
   $escaped = [regex]::Replace($Value, '(\\+)$', '$1$1')
   return '"' + $escaped + '"'
@@ -127,7 +127,7 @@ function Start-DreamSkinPackagedCodex {
     [Parameter(Mandatory = $true)][object]$Codex,
     [AllowEmptyCollection()][string[]]$ArgumentList = @()
   )
-  if (-not $Codex.PackageFamilyName) { throw 'Codex package family identity is missing.' }
+  if (-not $Codex.PackageFamilyName) { throw '缺少 Codex 应用包系列身份信息。' }
   Initialize-DreamSkinApplicationActivationManager
   $appUserModelId = "$($Codex.PackageFamilyName)!App"
   $arguments = ($ArgumentList | ForEach-Object { ConvertTo-DreamSkinProcessArgument -Value $_ }) -join ' '
@@ -149,20 +149,38 @@ function Get-DreamSkinProcessExecutablePath {
 function Get-DreamSkinNodeRuntime {
   param([int]$MinimumMajor = 22)
 
-  $command = Get-Command node.exe -ErrorAction SilentlyContinue
-  if (-not $command) { $command = Get-Command node -ErrorAction SilentlyContinue }
-  if (-not $command) { throw "Node.js $MinimumMajor or newer is required and was not found in PATH." }
-  $version = "$(& $command.Source -p 'process.versions.node' 2>$null)".Trim()
-  if ($LASTEXITCODE -ne 0 -or -not $version) { throw 'The Node.js runtime could not be validated.' }
-  $runtimePath = "$(& $command.Source -p 'process.execPath' 2>$null)".Trim()
-  if ($LASTEXITCODE -ne 0 -or -not $runtimePath -or -not (Test-Path -LiteralPath $runtimePath)) {
-    throw 'The Node.js executable path could not be validated.'
+  $candidates = @(
+    (Join-Path $env:USERPROFILE '.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe'),
+    (Join-Path $env:ProgramFiles 'nodejs\node.exe'),
+    (Join-Path $env:LOCALAPPDATA 'Programs\nodejs\node.exe')
+  )
+  foreach ($commandName in @('node.exe', 'node')) {
+    $command = Get-Command $commandName -ErrorAction SilentlyContinue
+    if ($command -and $command.Source) { $candidates += "$($command.Source)" }
   }
-  $major = 0
-  if (-not [int]::TryParse(($version -split '\.')[0], [ref]$major) -or $major -lt $MinimumMajor) {
-    throw "Node.js $MinimumMajor or newer is required; found $version at $runtimePath."
+
+  $seen = @{}
+  $invalid = @()
+  foreach ($candidate in $candidates) {
+    if ([string]::IsNullOrWhiteSpace($candidate)) { continue }
+    $candidatePath = [System.IO.Path]::GetFullPath($candidate)
+    if ($seen.ContainsKey($candidatePath)) { continue }
+    $seen[$candidatePath] = $true
+    if (-not (Test-Path -LiteralPath $candidatePath -PathType Leaf)) { continue }
+    $version = "$(& $candidatePath -p 'process.versions.node' 2>$null)".Trim()
+    if ($LASTEXITCODE -ne 0 -or -not $version) { continue }
+    $runtimePath = "$(& $candidatePath -p 'process.execPath' 2>$null)".Trim()
+    if ($LASTEXITCODE -ne 0 -or -not $runtimePath -or -not (Test-Path -LiteralPath $runtimePath)) { continue }
+    $major = 0
+    if ([int]::TryParse(($version -split '\.')[0], [ref]$major) -and $major -ge $MinimumMajor) {
+      return [pscustomobject]@{ Path = $runtimePath; Version = $version; Major = $major }
+    }
+    $invalid += "$version ($runtimePath)"
   }
-  return [pscustomobject]@{ Path = $runtimePath; Version = $version; Major = $major }
+  if ($invalid.Count -gt 0) {
+    throw "需要 Node.js $MinimumMajor 或更高版本；检测到的版本不满足要求：$($invalid -join ', ')"
+  }
+  throw "需要 Node.js $MinimumMajor 或更高版本，但未找到可用的运行环境。"
 }
 
 function ConvertTo-DreamSkinCodexInstall {
@@ -197,7 +215,7 @@ function Get-DreamSkinRegisteredCodexInstalls {
 
 function Get-DreamSkinCodexInstall {
   $installs = @(Get-DreamSkinRegisteredCodexInstalls)
-  if ($installs.Count -eq 0) { throw 'The official OpenAI.Codex Store package is not installed or its identity cannot be validated.' }
+  if ($installs.Count -eq 0) { throw '未安装官方 OpenAI Codex 商店版应用，或无法验证其应用身份。' }
   return $installs[0]
 }
 
@@ -331,7 +349,7 @@ function Get-DreamSkinCdpBrowserIdentity {
 function Get-DreamSkinPortListeners {
   param([int]$Port)
   if (-not (Get-Command Get-NetTCPConnection -ErrorAction SilentlyContinue)) {
-    throw 'Get-NetTCPConnection is required to verify CDP listener ownership.'
+    throw '需要 Get-NetTCPConnection 才能验证 CDP 监听端口的所属进程。'
   }
   return @(Get-NetTCPConnection -State Listen -LocalPort $Port -ErrorAction SilentlyContinue)
 }
@@ -382,7 +400,7 @@ function Select-DreamSkinPort {
   for ($candidate = $PreferredPort; $candidate -le [Math]::Min(65535, $PreferredPort + 100); $candidate++) {
     if (Test-DreamSkinPortAvailable -Port $candidate) { return $candidate }
   }
-  throw "No free loopback port was found between $PreferredPort and $([Math]::Min(65535, $PreferredPort + 100))."
+  throw "在 $PreferredPort 到 $([Math]::Min(65535, $PreferredPort + 100)) 之间未找到可用的本机端口。"
 }
 
 function Wait-DreamSkinPortAvailable {
@@ -400,17 +418,17 @@ function Read-DreamSkinState {
   if (-not (Test-Path -LiteralPath $Path)) { return $null }
   try {
     $state = (Read-DreamSkinUtf8File -Path $Path) | ConvertFrom-Json -ErrorAction Stop
-    if ($null -eq $state -or $state -is [string] -or $state -is [array]) { throw 'State root must be an object.' }
+    if ($null -eq $state -or $state -is [string] -or $state -is [array]) { throw '主题状态文件的根节点必须是对象。' }
     $properties = @($state.PSObject.Properties.Name)
     if ($properties -contains 'platform' -and "$($state.platform)" -ine 'windows') {
-      throw 'State platform is not Windows.'
+      throw '主题状态文件记录的平台不是 Windows。'
     }
     $schemaVersion = 1
     if ($properties -contains 'schemaVersion') {
       $schemaVersion = 0
       if (-not [int]::TryParse("$($state.schemaVersion)", [ref]$schemaVersion) -or
         $schemaVersion -lt 1 -or $schemaVersion -gt 3) {
-        throw 'State schema is not supported.'
+        throw '不支持该版本的主题状态格式。'
       }
     }
     if ($schemaVersion -ge 3) {
@@ -419,28 +437,28 @@ function Read-DreamSkinState {
         'codexExe', 'codexPackageRoot', 'codexPackageFullName', 'codexPackageFamilyName', 'browserId'
       )) {
         if ($properties -notcontains $required -or -not $state.$required) {
-          throw "State schema 3 is missing required field: $required"
+          throw "主题状态格式 3 缺少必填字段：$required"
         }
       }
     }
     if ($properties -contains 'port') {
       $statePort = 0
-      if (-not [int]::TryParse("$($state.port)", [ref]$statePort)) { throw 'State port is invalid.' }
+      if (-not [int]::TryParse("$($state.port)", [ref]$statePort)) { throw '主题状态中的端口无效。' }
       Assert-DreamSkinPort -Port $statePort
     }
     if ($properties -contains 'injectorPid' -and $null -ne $state.injectorPid) {
       $statePid = 0
       if (-not [int]::TryParse("$($state.injectorPid)", [ref]$statePid) -or $statePid -le 0) {
-        throw 'State injector PID is invalid.'
+        throw '主题状态中的注入进程 PID 无效。'
       }
     }
     if ($properties -contains 'browserId' -and $state.browserId -and
       -not (Test-DreamSkinBrowserId -Value "$($state.browserId)")) {
-      throw 'State browser ID is invalid.'
+      throw '主题状态中的浏览器 ID 无效。'
     }
     return $state
   } catch {
-    throw "Dream Skin state is unreadable; it was preserved for inspection: $Path"
+    throw "无法读取主题状态文件，已保留该文件以便检查：$Path"
   }
 }
 
@@ -486,7 +504,7 @@ function Stop-DreamSkinRecordedInjector {
   $processPath = Get-DreamSkinProcessExecutablePath -ProcessInfo $process
   $commandLine = "$($process.CommandLine)"
   if (-not $processPath -or -not $commandLine) {
-    throw "The recorded injector PID $processId is running, but its identity cannot be inspected. State was preserved."
+    throw "记录的主题注入进程 PID $processId 仍在运行，但无法核验其身份。为避免误结束其他程序，主题状态已保留。"
   }
   $isNodeExecutable = [System.IO.Path]::GetFileName("$processPath") -ieq 'node.exe'
   $nodeMatches = -not $State.nodePath -or
@@ -509,14 +527,14 @@ function Stop-DreamSkinRecordedInjector {
   $identityMatches = [bool]($isNodeExecutable -and $nodeMatches -and $injectorMatches -and $startMatches)
 
   if (-not $identityMatches) {
-    Write-Warning "Skipped stale injector PID $processId because its visible identity does not match the saved Dream Skin process."
+    Write-Warning "已跳过旧的注入进程 PID $processId，因为当前可见的进程身份与保存的主题进程不一致。"
     return $false
   }
 
   Stop-Process -Id $processId -Force -ErrorAction Stop
   try { Wait-Process -Id $processId -Timeout 5 -ErrorAction Stop } catch {}
   if (Get-Process -Id $processId -ErrorAction SilentlyContinue) {
-    throw "The recorded Dream Skin injector did not stop: PID $processId"
+    throw "记录的主题注入进程未能停止：PID $processId"
   }
   return $true
 }
@@ -528,6 +546,27 @@ function Get-DreamSkinCodexProcesses {
       $processPath = Get-DreamSkinProcessExecutablePath -ProcessInfo $_
       Test-DreamSkinPathEqual -Left $processPath -Right $Codex.Executable
     })
+}
+
+function Show-DreamSkinCodexWindow {
+  param(
+    [Parameter(Mandatory = $true)][object]$Codex,
+    [ValidateRange(1, 30)][int]$TimeoutSeconds = 8
+  )
+  $shell = New-Object -ComObject WScript.Shell
+  $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
+  do {
+    foreach ($item in @(Get-DreamSkinCodexProcesses -Codex $Codex)) {
+      try {
+        $process = Get-Process -Id ([int]$item.ProcessId) -ErrorAction Stop
+        if ($process.MainWindowHandle -ne [IntPtr]::Zero -and $shell.AppActivate($process.Id)) {
+          return $true
+        }
+      } catch {}
+    }
+    Start-Sleep -Milliseconds 150
+  } while ((Get-Date) -lt $deadline)
+  return $false
 }
 
 function Stop-DreamSkinCodex {
@@ -545,7 +584,7 @@ function Stop-DreamSkinCodex {
   $remaining = Get-DreamSkinCodexProcesses -Codex $Codex
   if ($remaining.Count -eq 0) { return }
   if (-not $AllowForce) {
-    throw 'Codex did not close within 15 seconds. Close it manually or explicitly authorize a forced restart.'
+    throw 'Codex 未能在 15 秒内关闭。请手动关闭，或明确允许启动器强制重启。'
   }
   foreach ($item in $remaining) {
     $current = Get-CimInstance Win32_Process -Filter "ProcessId = $([int]$item.ProcessId)" -ErrorAction SilentlyContinue
@@ -555,11 +594,11 @@ function Stop-DreamSkinCodex {
     }
   }
   Start-Sleep -Milliseconds 500
-  if ((Get-DreamSkinCodexProcesses -Codex $Codex).Count -gt 0) { throw 'Codex could not be stopped safely.' }
+  if ((Get-DreamSkinCodexProcesses -Codex $Codex).Count -gt 0) { throw '无法安全停止 Codex。' }
 }
 
 function Confirm-DreamSkinRestart {
   param([string]$Message)
   $shell = New-Object -ComObject WScript.Shell
-  return $shell.Popup($Message, 0, 'Codex Dream Skin', 52) -eq 6
+  return $shell.Popup($Message, 0, 'Codex 主题', 52) -eq 6
 }

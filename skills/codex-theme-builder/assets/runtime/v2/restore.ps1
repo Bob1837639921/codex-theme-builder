@@ -1,4 +1,4 @@
-[CmdletBinding()]
+﻿[CmdletBinding()]
 param([switch]$RestartCodex)
 
 $ErrorActionPreference = 'Stop'
@@ -10,7 +10,7 @@ try {
   $stateRoot = Join-Path $env:LOCALAPPDATA 'CodexDreamSkinV2'
   $statePath = Join-Path $stateRoot 'state.json'
   $state = Read-DreamSkinState -Path $statePath
-  if ($null -eq $state) { Write-Host 'No V2 session is active.'; return }
+  if ($null -eq $state) { Write-Host '当前没有正在运行的主题会话。'; return }
 
   $nodePath = if ($state.nodePath -and (Test-Path -LiteralPath $state.nodePath)) {
     "$($state.nodePath)"
@@ -20,18 +20,18 @@ try {
   [void](Stop-DreamSkinRecordedInjector -State $state)
   & $nodePath $state.injectorPath --remove --port ([int]$state.port) `
     --browser-id $state.browserId --theme-dir $state.themeDir --timeout-ms 5000
-  if ($LASTEXITCODE -ne 0) { throw 'The live theme could not be removed cleanly; state was preserved.' }
+  if ($LASTEXITCODE -ne 0) { throw '无法完整移除当前主题，运行状态已保留以便检查。' }
 
   if ($RestartCodex) {
     $codex = Get-DreamSkinCodexInstallFromState -State $state
-    if ($null -eq $codex) { throw 'The saved Codex package identity is no longer registered.' }
+    if ($null -eq $codex) { throw '已保存的 Codex 应用包身份已不再注册。' }
     Stop-DreamSkinCodex -Codex $codex -AllowForce
     Start-DreamSkinPackagedCodex -Codex $codex | Out-Null
   } else {
-    Write-Warning 'The visual theme is removed, but CDP remains open until Codex exits. Use -RestartCodex to close it now.'
+    Write-Warning '视觉主题已移除，但 CDP 调试端口会在 Codex 退出前保持开启。如需立即关闭，请使用 -RestartCodex。'
   }
   Remove-Item -LiteralPath $statePath -Force
-  Write-Host 'Dream Skin V2 was restored.'
+  Write-Host 'Codex 主题已恢复。'
 } finally {
   Exit-DreamSkinOperationLock -Mutex $lock
 }

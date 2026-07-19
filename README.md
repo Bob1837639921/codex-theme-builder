@@ -31,11 +31,19 @@
 
 ## 安装 Skill
 
-克隆仓库，然后执行安装脚本：
+推荐让 AI 或管理员执行完整自动配置：
 
 ```powershell
 git clone https://github.com/Bob1837639921/codex-theme-builder.git
 cd codex-theme-builder
+powershell -ExecutionPolicy Bypass -File .\scripts\setup-windows.ps1
+```
+
+该脚本会自动验证仓库、安装或更新 Skill、核验 Node.js 与 Microsoft Store 版 Codex、生成主题图标，并在桌面创建直接调用隐藏 PowerShell 的主题快捷方式。配置结束后，用户只需保存当前内容、完全退出 Codex，再点击桌面快捷方式。
+
+如果只需要安装 Skill，可以执行：
+
+```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\install-skill.ps1
 ```
 
@@ -51,7 +59,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\install-skill.ps1
 %USERPROFILE%\.codex\skills\codex-theme-builder
 ```
 
-安装后重新打开 Codex，使 Skill 出现在可用 Skills 中。若目标目录已存在，使用 `-Force`；旧版本会先保存为带时间戳的备份。
+安装后重新打开 Codex，使 Skill 出现在可用 Skills 中。若目标目录已存在，使用 `-Force`。内容完全一致时脚本不会重复复制；确有变化时，旧版本会备份到 `%LOCALAPPDATA%\CodexThemeBuilder\skill-backups`，不会在 Skills 列表中形成重复项。
 
 ## 让 Codex 全自动制作主题
 

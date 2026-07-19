@@ -1,6 +1,6 @@
 ---
 name: codex-theme-builder
-description: Autonomously design, create, modify, port, preview, visually verify, restore, and package reusable Codex Desktop themes from written requirements, screenshots, mockups, or existing themes. Use for Codex skins, implementation-ready design previews, theme manifests, generated artwork, CSS and motion customization, update compatibility, visual regression fixes, or reusable presets. Includes a safe Windows Store Codex CDP runtime and an ink-landscape example, but supports any visual direction.
+description: Autonomously design, create, modify, port, deploy, preview, visually verify, restore, and package reusable Codex Desktop themes from written requirements, screenshots, mockups, or existing themes. Use for Codex skins, implementation-ready design previews, theme manifests, generated artwork, CSS and motion customization, update compatibility, visual regression fixes, reusable presets, complete project setup, skill installation, or desktop theme shortcuts. Includes a safe Windows Store Codex CDP runtime and an ink-landscape example, but supports any visual direction.
 ---
 
 # Codex Theme Builder
@@ -24,6 +24,7 @@ For every proposed visual element, record how it will be implemented: existing D
 - Hot-preview an edit in an already themed Codex session: run `scripts/preview-theme.ps1`.
 - Remove the active theme: run `scripts/restore-theme.ps1`.
 - Produce a distributable archive: run `scripts/package-theme.ps1`.
+- Install a verified theme launcher on the Windows desktop: run `scripts/install-desktop-shortcut.ps1` from the installed skill.
 
 Read [theme-contract.md](references/theme-contract.md) before authoring or modifying a theme. Read [windows-runtime.md](references/windows-runtime.md) before live application. Use [qa-checklist.md](references/qa-checklist.md) for final verification.
 
@@ -74,6 +75,18 @@ Put the design preview and implementation capture into the same comparison view.
 
 After a Codex update, assume DOM selectors may have changed. Re-run validation and live QA; update scoped CSS or runtime selectors rather than modifying Codex application files.
 
+## Deploy and hand off autonomously
+
+When the user asks to configure the project, install a theme, or make the repository independently usable, complete the deployment instead of handing the user shell commands:
+
+1. From a repository checkout, run `scripts/setup-windows.ps1`. It validates the repository, installs or updates this skill, verifies Node.js and the Store Codex package, creates the theme icon, and installs the desktop shortcut.
+2. For a skill that is already installed, run `scripts/install-desktop-shortcut.ps1 -ThemeId <id>` after validating the selected theme.
+3. Verify that the `.lnk` targets hidden `powershell.exe` directly, includes the installed `desktop-launch.ps1` and theme path, and has a valid icon. Never point the shortcut at a localized `.cmd` wrapper.
+4. Do not start the shortcut, close Codex, or force a restart during setup. The only final user action is launching the theme after saving their work.
+5. End with a clear handoff containing the exact shortcut name: `配置完成。请保存当前内容并完全退出 Codex，然后在桌面双击「<shortcut name>」启动。`
+
+Do not stop after installing the skill, and do not ask the user to manually recreate the shortcut, edit PATH, or select the launcher target when the automation can do it.
+
 ## Restore and package
 
 Remove the active injection without changing Codex installation files:
@@ -107,3 +120,4 @@ Commit the skill, source theme directories, documentation, and intentionally siz
 - `assets/runtime/`: reusable Windows live-preview runtime.
 - `assets/themes/ink-landscape/`: complete sample preset.
 - `assets/theme-template/`: neutral starter CSS used by the scaffold script.
+- `scripts/install-desktop-shortcut.ps1`: deterministic Windows shortcut and icon installer for any bundled theme.

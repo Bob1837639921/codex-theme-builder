@@ -1,4 +1,4 @@
-[CmdletBinding()]
+﻿[CmdletBinding()]
 param(
   [string]$Theme = '',
   [switch]$ForegroundInjector
@@ -15,7 +15,7 @@ $lock = Enter-DreamSkinOperationLock
 try {
   $Theme = [System.IO.Path]::GetFullPath($Theme)
   if (-not (Test-Path -LiteralPath (Join-Path $Theme 'theme.json'))) {
-    throw "Theme manifest not found: $Theme"
+    throw "找不到主题清单文件：$Theme"
   }
 
   $stateRoot = Join-Path $env:LOCALAPPDATA 'CodexDreamSkinV2'
@@ -23,13 +23,13 @@ try {
   $injector = Join-Path $PSScriptRoot 'scripts\injector.mjs'
   New-Item -ItemType Directory -Force -Path $stateRoot | Out-Null
   if (Test-Path -LiteralPath $statePath) {
-    throw 'A V2 session already exists. Run restore.ps1 before starting another theme.'
+    throw '已经存在一个主题会话。请先运行 restore.ps1 恢复，再启动其他主题。'
   }
 
   $node = Get-DreamSkinNodeRuntime
   $codex = Get-DreamSkinCodexInstall
   if ((Get-DreamSkinCodexProcesses -Codex $codex).Count -gt 0) {
-    throw 'Close Codex before starting V2. The prototype never forces a restart without explicit user action.'
+    throw '请先关闭 Codex，再启动主题。未经用户明确确认，启动器不会强制重启 Codex。'
   }
 
   $port = $null
@@ -37,7 +37,7 @@ try {
     $candidate = Get-Random -Minimum 49152 -Maximum 65535
     if (Test-DreamSkinPortAvailable -Port $candidate) { $port = $candidate; break }
   }
-  if ($null -eq $port) { throw 'Could not reserve a random loopback CDP port.' }
+  if ($null -eq $port) { throw '无法分配随机的本机 CDP 端口。' }
 
   Start-DreamSkinPackagedCodex -Codex $codex -ArgumentList @(
     '--remote-debugging-address=127.0.0.1',
@@ -52,7 +52,7 @@ try {
   }
   if ($null -eq $identity) {
     Stop-DreamSkinCodex -Codex $codex -AllowForce
-    throw 'Codex did not expose a verified loopback CDP endpoint.'
+    throw 'Codex 未能提供通过验证的本机 CDP 调试端点。'
   }
 
   $args = @(
@@ -72,9 +72,9 @@ try {
   $daemon = Start-Process -FilePath $node.Path -ArgumentList $args -WindowStyle Hidden -PassThru `
     -RedirectStandardOutput $stdout -RedirectStandardError $stderr
   Start-Sleep -Milliseconds 600
-  if ($daemon.HasExited) { throw "The injector exited during startup. See $stderr" }
+  if ($daemon.HasExited) { throw "主题注入程序在启动过程中意外退出。错误日志：$stderr" }
   $startedAt = Get-DreamSkinProcessStartedAt -ProcessId $daemon.Id
-  if (-not $startedAt) { throw 'Could not record injector process identity.' }
+  if (-not $startedAt) { throw '无法记录主题注入程序的进程身份。' }
 
   $state = [pscustomobject]@{
     schemaVersion = 3
@@ -97,8 +97,8 @@ try {
   Write-DreamSkinState -Path $statePath -State $state
 
   & $node.Path $injector --verify --port $port --browser-id $identity.BrowserId --theme-dir $Theme
-  if ($LASTEXITCODE -ne 0) { throw 'V2 injection verification failed.' }
-  Write-Host "Dream Skin V2 is active on a random loopback port ($port)."
+  if ($LASTEXITCODE -ne 0) { throw '主题注入验证失败。' }
+  Write-Host "主题已在随机本机端口（$port）上启用。"
 } finally {
   if ($null -ne $lock) { Exit-DreamSkinOperationLock -Mutex $lock }
 }
