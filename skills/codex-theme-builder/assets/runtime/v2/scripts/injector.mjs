@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, "..");
-const SKIN_VERSION = "2.0.0-prototype";
+const SKIN_VERSION = "2.1.0-prototype";
 const MAX_ART_BYTES = 8 * 1024 * 1024;
 const LOOPBACK_HOSTS = new Set(["127.0.0.1", "localhost", "[::1]", "::1"]);
 const BROWSER_ID_PATTERN = /^[A-Za-z0-9._-]{1,200}$/;
@@ -18,7 +18,10 @@ function parseArgs(argv) {
     timeoutMs: 30000,
     screenshot: null,
     openHome: false,
+    openSwitcher: false,
     testActions: false,
+    testSwitcher: false,
+    selectTheme: null,
     reload: false,
     hoverSelectedThread: false,
     browserId: null,
@@ -36,7 +39,10 @@ function parseArgs(argv) {
     else if (arg === "--theme-dir") options.themeDir = path.resolve(argv[++i]);
     else if (arg === "--screenshot") options.screenshot = path.resolve(argv[++i]);
     else if (arg === "--open-home") options.openHome = true;
+    else if (arg === "--open-switcher") options.openSwitcher = true;
     else if (arg === "--test-actions") options.testActions = true;
+    else if (arg === "--test-switcher") options.testSwitcher = true;
+    else if (arg === "--select-theme") options.selectTheme = argv[++i];
     else if (arg === "--reload") options.reload = true;
     else if (arg === "--hover-selected-thread") options.hoverSelectedThread = true;
     else if (arg === "--self-test") options.mode = "self-test";
@@ -51,6 +57,9 @@ function parseArgs(argv) {
   }
   if (options.browserId !== null && !BROWSER_ID_PATTERN.test(options.browserId)) {
     throw new Error(`Invalid browser ID: ${options.browserId}`);
+  }
+  if (options.selectTheme !== null && !/^[a-z0-9][a-z0-9-]{0,63}$/.test(options.selectTheme)) {
+    throw new Error(`Invalid theme ID: ${options.selectTheme}`);
   }
   if (["watch", "once", "verify", "remove"].includes(options.mode) && !options.browserId) {
     throw new Error(`--browser-id is required in ${options.mode} mode`);
@@ -275,11 +284,9 @@ async function connectBrowserIdentityAnchor(port, expectedBrowserId) {
   return new BrowserIdentityAnchor(validatedDebuggerUrl(version, port)).open();
 }
 
-async function loadPayload(themeDir) {
+async function loadThemePackage(themeDir, baseCss) {
   const manifestPath = path.join(themeDir, "theme.json");
-  const [css, template, manifestText, themeCss] = await Promise.all([
-    fs.readFile(path.join(root, "assets", "base.css"), "utf8"),
-    fs.readFile(path.join(root, "assets", "runtime.js"), "utf8"),
+  const [manifestText, themeCss] = await Promise.all([
     fs.readFile(manifestPath, "utf8"),
     fs.readFile(path.join(themeDir, "theme.css"), "utf8").catch((error) => {
       if (error.code === "ENOENT") return "";
@@ -382,11 +389,50 @@ async function loadPayload(themeDir) {
   const conversationMime = conversationExtension === ".webp" ? "image/webp" :
     conversationExtension === ".jpg" || conversationExtension === ".jpeg" ? "image/jpeg" : "image/png";
   const conversationArtDataUrl = `data:${conversationMime};base64,${conversationArt.toString("base64")}`;
+  return {
+    ...theme,
+    cssText: `${themeVariables}\n${baseCss}\n${themeCss}`,
+    artDataUrl,
+    conversationArtDataUrl,
+    swatches: [theme.accent, theme.accentAlt, theme.surface],
+  };
+}
+
+async function loadPayload(themeDir) {
+  const [baseCss, template] = await Promise.all([
+    fs.readFile(path.join(root, "assets", "base.css"), "utf8"),
+    fs.readFile(path.join(root, "assets", "runtime.js"), "utf8"),
+  ]);
+  const initialThemeDir = path.resolve(themeDir);
+  const themesRoot = path.dirname(initialThemeDir);
+  const catalogPath = path.join(themesRoot, "theme-catalog.json");
+  let themeIds = [path.basename(initialThemeDir)];
+  try {
+    const catalog = JSON.parse(await fs.readFile(catalogPath, "utf8"));
+    if (catalog.schemaVersion !== 1 || !Array.isArray(catalog.themes) || catalog.themes.length < 1) {
+      throw new Error("Theme catalog must use schemaVersion 1 and include at least one theme ID");
+    }
+    themeIds = [...new Set(catalog.themes)];
+    if (themeIds.some((id) => typeof id !== "string" || !/^[a-z0-9][a-z0-9-]{0,63}$/.test(id))) {
+      throw new Error("Theme catalog IDs must use lowercase letters, digits, and hyphens");
+    }
+  } catch (error) {
+    if (error.code !== "ENOENT") throw error;
+  }
+  const initialThemeId = path.basename(initialThemeDir);
+  if (!themeIds.includes(initialThemeId)) themeIds.unshift(initialThemeId);
+  const themes = await Promise.all(themeIds.map(async (id) => {
+    const directory = path.resolve(themesRoot, id);
+    if (path.dirname(directory) !== themesRoot || path.basename(directory) !== id) {
+      throw new Error(`Rejected theme catalog path: ${id}`);
+    }
+    const result = await loadThemePackage(directory, baseCss);
+    if (result.id !== id) throw new Error(`Theme ID ${result.id} must match its directory ${id}`);
+    return result;
+  }));
   return template
-    .replace("__DREAM_CSS_JSON__", JSON.stringify(`${themeVariables}\n${css}\n${themeCss}`))
-    .replace("__DREAM_ART_JSON__", JSON.stringify(artDataUrl))
-    .replace("__DREAM_CONVERSATION_ART_JSON__", JSON.stringify(conversationArtDataUrl))
-    .replace("__DREAM_THEME_JSON__", JSON.stringify(theme));
+    .replace("__DREAM_THEME_CATALOG_JSON__", JSON.stringify(themes))
+    .replace("__DREAM_INITIAL_THEME_ID_JSON__", JSON.stringify(initialThemeId));
 }
 
 async function probeSession(session) {
@@ -455,6 +501,7 @@ async function removeFromSession(session) {
     document.getElementById('codex-dream-skin-chrome')?.remove();
     document.getElementById('codex-dream-skin-actions')?.remove();
     document.getElementById('codex-dream-skin-title')?.remove();
+    document.getElementById('codex-dream-theme-switcher')?.remove();
     delete window.__CODEX_DREAM_SKIN_STATE__;
     return true;
   })()`);
@@ -470,6 +517,7 @@ async function verifyRemovedSession(session) {
     !document.getElementById('codex-dream-skin-chrome') &&
     !document.getElementById('codex-dream-skin-actions') &&
     !document.getElementById('codex-dream-skin-title') &&
+    !document.getElementById('codex-dream-theme-switcher') &&
     !window.__CODEX_DREAM_SKIN_STATE__
   )()`);
 }
@@ -485,6 +533,8 @@ async function verifySession(session) {
     const actionGrid = home?.querySelector('#codex-dream-skin-actions') ?? null;
     const cards = actionGrid ? [...actionGrid.querySelectorAll('button')].map(box) : [];
     const title = home?.querySelector('#codex-dream-skin-title') ?? null;
+    const switcher = document.getElementById('codex-dream-theme-switcher');
+    const themeCards = switcher ? [...switcher.querySelectorAll('[data-dream-theme-id]')] : [];
     const conversation = document.querySelector('[role="main"].dream-conversation');
     const outputPanel = document.querySelector('.dream-output-panel');
     const composerNode = document.querySelector('.composer-surface-chrome');
@@ -552,6 +602,9 @@ async function verifySession(session) {
       actionGridPresent: Boolean(actionGrid),
       titlePresent: Boolean(title),
       iconsPresent,
+      switcherPresent: Boolean(switcher),
+      themeCardCount: themeCards.length,
+      activeThemeId: window.__CODEX_DREAM_SKIN_STATE__?.activeThemeId ?? null,
       conversation: conversation ? {
         box: box(conversation),
         backgroundColor: getComputedStyle(conversation).backgroundColor,
@@ -616,6 +669,7 @@ async function verifySession(session) {
     result.pass = result.installed && result.version === result.expectedVersion &&
       result.stylePresent && result.chromePresent &&
       result.chromePointerEvents === 'none' && Boolean(result.composer) && Boolean(result.sidebar) &&
+      result.switcherPresent && result.themeCardCount === 2 && Boolean(result.activeThemeId) &&
       (!result.homePresent || (Boolean(result.hero) && result.titlePresent &&
         result.actionGridPresent && result.iconsPresent && result.cards.length === 4));
     return result;
@@ -640,10 +694,19 @@ async function waitForVerifiedSession(session, timeoutMs) {
   return lastResult;
 }
 
-async function capture(session, outputPath, hoverSelectedThread = false) {
+async function capture(session, outputPath, hoverSelectedThread = false, openSwitcher = false) {
   await fs.mkdir(path.dirname(outputPath), { recursive: true });
-  await session.send("Input.dispatchKeyEvent", { type: "keyDown", key: "Escape", code: "Escape", windowsVirtualKeyCode: 27 });
-  await session.send("Input.dispatchKeyEvent", { type: "keyUp", key: "Escape", code: "Escape", windowsVirtualKeyCode: 27 });
+  if (openSwitcher) {
+    await session.evaluate(`(() => {
+      const trigger = document.querySelector('#codex-dream-theme-switcher .dream-theme-trigger');
+      if (!trigger) return false;
+      if (trigger.getAttribute('aria-expanded') !== 'true') trigger.click();
+      return true;
+    })()`);
+  } else {
+    await session.send("Input.dispatchKeyEvent", { type: "keyDown", key: "Escape", code: "Escape", windowsVirtualKeyCode: 27 });
+    await session.send("Input.dispatchKeyEvent", { type: "keyUp", key: "Escape", code: "Escape", windowsVirtualKeyCode: 27 });
+  }
   const viewport = await session.evaluate("({ width: innerWidth, height: innerHeight })");
   const hoverPoint = hoverSelectedThread ? await session.evaluate(`(() => {
     const node = document.querySelector('.dream-selected-thread');
@@ -713,14 +776,39 @@ async function runOneShot(options) {
           })()`);
           if (!actionTest.pass) throw new Error(`Action interaction test failed: ${actionTest.reason || actionTest.filled || 'unknown'}`);
         }
+        let switcherTest = null;
+        if (options.testSwitcher) {
+          switcherTest = await session.evaluate(`(async () => {
+            const state = window.__CODEX_DREAM_SKIN_STATE__;
+            const cards = [...document.querySelectorAll('#codex-dream-theme-switcher [data-dream-theme-id]')];
+            if (!state || cards.length !== 2) return { pass: false, reason: 'missing state or two theme cards' };
+            const original = state.activeThemeId;
+            const alternate = cards.find((card) => card.dataset.dreamThemeId !== original);
+            alternate?.click();
+            await new Promise((resolve) => setTimeout(resolve, 120));
+            const changed = state.activeThemeId;
+            const changedStyle = document.getElementById('codex-dream-skin-style')?.dataset.dreamThemeId;
+            const originalCard = cards.find((card) => card.dataset.dreamThemeId === original);
+            originalCard?.click();
+            await new Promise((resolve) => setTimeout(resolve, 120));
+            const restored = state.activeThemeId;
+            return { pass: changed !== original && changedStyle === changed && restored === original, original, changed, restored };
+          })()`);
+          if (!switcherTest.pass) throw new Error(`Theme switcher interaction test failed: ${switcherTest.reason || JSON.stringify(switcherTest)}`);
+        }
+        if (options.selectTheme) {
+          const selected = await session.evaluate(`window.__CODEX_DREAM_SKIN_STATE__?.activateTheme?.(${JSON.stringify(options.selectTheme)}) ?? false`);
+          if (!selected) throw new Error(`Could not activate requested theme: ${options.selectTheme}`);
+          await new Promise((resolve) => setTimeout(resolve, 180));
+        }
         const verified = options.mode === "remove"
           ? await verifyRemovedSession(session)
           : (options.reload || options.mode === "once" || options.mode === "verify")
             ? await waitForVerifiedSession(session, options.timeoutMs)
             : await verifySession(session);
-        results.push({ targetId: target.id, markers: probe.markers, actionTest, result: verified });
+        results.push({ targetId: target.id, markers: probe.markers, actionTest, switcherTest, result: verified });
         if (options.screenshot && !screenshotCaptured) {
-          await capture(session, options.screenshot, options.hoverSelectedThread);
+          await capture(session, options.screenshot, options.hoverSelectedThread, options.openSwitcher);
           screenshotCaptured = true;
         }
       } finally {
@@ -883,10 +971,11 @@ if (options.mode === "self-test") {
   console.log(JSON.stringify({ pass: true, version: SKIN_VERSION, test: "loopback-cdp-validation" }));
 } else if (options.mode === "check-payload") {
   const payload = await loadPayload(options.themeDir);
-  if (payload.includes("__DREAM_CSS_JSON__") || payload.includes("__DREAM_ART_JSON__") ||
-      payload.includes("__DREAM_THEME_JSON__")) {
+  if (payload.includes("__DREAM_THEME_CATALOG_JSON__") ||
+      payload.includes("__DREAM_INITIAL_THEME_ID_JSON__")) {
     throw new Error("Payload placeholders were not fully replaced");
   }
+  new Function(payload);
   console.log(JSON.stringify({ pass: true, version: SKIN_VERSION, payloadBytes: Buffer.byteLength(payload) }));
 } else if (options.mode === "watch") await runWatch(options);
 else await runOneShot(options);

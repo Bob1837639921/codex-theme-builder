@@ -6,11 +6,12 @@ $repositoryRoot = Split-Path -Parent $PSScriptRoot
 $skill = Join-Path $repositoryRoot 'skills\codex-theme-builder'
 $manifest = Join-Path $skill 'SKILL.md'
 $agentMetadata = Join-Path $skill 'agents\openai.yaml'
-$theme = Join-Path $skill 'assets\themes\ink-landscape'
+$themesRoot = Join-Path $skill 'assets\themes'
+$catalogPath = Join-Path $themesRoot 'theme-catalog.json'
 $setupScript = Join-Path $PSScriptRoot 'setup-windows.ps1'
 $shortcutInstaller = Join-Path $skill 'scripts\install-desktop-shortcut.ps1'
 
-foreach ($required in @($manifest, $agentMetadata, $theme, $setupScript, $shortcutInstaller)) {
+foreach ($required in @($manifest, $agentMetadata, $themesRoot, $catalogPath, $setupScript, $shortcutInstaller)) {
   if (-not (Test-Path -LiteralPath $required)) {
     throw "Required repository item is missing: $required"
   }
@@ -44,9 +45,27 @@ if ($parseErrors.Count -gt 0) {
   throw "PowerShell syntax validation failed:`n$($parseErrors -join "`n")"
 }
 
-& (Join-Path $skill 'scripts\test-theme.ps1') -ThemePath $theme
-if ($LASTEXITCODE -ne 0) {
-  throw 'Bundled ink-landscape validation failed.'
+$catalog = Get-Content -Raw -Encoding UTF8 -LiteralPath $catalogPath | ConvertFrom-Json -ErrorAction Stop
+if ($catalog.schemaVersion -ne 1 -or @($catalog.themes).Count -ne 2) {
+  throw 'theme-catalog.json must use schemaVersion 1 and list exactly two bundled themes.'
+}
+$expectedThemes = @('ink-landscape', 'frost-sword-immortal')
+if ((@($catalog.themes) -join ',') -ne ($expectedThemes -join ',')) {
+  throw "Bundled theme catalog must list: $($expectedThemes -join ', ')"
+}
+foreach ($themeId in $expectedThemes) {
+  if ($themeId -notmatch '^[a-z0-9][a-z0-9-]{0,63}$') { throw "Invalid bundled theme ID: $themeId" }
+  $theme = Join-Path $themesRoot $themeId
+  if (-not (Test-Path -LiteralPath $theme -PathType Container)) {
+    throw "Bundled theme directory is missing: $themeId"
+  }
+  $themeManifest = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $theme 'theme.json') |
+    ConvertFrom-Json -ErrorAction Stop
+  if ($themeManifest.id -ne $themeId) {
+    throw "Bundled theme manifest ID does not match its directory: $themeId"
+  }
+  & (Join-Path $skill 'scripts\test-theme.ps1') -ThemePath $theme
+  if ($LASTEXITCODE -ne 0) { throw "Bundled theme validation failed: $themeId" }
 }
 
 Write-Host 'Repository validation passed.'

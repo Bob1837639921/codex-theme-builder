@@ -44,6 +44,31 @@ function Test-SkillDirectoryEqual {
   return $true
 }
 
+function Remove-SkillDirectoryStaleItems {
+  param(
+    [Parameter(Mandatory)][string]$Source,
+    [Parameter(Mandatory)][string]$Destination
+  )
+  $sourcePath = [System.IO.Path]::GetFullPath($Source).TrimEnd('\')
+  $destinationPath = [System.IO.Path]::GetFullPath($Destination).TrimEnd('\')
+  if ($destinationPath -eq [System.IO.Path]::GetPathRoot($destinationPath) -or
+      $destinationPath -eq $sourcePath) {
+    throw "Refusing unsafe Skill synchronization target: $destinationPath"
+  }
+  $items = @(Get-ChildItem -LiteralPath $destinationPath -Recurse -Force |
+    Sort-Object { $_.FullName.Length } -Descending)
+  foreach ($item in $items) {
+    if (-not $item.FullName.StartsWith($destinationPath + '\', [System.StringComparison]::OrdinalIgnoreCase)) {
+      throw "Refusing stale item outside installed Skill: $($item.FullName)"
+    }
+    $relative = $item.FullName.Substring($destinationPath.Length + 1)
+    if (-not (Test-Path -LiteralPath (Join-Path $sourcePath $relative))) {
+      if ($item.PSIsContainer) { Remove-Item -LiteralPath $item.FullName -Recurse -Force }
+      else { Remove-Item -LiteralPath $item.FullName -Force }
+    }
+  }
+}
+
 if (-not (Test-Path -LiteralPath (Join-Path $source 'SKILL.md') -PathType Leaf)) {
   throw "Codex Theme Builder Skill was not found: $source"
 }
@@ -76,6 +101,10 @@ if (Test-Path -LiteralPath $destination) {
   Copy-Item -LiteralPath $destination -Destination $backup -Recurse
   Write-Host "Previous Skill backed up: $backup"
   Copy-SkillDirectoryOverlay -Source $source -Destination $destination
+  Remove-SkillDirectoryStaleItems -Source $source -Destination $destination
+  if (-not (Test-SkillDirectoryEqual -Source $source -Destination $destination)) {
+    throw "Installed Skill does not exactly match the repository source: $destination"
+  }
 } else {
   Copy-Item -LiteralPath $source -Destination $destination -Recurse
 }

@@ -17,7 +17,7 @@ The desktop launcher supports a true cold start. When Codex is not running, it s
 
 Desktop shortcuts must target `powershell.exe` directly with `-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File "<skill>\assets\runtime\v2\desktop-launch.ps1"`. Do not point a shortcut at a localized `.cmd` wrapper: `cmd.exe` can decode the batch file before an in-file `chcp` command takes effect, corrupting Chinese text and the commands that follow it.
 
-Only one runtime session can be active. Its state is stored under `%LOCALAPPDATA%\CodexDreamSkinV2`. Restore the previous session before switching themes.
+Only one runtime session can be active. Its state is stored under `%LOCALAPPDATA%\CodexDreamSkinV2`. When `theme-catalog.json` is present, switch bundled themes from the in-app selector without restarting Codex; restore the runtime session only when removing the theme system itself.
 
 ## Restore contract
 

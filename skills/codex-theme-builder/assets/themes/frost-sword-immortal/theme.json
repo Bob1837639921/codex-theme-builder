@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "frost-sword-immortal",
+  "name": "雪魄剑仙",
+  "subtitle": "FROST SWORD IMMORTAL · CODEX",
+  "image": "background.webp",
+  "conversationImage": "background.webp",
+  "sidebarImage": "conversation-background.webp",
+  "selectedLeaf": "selected-sword.png",
+  "icons": {
+    "build": "icon-build.svg",
+    "analyze": "icon-analyze.svg",
+    "automate": "icon-automate.svg",
+    "debug": "icon-debug.svg"
+  },
+  "colors": {
+    "accent": "#5579a8",
+    "accentAlt": "#9ab8d8",
+    "surface": "#eef4fa",
+    "text": "#1d334d"
+  }
+}

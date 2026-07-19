@@ -39,6 +39,15 @@
 - Check headings, secondary copy, close buttons, progress indicators, and links independently.
 - Remember that portaled overlays may sit outside the themed main surface and need explicit scoped colors.
 
+## In-app theme switcher
+
+- The switcher root is `#codex-dream-theme-switcher` and remains inside the mapped sidebar anchor.
+- Opening the switcher does not move, rename, hide, or cover native controls.
+- Keyboard focus enters, traverses, selects, and exits the switcher predictably.
+- The selected theme persists across reload and a second task, or the UI clearly declares launcher-only fallback behavior.
+- Switching replaces all theme assets and color tokens atomically; failure restores the previous theme.
+- Narrow windows keep the switcher within the viewport without horizontal overflow.
+
 ## Resilience
 
 - Check a narrower window without horizontal overflow.

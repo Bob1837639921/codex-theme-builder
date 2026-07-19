@@ -1,10 +1,12 @@
-((cssText, artDataUrl, conversationDataUrl, theme) => {
+((themeCatalog, initialThemeId) => {
   const STATE_KEY = "__CODEX_DREAM_SKIN_STATE__";
   const STYLE_ID = "codex-dream-skin-style";
   const CHROME_ID = "codex-dream-skin-chrome";
   const ACTIONS_ID = "codex-dream-skin-actions";
   const TITLE_ID = "codex-dream-skin-title";
-  const RUNTIME_VERSION = "2.0.0-prototype";
+  const SWITCHER_ID = "codex-dream-theme-switcher";
+  const STORAGE_KEY = "codex-dream-theme-active";
+  const RUNTIME_VERSION = "2.1.0-prototype";
   const actions = [
     ["build", "构建", "编码实现与应用", "帮我构建一个新的应用"],
     ["analyze", "分析", "数据分析与洞察", "分析这个项目的结构与风险"],
@@ -18,25 +20,32 @@
   if (previous?.timer) clearInterval(previous.timer);
   if (previous?.scheduler?.timeout) clearTimeout(previous.scheduler.timeout);
   if (previous?.scheduler?.frame) cancelAnimationFrame(previous.scheduler.frame);
-  const artUrl = previous?.artUrl || (() => {
-    const comma = artDataUrl.indexOf(",");
-    const binary = atob(artDataUrl.slice(comma + 1));
-    const bytes = new Uint8Array(binary.length);
-    for (let index = 0; index < binary.length; index += 1) bytes[index] = binary.charCodeAt(index);
-    return URL.createObjectURL(new Blob([bytes], { type: "image/png" }));
-  })();
-  const conversationUrl = previous?.conversationUrl || (() => {
-    const comma = conversationDataUrl.indexOf(",");
-    const binary = atob(conversationDataUrl.slice(comma + 1));
-    const bytes = new Uint8Array(binary.length);
-    for (let index = 0; index < binary.length; index += 1) bytes[index] = binary.charCodeAt(index);
-    return URL.createObjectURL(new Blob([bytes], { type: "image/png" }));
-  })();
-  const existingStyle = document.getElementById(STYLE_ID);
-  if (existingStyle) {
-    existingStyle.textContent = cssText;
-    existingStyle.dataset.dreamVersion = RUNTIME_VERSION;
+  previous?.removeSwitcherListeners?.();
+  document.getElementById(SWITCHER_ID)?.remove();
+  for (const urls of previous?.objectUrls?.values?.() || []) {
+    URL.revokeObjectURL(urls.artUrl);
+    URL.revokeObjectURL(urls.conversationUrl);
   }
+  const themeMap = new Map(themeCatalog.map((item) => [item.id, item]));
+  if (!themeMap.size || !themeMap.has(initialThemeId)) throw new Error("Theme catalog is empty or missing the initial theme");
+  const objectUrls = new Map();
+  const dataUrlToObjectUrl = (dataUrl) => {
+    const comma = dataUrl.indexOf(",");
+    const binary = atob(dataUrl.slice(comma + 1));
+    const bytes = new Uint8Array(binary.length);
+    for (let index = 0; index < binary.length; index += 1) bytes[index] = binary.charCodeAt(index);
+    const mime = dataUrl.slice(5, dataUrl.indexOf(";")) || "image/png";
+    return URL.createObjectURL(new Blob([bytes], { type: mime }));
+  };
+  const urlsFor = (theme) => {
+    if (!objectUrls.has(theme.id)) objectUrls.set(theme.id, {
+      artUrl: dataUrlToObjectUrl(theme.artDataUrl),
+      conversationUrl: dataUrlToObjectUrl(theme.conversationArtDataUrl),
+    });
+    return objectUrls.get(theme.id);
+  };
+  const storedThemeId = (() => { try { return localStorage.getItem(STORAGE_KEY); } catch { return null; } })();
+  let activeTheme = themeMap.get(storedThemeId) || themeMap.get(initialThemeId);
 
   const clearDetailMarkers = () => {
     document.querySelectorAll(".dream-progress-pill").forEach((node) => node.classList.remove("dream-progress-pill"));
@@ -167,23 +176,171 @@
     output?.classList.add("dream-output-panel");
   };
 
-  const ensure = () => {
-    if (window.__CODEX_DREAM_SKIN_DISABLED__) return;
-    const root = document.documentElement;
-    if (!root) return;
-    root.classList.add("codex-dream-skin");
-    root.style.setProperty("--dream-art", `url("${artUrl}")`);
-    root.style.setProperty("--dream-conversation-art", `url("${conversationUrl}")`);
+  const renderSwitcherSelection = () => {
+    const switcher = document.getElementById(SWITCHER_ID);
+    switcher?.querySelectorAll("[data-dream-theme-id]").forEach((card) => {
+      const selected = card.dataset.dreamThemeId === activeTheme.id;
+      card.classList.toggle("is-selected", selected);
+      card.setAttribute("aria-pressed", String(selected));
+      const check = card.querySelector(".dream-theme-check");
+      if (check) check.hidden = !selected;
+    });
+  };
 
+  const applyTheme = (theme, persist = true) => {
+    const root = document.documentElement;
+    if (!root) throw new Error("Document root is unavailable");
+    const urls = urlsFor(theme);
     let style = document.getElementById(STYLE_ID);
     if (!style) {
       style = document.createElement("style");
       style.id = STYLE_ID;
       (document.head || root).appendChild(style);
     }
-    if (style.dataset.dreamVersion !== RUNTIME_VERSION) {
-      style.textContent = cssText;
-      style.dataset.dreamVersion = RUNTIME_VERSION;
+    style.textContent = theme.cssText;
+    style.dataset.dreamVersion = RUNTIME_VERSION;
+    style.dataset.dreamThemeId = theme.id;
+    root.classList.add("codex-dream-skin");
+    root.style.setProperty("--dream-art", `url("${urls.artUrl}")`);
+    root.style.setProperty("--dream-conversation-art", `url("${urls.conversationUrl}")`);
+    activeTheme = theme;
+    document.querySelectorAll(".dream-action-button[data-dream-action-key]").forEach((button) => {
+      const icon = button.querySelector("img");
+      if (icon) icon.src = theme.icons?.[button.dataset.dreamActionKey] || "";
+    });
+    const chrome = document.getElementById(CHROME_ID);
+    if (chrome) {
+      chrome.querySelector(".dream-brand b").textContent = theme.name;
+      chrome.querySelector(".dream-brand small").textContent = theme.subtitle;
+      chrome.querySelector(".dream-signature").textContent = theme.id;
+    }
+    if (persist) {
+      try { localStorage.setItem(STORAGE_KEY, theme.id); } catch {}
+    }
+    renderSwitcherSelection();
+  };
+
+  const activateTheme = (themeId) => {
+    const next = themeMap.get(themeId);
+    if (!next || next === activeTheme) return true;
+    const previousTheme = activeTheme;
+    try {
+      applyTheme(next, true);
+      return true;
+    } catch (error) {
+      try { applyTheme(previousTheme, false); } catch {}
+      console.error("Codex theme switch failed and was rolled back", error);
+      return false;
+    }
+  };
+
+  let removeSwitcherListeners = null;
+  const ensureThemeSwitcher = (sidebar) => {
+    if (!sidebar || themeCatalog.length < 2) return;
+    let switcher = document.getElementById(SWITCHER_ID);
+    if (switcher?.parentElement === sidebar) {
+      renderSwitcherSelection();
+      return;
+    }
+    switcher?.remove();
+    removeSwitcherListeners?.();
+    switcher = document.createElement("div");
+    switcher.id = SWITCHER_ID;
+    const trigger = document.createElement("button");
+    trigger.type = "button";
+    trigger.className = "dream-theme-trigger";
+    trigger.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z"></path>
+      <circle cx="13.5" cy="6.5" r=".5" fill="currentColor"></circle>
+      <circle cx="17.5" cy="10.5" r=".5" fill="currentColor"></circle>
+      <circle cx="6.5" cy="12.5" r=".5" fill="currentColor"></circle>
+      <circle cx="8.5" cy="7.5" r=".5" fill="currentColor"></circle>
+    </svg>`;
+    trigger.setAttribute("aria-label", "切换主题");
+    trigger.setAttribute("aria-expanded", "false");
+    trigger.setAttribute("aria-haspopup", "dialog");
+    trigger.title = "切换主题";
+    const panel = document.createElement("div");
+    panel.className = "dream-theme-panel";
+    panel.hidden = true;
+    panel.setAttribute("role", "dialog");
+    panel.setAttribute("aria-label", "选择 Codex 主题");
+    const grid = document.createElement("div");
+    grid.className = "dream-theme-grid";
+    for (const item of themeCatalog) {
+      const card = document.createElement("button");
+      card.type = "button";
+      card.className = "dream-theme-card";
+      card.dataset.dreamThemeId = item.id;
+      const preview = document.createElement("span");
+      preview.className = "dream-theme-preview";
+      preview.style.backgroundImage = `url("${item.artDataUrl}")`;
+      const check = document.createElement("span");
+      check.className = "dream-theme-check";
+      check.textContent = "✓";
+      check.setAttribute("aria-hidden", "true");
+      preview.appendChild(check);
+      const label = document.createElement("strong");
+      label.textContent = item.name;
+      const swatches = document.createElement("span");
+      swatches.className = "dream-theme-swatches";
+      for (const color of item.swatches || []) {
+        const swatch = document.createElement("i");
+        swatch.style.backgroundColor = color;
+        swatches.appendChild(swatch);
+      }
+      card.append(preview, label, swatches);
+      card.addEventListener("click", () => {
+        activateTheme(item.id);
+        panel.hidden = true;
+        trigger.setAttribute("aria-expanded", "false");
+        trigger.focus();
+      });
+      grid.appendChild(card);
+    }
+    panel.appendChild(grid);
+    switcher.append(trigger, panel);
+    sidebar.appendChild(switcher);
+    const close = () => {
+      panel.hidden = true;
+      trigger.setAttribute("aria-expanded", "false");
+    };
+    const onDocumentPointer = (event) => { if (!switcher.contains(event.target)) close(); };
+    const onDocumentKey = (event) => {
+      if (event.key === "Escape" && !panel.hidden) {
+        close();
+        trigger.focus();
+      }
+    };
+    trigger.addEventListener("click", () => {
+      panel.hidden = !panel.hidden;
+      trigger.setAttribute("aria-expanded", String(!panel.hidden));
+      if (!panel.hidden) panel.querySelector(".is-selected")?.focus();
+    });
+    document.addEventListener("pointerdown", onDocumentPointer, true);
+    document.addEventListener("keydown", onDocumentKey, true);
+    removeSwitcherListeners = () => {
+      document.removeEventListener("pointerdown", onDocumentPointer, true);
+      document.removeEventListener("keydown", onDocumentKey, true);
+    };
+    if (window[STATE_KEY]) window[STATE_KEY].removeSwitcherListeners = removeSwitcherListeners;
+    renderSwitcherSelection();
+  };
+
+  const ensure = () => {
+    if (window.__CODEX_DREAM_SKIN_DISABLED__) return;
+    const root = document.documentElement;
+    if (!root) return;
+    root.classList.add("codex-dream-skin");
+    let style = document.getElementById(STYLE_ID);
+    if (!style) {
+      style = document.createElement("style");
+      style.id = STYLE_ID;
+      (document.head || root).appendChild(style);
+    }
+    if (style.dataset.dreamVersion !== RUNTIME_VERSION || style.dataset.dreamThemeId !== activeTheme.id) {
+      applyTheme(activeTheme, false);
+      style = document.getElementById(STYLE_ID);
     }
 
     const shellMain = document.querySelector("main.main-surface") || document.querySelector("main");
@@ -245,8 +402,9 @@
             const button = document.createElement("button");
             button.type = "button";
             button.className = "dream-action-button";
+            button.dataset.dreamActionKey = key;
             const icon = document.createElement("img");
-            icon.src = theme.icons?.[key] || "";
+            icon.src = activeTheme.icons?.[key] || "";
             icon.alt = "";
             icon.width = 42;
             icon.height = 42;
@@ -279,6 +437,7 @@
     shellMain.classList.toggle("dream-home-shell", Boolean(home));
     shellMain.classList.toggle("dream-conversation-shell", !home);
     markDetailSurfaces();
+    ensureThemeSwitcher(document.querySelector("aside.app-shell-left-panel"));
     let chrome = document.getElementById(CHROME_ID);
     if (!chrome || chrome.parentElement !== document.body) {
       chrome?.remove();
@@ -293,9 +452,9 @@
       document.body.appendChild(chrome);
     }
     chrome.style.pointerEvents = "none";
-    chrome.querySelector(".dream-brand b").textContent = theme.name;
-    chrome.querySelector(".dream-brand small").textContent = theme.subtitle;
-    chrome.querySelector(".dream-signature").textContent = theme.id;
+    chrome.querySelector(".dream-brand b").textContent = activeTheme.name;
+    chrome.querySelector(".dream-brand small").textContent = activeTheme.subtitle;
+    chrome.querySelector(".dream-signature").textContent = activeTheme.id;
     const shellBox = shellMain.getBoundingClientRect();
     chrome.style.left = `${Math.round(shellBox.left)}px`;
     chrome.style.top = `${Math.round(shellBox.top)}px`;
@@ -317,6 +476,8 @@
     document.getElementById(CHROME_ID)?.remove();
     document.getElementById(ACTIONS_ID)?.remove();
     document.getElementById(TITLE_ID)?.remove();
+    document.getElementById(SWITCHER_ID)?.remove();
+    removeSwitcherListeners?.();
     document.querySelectorAll(".dream-home-promo").forEach((node) => node.classList.remove("dream-home-promo"));
     clearDetailMarkers();
     const state = window[STATE_KEY];
@@ -324,8 +485,10 @@
     if (state?.timer) clearInterval(state.timer);
     if (state?.scheduler?.timeout) clearTimeout(state.scheduler.timeout);
     if (state?.scheduler?.frame) cancelAnimationFrame(state.scheduler.frame);
-    if (state?.artUrl) URL.revokeObjectURL(state.artUrl);
-    if (state?.conversationUrl) URL.revokeObjectURL(state.conversationUrl);
+    for (const urls of state?.objectUrls?.values?.() || []) {
+      URL.revokeObjectURL(urls.artUrl);
+      URL.revokeObjectURL(urls.conversationUrl);
+    }
     delete window[STATE_KEY];
     return true;
   };
@@ -341,7 +504,19 @@
   const observer = new MutationObserver(scheduleEnsure);
   observer.observe(document.documentElement, { childList: true, subtree: true });
   const timer = setInterval(ensure, 5000);
-  window[STATE_KEY] = { ensure, cleanup, observer, timer, scheduler, artUrl, conversationUrl, version: RUNTIME_VERSION };
+  window[STATE_KEY] = {
+    ensure,
+    cleanup,
+    observer,
+    timer,
+    scheduler,
+    objectUrls,
+    activateTheme,
+    removeSwitcherListeners,
+    get activeThemeId() { return activeTheme.id; },
+    version: RUNTIME_VERSION,
+  };
+  applyTheme(activeTheme, false);
   ensure();
-  return { installed: true, version: RUNTIME_VERSION };
-})(__DREAM_CSS_JSON__, __DREAM_ART_JSON__, __DREAM_CONVERSATION_ART_JSON__, __DREAM_THEME_JSON__)
+  return { installed: true, version: RUNTIME_VERSION, activeThemeId: activeTheme.id, themeCount: themeCatalog.length };
+})(__DREAM_THEME_CATALOG_JSON__, __DREAM_INITIAL_THEME_ID_JSON__)

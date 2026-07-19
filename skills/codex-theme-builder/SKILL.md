@@ -15,6 +15,8 @@ Use the supplied reference as the visual truth. When the user supplies an existi
 
 For every proposed visual element, record how it will be implemented: existing DOM hook, runtime marker, asset, interaction state, motion property, reduced-motion fallback, and performance cost. Reject or revise mock elements that cannot be implemented without breaking native controls or modifying Codex application files.
 
+When a real Codex screenshot exists, treat the work as a constrained edit rather than a new UI generation. Read [visual-lock-and-switcher.md](references/visual-lock-and-switcher.md), create a provisional implementation map before generating any preview, and reject images that move, replace, rename, or invent native product surfaces. Read the same reference before designing or implementing an in-app theme switcher.
+
 ## Choose the workflow
 
 - Create a theme from artwork: run `scripts/new-theme.ps1`.

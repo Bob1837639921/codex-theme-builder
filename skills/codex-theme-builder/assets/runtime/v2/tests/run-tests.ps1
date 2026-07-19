@@ -47,7 +47,21 @@ if (($runtimeText -join "`n") -match '(?i)config\.toml|appearanceTheme|BaseUrl|A
 $themeCss = Get-Content -LiteralPath (Join-Path $theme 'theme.css') -Raw
 $runtimeJs = Get-Content -LiteralPath (Join-Path $Root 'assets\runtime.js') -Raw
 $injectorText = Get-Content -LiteralPath $injector -Raw
+$catalogPath = Join-Path (Split-Path -Parent $theme) 'theme-catalog.json'
+$catalog = Get-Content -LiteralPath $catalogPath -Raw | ConvertFrom-Json
 $manifest = Get-Content -LiteralPath (Join-Path $theme 'theme.json') -Raw | ConvertFrom-Json
+if ($catalog.schemaVersion -ne 1 -or $catalog.themes.Count -ne 2 -or
+    $catalog.themes[0] -ne 'ink-landscape' -or $catalog.themes[1] -ne 'frost-sword-immortal') {
+  throw 'The bundled catalog must expose exactly the ink and sword-immortal themes.'
+}
+if ($runtimeJs -notmatch 'codex-dream-theme-switcher' -or
+    $runtimeJs -notmatch 'codex-dream-theme-active' -or
+    $runtimeJs -notmatch 'activateTheme' -or
+    $runtimeJs -notmatch 'rolled back' -or
+    $runtimeJs -notmatch 'event\.key === "Escape"' -or
+    $injectorText -notmatch 'Theme switcher interaction test failed') {
+  throw 'The two-card switcher must keep persistence, rollback, keyboard handling, and live interaction coverage.'
+}
 if ($themeCss -notmatch '(?s)main\.dream-conversation-shell\s+\.sticky\.bottom-0\s+\[class~="bg-gradient-to-t"\]\s*\{[^}]*background-image:\s*none\s*!important') {
   throw 'Conversation composer fades must stay transparent, including the in-progress file-summary state.'
 }

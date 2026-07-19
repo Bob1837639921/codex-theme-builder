@@ -84,3 +84,16 @@ Codex uses sticky gradient layers around the composer. The bundled base runtime 
 - Avoid high-frequency detail behind text and controls.
 - Use separate art for home and conversation if one crop cannot serve both.
 - Treat icon styling as part of the selected theme, not part of the runtime.
+
+## In-app theme switching
+
+Each schema-version-1 manifest still describes one theme. The bundled v2 runtime opts into live switching when a sibling `theme-catalog.json` is present; without that file it loads only the selected theme and keeps launcher-based selection.
+
+When the user requests an in-app switcher:
+
+- Read `visual-lock-and-switcher.md` before previewing or coding it.
+- Treat the switcher as a shared runtime augmentation, not ordinary theme CSS.
+- Define the theme catalog, active-theme persistence, asset loading, rollback behavior, and exact DOM anchor in the implementation map before showing the control in a preview.
+- Prefer one compact control anchored inside `aside.app-shell-left-panel`, normally beside the existing account/settings area. Do not move native navigation or cover thread actions.
+- Use the stable runtime ID `#codex-dream-theme-switcher` for the injected root and keep all pointer and keyboard behavior inside that root.
+- Fall back to the existing launcher-based theme selection when live switching cannot be validated safely.
