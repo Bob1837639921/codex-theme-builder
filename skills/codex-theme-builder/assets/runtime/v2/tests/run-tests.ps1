@@ -62,10 +62,13 @@ if ($runtimeJs -notmatch 'codex-dream-theme-switcher' -or
     $runtimeJs -notmatch 'rolled back' -or
     $runtimeJs -notmatch 'event\.key === "Escape"' -or
     $baseCss -notmatch 'dream-theme-panel-in' -or
+    $baseCss -notmatch 'dream-theme-transition-out' -or
+    $runtimeJs -notmatch 'THEME_FADE_OUT_MS' -or
+    $runtimeJs -notmatch 'prefers-reduced-motion: reduce' -or
     $runtimeJs -match 'dream-theme-feedback' -or
     $baseCss -match 'dream-theme-feedback' -or
     $injectorText -notmatch 'Theme switcher interaction test failed') {
-  throw 'The catalog-driven switcher must keep persistence, rollback, keyboard handling, and live interaction coverage.'
+  throw 'The catalog-driven switcher must keep persistence, rollback, keyboard handling, fade transition, reduced-motion, and live interaction coverage.'
 }
 if ($themeCss -notmatch '(?s)main\.dream-conversation-shell\s+\.sticky\.bottom-0\s+\[class~="bg-gradient-to-t"\]\s*\{[^}]*background-image:\s*none\s*!important') {
   throw 'Conversation composer fades must stay transparent, including the in-progress file-summary state.'

@@ -47,6 +47,18 @@ html.codex-dream-skin body {
   font-family: "Microsoft YaHei UI", "Noto Sans CJK SC", system-ui, sans-serif !important;
 }
 
+html.codex-dream-skin aside.app-shell-left-panel,
+html.codex-dream-skin main.main-surface {
+  transition: opacity 150ms cubic-bezier(.4, 0, .2, 1),
+    filter 150ms cubic-bezier(.4, 0, .2, 1);
+}
+
+html.codex-dream-skin.dream-theme-transition-out aside.app-shell-left-panel,
+html.codex-dream-skin.dream-theme-transition-out main.main-surface {
+  opacity: .45;
+  filter: saturate(.82) brightness(.98);
+}
+
 html.codex-dream-skin aside.app-shell-left-panel
   [role="status"][class~="bg-token-main-surface-primary"] {
   color: var(--dream-ink, #252a27) !important;
@@ -252,5 +264,10 @@ html.codex-dream-skin aside.app-shell-left-panel {
 
   #codex-dream-theme-switcher .dream-theme-panel {
     animation: none !important;
+  }
+
+  html.codex-dream-skin aside.app-shell-left-panel,
+  html.codex-dream-skin main.main-surface {
+    transition: none !important;
   }
 }

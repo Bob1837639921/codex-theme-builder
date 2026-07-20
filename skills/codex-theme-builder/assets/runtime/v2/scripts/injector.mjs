@@ -819,21 +819,34 @@ async function runOneShot(options) {
             if (!state || state.themeCount < 2 || cards.length !== state.themeCount) {
               return { pass: false, reason: 'missing state or incomplete theme catalog cards' };
             }
+            const root = document.documentElement;
+            const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
             const original = state.activeThemeId;
             const alternate = cards.find((card) => card.dataset.dreamThemeId !== original);
             alternate?.click();
-            await new Promise((resolve) => setTimeout(resolve, 120));
+            const firstTransitionStarted = root.classList.contains('dream-theme-transition-out');
+            await new Promise((resolve) => setTimeout(resolve, 380));
             const changed = state.activeThemeId;
             const changedStyle = document.getElementById('codex-dream-skin-style')?.dataset.dreamThemeId;
+            const firstTransitionEnded = !root.classList.contains('dream-theme-transition-out');
             const originalCard = cards.find((card) => card.dataset.dreamThemeId === original);
             originalCard?.click();
-            await new Promise((resolve) => setTimeout(resolve, 120));
+            const secondTransitionStarted = root.classList.contains('dream-theme-transition-out');
+            await new Promise((resolve) => setTimeout(resolve, 380));
             const restored = state.activeThemeId;
+            const secondTransitionEnded = !root.classList.contains('dream-theme-transition-out');
             return {
-              pass: changed !== original && changedStyle === changed && restored === original,
+              pass: changed !== original && changedStyle === changed && restored === original &&
+                (reducedMotion || (firstTransitionStarted && secondTransitionStarted)) &&
+                firstTransitionEnded && secondTransitionEnded,
               original,
               changed,
-              restored
+              restored,
+              reducedMotion,
+              firstTransitionStarted,
+              firstTransitionEnded,
+              secondTransitionStarted,
+              secondTransitionEnded
             };
           })()`);
           if (!switcherTest.pass) throw new Error(`Theme switcher interaction test failed: ${switcherTest.reason || JSON.stringify(switcherTest)}`);
