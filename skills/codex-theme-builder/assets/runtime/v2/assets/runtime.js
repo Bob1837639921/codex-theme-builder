@@ -514,6 +514,7 @@
     activateTheme,
     removeSwitcherListeners,
     get activeThemeId() { return activeTheme.id; },
+    themeCount: themeCatalog.length,
     version: RUNTIME_VERSION,
   };
   applyTheme(activeTheme, false);

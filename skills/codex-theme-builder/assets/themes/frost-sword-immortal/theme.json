@@ -7,6 +7,13 @@
   "conversationImage": "background.webp",
   "sidebarImage": "conversation-background.webp",
   "selectedLeaf": "selected-sword.png",
+  "composerEdge": {
+    "image": "composer-edge.png",
+    "horizontal": "right",
+    "vertical": "bottom",
+    "maxHeight": 220,
+    "opacity": 1
+  },
   "icons": {
     "build": "icon-build.svg",
     "analyze": "icon-analyze.svg",

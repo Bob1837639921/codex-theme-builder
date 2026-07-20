@@ -12,7 +12,7 @@ $injector = Join-Path $Root 'scripts\injector.mjs'
 $theme = if ($ThemePath) {
   (Resolve-Path -LiteralPath $ThemePath -ErrorAction Stop).Path
 } else {
-  Join-Path $Root 'themes\ink-landscape'
+  Join-Path $Root '..\..\themes\ink-landscape'
 }
 
 & $node.Path --check $injector
@@ -45,28 +45,36 @@ if (($runtimeText -join "`n") -match '(?i)config\.toml|appearanceTheme|BaseUrl|A
   throw 'V2 runtime must not read or write Codex configuration or provider settings.'
 }
 $themeCss = Get-Content -LiteralPath (Join-Path $theme 'theme.css') -Raw
+$baseCss = Get-Content -LiteralPath (Join-Path $Root 'assets\base.css') -Raw
 $runtimeJs = Get-Content -LiteralPath (Join-Path $Root 'assets\runtime.js') -Raw
 $injectorText = Get-Content -LiteralPath $injector -Raw
 $catalogPath = Join-Path (Split-Path -Parent $theme) 'theme-catalog.json'
 $catalog = Get-Content -LiteralPath $catalogPath -Raw | ConvertFrom-Json
 $manifest = Get-Content -LiteralPath (Join-Path $theme 'theme.json') -Raw | ConvertFrom-Json
-if ($catalog.schemaVersion -ne 1 -or $catalog.themes.Count -ne 2 -or
-    $catalog.themes[0] -ne 'ink-landscape' -or $catalog.themes[1] -ne 'frost-sword-immortal') {
-  throw 'The bundled catalog must expose exactly the ink and sword-immortal themes.'
+$catalogThemeIds = @($catalog.themes)
+if ($catalog.schemaVersion -ne 1 -or $catalogThemeIds.Count -lt 2 -or
+    'ink-landscape' -notin $catalogThemeIds -or 'frost-sword-immortal' -notin $catalogThemeIds) {
+  throw 'The bundled catalog must include the ink and sword-immortal examples and may include additional themes.'
 }
 if ($runtimeJs -notmatch 'codex-dream-theme-switcher' -or
     $runtimeJs -notmatch 'codex-dream-theme-active' -or
     $runtimeJs -notmatch 'activateTheme' -or
     $runtimeJs -notmatch 'rolled back' -or
     $runtimeJs -notmatch 'event\.key === "Escape"' -or
+    $baseCss -notmatch 'dream-theme-panel-in' -or
+    $runtimeJs -match 'dream-theme-feedback' -or
+    $baseCss -match 'dream-theme-feedback' -or
     $injectorText -notmatch 'Theme switcher interaction test failed') {
-  throw 'The two-card switcher must keep persistence, rollback, keyboard handling, and live interaction coverage.'
+  throw 'The catalog-driven switcher must keep persistence, rollback, keyboard handling, and live interaction coverage.'
 }
 if ($themeCss -notmatch '(?s)main\.dream-conversation-shell\s+\.sticky\.bottom-0\s+\[class~="bg-gradient-to-t"\]\s*\{[^}]*background-image:\s*none\s*!important') {
   throw 'Conversation composer fades must stay transparent, including the in-progress file-summary state.'
 }
 if ($themeCss -notmatch '(?s)\[role="dialog"\]\s*\{[^}]*color:\s*var\(--dream-ink\)\s*!important[^}]*background-color:') {
   throw 'Portaled light dialogs must keep readable dark text after Codex updates.'
+}
+if ($baseCss -notmatch '(?s)aside\.app-shell-left-panel\s+\[role="status"\]\[class~="bg-token-main-surface-primary"\]\s*\{[^}]*color:\s*var\(--dream-ink') {
+  throw 'The sidebar usage card must keep readable dark text on its light surface.'
 }
 if ($themeCss -notmatch '(?s)\[data-radix-popper-content-wrapper\].*?color:\s*var\(--dream-ink\)\s*!important') {
   throw 'Role-less Radix popovers must keep readable dark text after Codex updates.'
@@ -97,5 +105,19 @@ if ($manifest.selectedLeaf -ne 'selected-leaf.png' -or
     -not (Test-Path (Join-Path $theme $manifest.selectedLeaf)) -or
     $injectorText -notmatch 'Selected leaf must be a PNG or WebP') {
   throw 'The optional selected-state raster asset contract must remain validated and bundled.'
+}
+if ($manifest.composerEdge.image -ne 'composer-edge.png' -or
+    -not (Test-Path (Join-Path $theme $manifest.composerEdge.image)) -or
+    $injectorText -notmatch 'Composer edge must be a PNG or WebP' -or
+    $injectorText -notmatch '--dream-composer-edge' -or
+    $injectorText -notmatch '--dream-composer-edge-position' -or
+    $baseCss -notmatch 'background-position:\s*var\(--dream-composer-edge-position' -or
+    $baseCss -notmatch 'background-size:\s*auto\s+var\(--dream-composer-edge-max-height' -or
+    $baseCss -notmatch '(?s)div:has\(> \.composer-surface-chrome\)::after\s*\{[^}]*background-image:\s*var\(--dream-composer-edge\)' -or
+    $baseCss -notmatch 'inset:\s*-100px\s+-180px\s+-12px\s+-76px' -or
+    $baseCss -notmatch '(?s)div:has\(> \.composer-surface-chrome\)::after\s*\{[^}]*z-index:\s*2' -or
+    $baseCss -notmatch '(?s)\.composer-surface-chrome\s*>\s*\*\s*\{[^}]*z-index:\s*3' -or
+    $themeCss -match '(?s)div:has\(> \.composer-surface-chrome\)::after\s*,.*?display:\s*none') {
+  throw 'The theme-specific composer-edge raster contract and shared rendering hook must remain validated and bundled.'
 }
 Write-Host 'PASS: syntax, CDP validation, selected theme payload, composer fade regression, dialog contrast regression, detail polish, reduced motion, Store activation bridge, launch defaults, and zero-config-invasion checks.'

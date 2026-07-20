@@ -382,6 +382,11 @@ html.codex-dream-skin .composer-surface-chrome {
   backdrop-filter: none !important;
 }
 
+html.codex-dream-skin div:has(> .composer-surface-chrome)::after {
+  right: -115px;
+  clip-path: inset(0 0 0 calc(100% - 130px));
+}
+
 html.codex-dream-skin main.dream-home-shell .composer-surface-chrome {
   min-height: 176px !important;
   padding-top: 20px !important;
@@ -389,9 +394,7 @@ html.codex-dream-skin main.dream-home-shell .composer-surface-chrome {
 }
 
 html.codex-dream-skin .composer-surface-chrome::before,
-html.codex-dream-skin .composer-surface-chrome::after,
 html.codex-dream-skin div:has(> .composer-surface-chrome)::before,
-html.codex-dream-skin div:has(> .composer-surface-chrome)::after,
 .dream-home div:has(> .horizontal-scroll-fade-mask .group\/project-selector)::before {
   display: none !important;
   content: none !important;

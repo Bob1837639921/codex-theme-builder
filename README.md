@@ -2,7 +2,7 @@
 
 一个可被 Codex 自动调用的 Codex Desktop 主题设计、开发、预览、验证与打包 Skill。
 
-它不绑定某一种视觉风格。你可以给 Codex 一段文字需求、截图、设计稿或已有主题，Codex 会完成视觉方案、实现映射、主题开发、实时预览、视觉修正和最终打包。仓库内附带「水墨山水」与「雪魄剑仙」两套完整主题，以及可在 Codex 侧栏内即时切换的双卡片选择器。
+它不绑定某一种视觉风格。你可以给 Codex 一段文字需求、截图、设计稿或已有主题，Codex 会完成视觉方案、实现映射、主题开发、实时预览、视觉修正和最终打包。仓库内附带两套示例主题，并提供可扩展主题目录的侧栏切换器；新增主题只需遵循统一主题包结构并加入目录。
 
 <img src="skills/codex-theme-builder/assets/themes/ink-landscape/runtime-preview.webp" alt="水墨山水主题真实运行截图" width="960">
 
@@ -16,6 +16,8 @@
 - 支持首页与对话页使用不同背景。
 - 支持选中、悬停、运行中、文件变更、弹窗和输出面板等状态。
 - 支持侧栏内主题切换、选择记忆、失败回滚和键盘操作；无需重启 Codex。
+- 支持主题级输入框边缘素材：按左/右与上/下锚定、固定比例渲染，输入框变宽或变高时不会拉伸；主题切换后直接显示目标主题，不再叠加重复提示。
+- 内置结构化新主题蓝图，覆盖全局画布、侧栏、首页、对话、选中态、输入框、输出面板、用量弹窗、主题切换和窄窗口验收。
 - 在已启动的主题会话中热更新并截图验证。
 - 检测清单、资源大小、SVG 安全性、JavaScript 语法与 CDP 安全边界。
 - 打包主题为可分发 ZIP。
@@ -40,9 +42,9 @@ cd codex-theme-builder
 powershell -ExecutionPolicy Bypass -File .\scripts\setup-windows.ps1
 ```
 
-该脚本会自动验证两个内置主题和主题目录、安装或精确更新 Skill、核验 Node.js 与 Microsoft Store 版 Codex、生成主题图标，并在桌面创建直接调用隐藏 PowerShell 的主题快捷方式。配置结束后，用户只需保存当前内容、完全退出 Codex，再点击桌面快捷方式。启动后可在侧栏顶部的调色盘按钮中切换「墨境」和「雪魄剑仙」，选择会在后续任务和重启后保留。
+该脚本会自动验证内置主题和主题目录、安装或精确更新 Skill、核验 Node.js 与 Microsoft Store 版 Codex、生成「万象」图标，并在桌面创建直接调用隐藏 PowerShell 的主题快捷方式。配置结束后，用户只需保存当前内容、完全退出 Codex，再点击桌面快捷方式。启动后可在侧栏顶部的调色盘按钮中切换主题，选择会在后续任务和重启后保留。
 
-在另一台 Windows 电脑上复刻时只需克隆同一仓库并运行上述 `setup-windows.ps1`。双主题资源、切换运行时、中文启动提示、桌面快捷方式和 Skill 工作流都会从仓库安装，不依赖开发电脑上的临时目录或手工修改。
+在另一台 Windows 电脑上复刻时只需克隆同一仓库并运行上述 `setup-windows.ps1`。主题资源、切换运行时、中文启动提示、桌面快捷方式和 Skill 工作流都会从仓库安装，不依赖开发电脑上的临时目录或手工修改。
 
 如果只需要安装 Skill，可以执行：
 
@@ -80,9 +82,9 @@ powershell -ExecutionPolicy Bypass -File .\scripts\install-skill.ps1
 你自行比较三个方向并选择最适合原生控件的方案，完成开发和视觉验收。
 ```
 
-Skill 会把每个设计元素映射到原生 DOM、运行时标记或主题资产，拒绝无法安全实现的纯概念元素，并保留 `prefers-reduced-motion` 降级方案。
+Skill 会先读取结构化新主题蓝图，把每个设计元素映射到原生 DOM、运行时标记或主题资产，逐项处理侧栏、首页、对话、输入框前景装饰、选中态、输出面板和弹窗对比度；它会拒绝无法安全实现的纯概念元素，并保留 `prefers-reduced-motion` 降级方案。
 
-## 直接使用双主题运行时
+## 直接使用多主题运行时
 
 先保存未发送内容并完全退出 Codex，然后执行：
 
@@ -94,7 +96,7 @@ powershell -ExecutionPolicy Bypass -File "$skill\scripts\start-theme.ps1" `
   -ThemePath $theme -ConfirmCodexClosed
 ```
 
-启动后由隐藏的 Node.js 进程维持主题，不需要一直保留黑色控制台。运行时会读取相邻的 `theme-catalog.json` 并一次加载两套主题，侧栏调色盘负责即时切换。普通 Codex 快捷方式不会自动注入主题；Codex 更新或完全退出后，需要重新运行主题启动脚本或桌面主题快捷方式。
+启动后由隐藏的 Node.js 进程维持主题，不需要一直保留黑色控制台。运行时会读取相邻的 `theme-catalog.json` 并加载目录中列出的全部主题，侧栏调色盘负责即时切换。普通 Codex 快捷方式不会自动注入主题；Codex 更新或完全退出后，需要重新运行主题启动脚本或桌面主题快捷方式。
 
 移除主题：
 
@@ -185,4 +187,4 @@ Skill 的自动工作流、主题格式和 QA 标准分别位于：
 powershell -ExecutionPolicy Bypass -File .\scripts\validate-repository.ps1
 ```
 
-该命令会验证 Skill 元数据、目录结构、PowerShell 语法、运行时 JavaScript、安全自检、双主题目录以及两套内置主题的完整载荷。
+该命令会验证 Skill 元数据、目录结构、PowerShell 语法、运行时 JavaScript、安全自检、主题目录以及目录中全部主题的完整载荷。

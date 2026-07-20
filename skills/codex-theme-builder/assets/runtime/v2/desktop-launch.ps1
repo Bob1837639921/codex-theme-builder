@@ -1,7 +1,7 @@
 ﻿[CmdletBinding()]
 param(
   [string]$Theme = '',
-  [string]$ThemeName = '墨境主题'
+  [string]$ThemeName = '万象'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -12,7 +12,7 @@ if ([string]::IsNullOrWhiteSpace($Theme)) {
   $Theme = Join-Path $PSScriptRoot '..\..\themes\ink-landscape'
 }
 $Theme = [System.IO.Path]::GetFullPath($Theme)
-if ([string]::IsNullOrWhiteSpace($ThemeName)) { $ThemeName = 'Codex 主题' }
+if ([string]::IsNullOrWhiteSpace($ThemeName)) { $ThemeName = '万象' }
 
 $bundledNodeDir = Join-Path $env:USERPROFILE '.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin'
 if (Test-Path -LiteralPath (Join-Path $bundledNodeDir 'node.exe')) {

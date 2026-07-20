@@ -28,7 +28,7 @@ When a real Codex screenshot exists, treat the work as a constrained edit rather
 - Produce a distributable archive: run `scripts/package-theme.ps1`.
 - Install a verified theme launcher on the Windows desktop: run `scripts/install-desktop-shortcut.ps1` from the installed skill.
 
-Read [theme-contract.md](references/theme-contract.md) before authoring or modifying a theme. Read [windows-runtime.md](references/windows-runtime.md) before live application. Use [qa-checklist.md](references/qa-checklist.md) for final verification.
+Read [theme-contract.md](references/theme-contract.md) before authoring or modifying a theme. When creating or porting a visual direction, also read [new-theme-blueprint.md](references/new-theme-blueprint.md); it is the reusable map of assets, Codex surfaces, control-safe zones, and acceptance states that every new theme must cover. Read [windows-runtime.md](references/windows-runtime.md) before live application. Use [qa-checklist.md](references/qa-checklist.md) for final verification.
 
 ## Build a theme
 
@@ -46,7 +46,8 @@ powershell -ExecutionPolicy Bypass -File scripts/new-theme.ps1 `
 ```
 
 5. Tune `theme.css` using theme-scoped selectors under `:root.codex-dream-skin`. Keep native Codex controls functional.
-6. Validate before attempting a live preview.
+6. Work through every applicable row in `new-theme-blueprint.md`. Keep generic DOM discovery and safety behavior in the shared runtime; keep palette, imagery, spacing, and theme identity in the theme folder.
+7. Validate before attempting a live preview.
 
 ## Validate and preview
 

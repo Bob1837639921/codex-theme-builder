@@ -46,14 +46,18 @@ if ($parseErrors.Count -gt 0) {
 }
 
 $catalog = Get-Content -Raw -Encoding UTF8 -LiteralPath $catalogPath | ConvertFrom-Json -ErrorAction Stop
-if ($catalog.schemaVersion -ne 1 -or @($catalog.themes).Count -ne 2) {
-  throw 'theme-catalog.json must use schemaVersion 1 and list exactly two bundled themes.'
+$themeIds = @($catalog.themes)
+if ($catalog.schemaVersion -ne 1 -or $themeIds.Count -lt 1) {
+  throw 'theme-catalog.json must use schemaVersion 1 and list at least one bundled theme.'
+}
+if (@($themeIds | Select-Object -Unique).Count -ne $themeIds.Count) {
+  throw 'theme-catalog.json must not contain duplicate theme IDs.'
 }
 $expectedThemes = @('ink-landscape', 'frost-sword-immortal')
-if ((@($catalog.themes) -join ',') -ne ($expectedThemes -join ',')) {
-  throw "Bundled theme catalog must list: $($expectedThemes -join ', ')"
+if (@($expectedThemes | Where-Object { $_ -notin $themeIds }).Count -gt 0) {
+  throw "Bundled theme catalog must include: $($expectedThemes -join ', ')"
 }
-foreach ($themeId in $expectedThemes) {
+foreach ($themeId in $themeIds) {
   if ($themeId -notmatch '^[a-z0-9][a-z0-9-]{0,63}$') { throw "Invalid bundled theme ID: $themeId" }
   $theme = Join-Path $themesRoot $themeId
   if (-not (Test-Path -LiteralPath $theme -PathType Container)) {

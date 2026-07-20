@@ -351,6 +351,38 @@ async function loadThemePackage(themeDir, baseCss) {
     const selectedLeafMime = path.extname(raw.selectedLeaf).toLowerCase() === ".webp" ? "image/webp" : "image/png";
     selectedLeafDataUrl = `url("data:${selectedLeafMime};base64,${selectedLeafBytes.toString("base64")}")`;
   }
+  let composerEdgeDataUrl = "none";
+  let composerEdgePosition = "left bottom";
+  let composerEdgeMaxHeight = 128;
+  let composerEdgeOpacity = 0.84;
+  if (raw.composerEdge !== undefined) {
+    const composerEdge = typeof raw.composerEdge === "string"
+      ? { image: raw.composerEdge }
+      : raw.composerEdge;
+    if (!composerEdge || typeof composerEdge !== "object" || typeof composerEdge.image !== "string" ||
+        path.basename(composerEdge.image) !== composerEdge.image || !/\.(?:png|webp)$/i.test(composerEdge.image)) {
+      throw new Error("Composer edge must be a PNG or WebP file inside the theme directory");
+    }
+    const composerEdgePath = path.join(themeDir, composerEdge.image);
+    const composerEdgeStat = await fs.stat(composerEdgePath);
+    if (!composerEdgeStat.isFile() || composerEdgeStat.size < 1 || composerEdgeStat.size > 2 * 1024 * 1024) {
+      throw new Error("Composer edge must be non-empty and no larger than 2 MB");
+    }
+    const composerEdgeBytes = await fs.readFile(composerEdgePath);
+    const composerEdgeMime = path.extname(composerEdge.image).toLowerCase() === ".webp" ? "image/webp" : "image/png";
+    composerEdgeDataUrl = `url("data:${composerEdgeMime};base64,${composerEdgeBytes.toString("base64")}")`;
+    const horizontal = ["left", "center", "right"].includes(composerEdge.horizontal)
+      ? composerEdge.horizontal : "left";
+    const vertical = ["top", "center", "bottom"].includes(composerEdge.vertical)
+      ? composerEdge.vertical : "bottom";
+    composerEdgePosition = `${horizontal} ${vertical}`;
+    if (Number.isInteger(composerEdge.maxHeight) && composerEdge.maxHeight >= 48 && composerEdge.maxHeight <= 384) {
+      composerEdgeMaxHeight = composerEdge.maxHeight;
+    }
+    if (typeof composerEdge.opacity === "number" && composerEdge.opacity >= 0.2 && composerEdge.opacity <= 1) {
+      composerEdgeOpacity = composerEdge.opacity;
+    }
+  }
   const theme = {
     id: text(raw.id, "custom", 64),
     name: text(raw.name, "Dream Skin", 80),
@@ -382,7 +414,7 @@ async function loadThemePackage(themeDir, baseCss) {
   const extension = path.extname(image).toLowerCase();
   const mime = extension === ".webp" ? "image/webp" : extension === ".jpg" || extension === ".jpeg"
     ? "image/jpeg" : "image/png";
-  const themeVariables = `:root.codex-dream-skin{--dream-purple:${theme.accent};--dream-pink:${theme.accentAlt};--dream-surface:${theme.surface};--dream-ink:${theme.text};--dream-sidebar-art:${sidebarImageDataUrl};--dream-selected-leaf:${selectedLeafDataUrl};}`;
+  const themeVariables = `:root.codex-dream-skin{--dream-purple:${theme.accent};--dream-pink:${theme.accentAlt};--dream-surface:${theme.surface};--dream-ink:${theme.text};--dream-sidebar-art:${sidebarImageDataUrl};--dream-selected-leaf:${selectedLeafDataUrl};--dream-composer-edge:${composerEdgeDataUrl};--dream-composer-edge-position:${composerEdgePosition};--dream-composer-edge-max-height:${composerEdgeMaxHeight}px;--dream-composer-edge-opacity:${composerEdgeOpacity};}`;
   const artDataUrl = `data:${mime};base64,${art.toString("base64")}`;
   const conversationArt = conversationImagePath === imagePath ? art : await fs.readFile(conversationImagePath);
   const conversationExtension = path.extname(conversationImage).toLowerCase();
@@ -604,6 +636,7 @@ async function verifySession(session) {
       iconsPresent,
       switcherPresent: Boolean(switcher),
       themeCardCount: themeCards.length,
+      themeCount: window.__CODEX_DREAM_SKIN_STATE__?.themeCount ?? 0,
       activeThemeId: window.__CODEX_DREAM_SKIN_STATE__?.activeThemeId ?? null,
       conversation: conversation ? {
         box: box(conversation),
@@ -669,7 +702,9 @@ async function verifySession(session) {
     result.pass = result.installed && result.version === result.expectedVersion &&
       result.stylePresent && result.chromePresent &&
       result.chromePointerEvents === 'none' && Boolean(result.composer) && Boolean(result.sidebar) &&
-      result.switcherPresent && result.themeCardCount === 2 && Boolean(result.activeThemeId) &&
+      ((result.themeCount < 2 && !result.switcherPresent && result.themeCardCount === 0) ||
+        (result.themeCount >= 2 && result.switcherPresent && result.themeCardCount === result.themeCount)) &&
+      Boolean(result.activeThemeId) &&
       (!result.homePresent || (Boolean(result.hero) && result.titlePresent &&
         result.actionGridPresent && result.iconsPresent && result.cards.length === 4));
     return result;
@@ -781,7 +816,9 @@ async function runOneShot(options) {
           switcherTest = await session.evaluate(`(async () => {
             const state = window.__CODEX_DREAM_SKIN_STATE__;
             const cards = [...document.querySelectorAll('#codex-dream-theme-switcher [data-dream-theme-id]')];
-            if (!state || cards.length !== 2) return { pass: false, reason: 'missing state or two theme cards' };
+            if (!state || state.themeCount < 2 || cards.length !== state.themeCount) {
+              return { pass: false, reason: 'missing state or incomplete theme catalog cards' };
+            }
             const original = state.activeThemeId;
             const alternate = cards.find((card) => card.dataset.dreamThemeId !== original);
             alternate?.click();
@@ -792,7 +829,12 @@ async function runOneShot(options) {
             originalCard?.click();
             await new Promise((resolve) => setTimeout(resolve, 120));
             const restored = state.activeThemeId;
-            return { pass: changed !== original && changedStyle === changed && restored === original, original, changed, restored };
+            return {
+              pass: changed !== original && changedStyle === changed && restored === original,
+              original,
+              changed,
+              restored
+            };
           })()`);
           if (!switcherTest.pass) throw new Error(`Theme switcher interaction test failed: ${switcherTest.reason || JSON.stringify(switcherTest)}`);
         }

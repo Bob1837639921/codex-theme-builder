@@ -6,8 +6,60 @@
   --dream-paper: #f5f2e9;
 }
 
+html.codex-dream-skin .composer-surface-chrome {
+  position: relative !important;
+}
+
+html.codex-dream-skin .composer-surface-chrome > * {
+  position: relative;
+  z-index: 3;
+}
+
+html.codex-dream-skin div:has(> .composer-surface-chrome) {
+  position: relative !important;
+  isolation: isolate;
+  overflow: visible !important;
+}
+
+html.codex-dream-skin div:has(> .composer-surface-chrome)::after {
+  content: "" !important;
+  display: block !important;
+  position: absolute;
+  z-index: 2;
+  inset: -100px -180px -12px -76px;
+  border-radius: 28px;
+  background-image: var(--dream-composer-edge);
+  background-repeat: no-repeat;
+  background-position: var(--dream-composer-edge-position, left bottom);
+  background-size: auto var(--dream-composer-edge-max-height, 176px);
+  opacity: var(--dream-composer-edge-opacity, .84);
+  pointer-events: none;
+  transition: opacity 180ms cubic-bezier(.2, .8, .2, 1),
+    filter 180ms cubic-bezier(.2, .8, .2, 1);
+}
+
+html.codex-dream-skin div:has(> .composer-surface-chrome):focus-within::after {
+  opacity: 1;
+  filter: saturate(1.06) contrast(1.02);
+}
+
 html.codex-dream-skin body {
   font-family: "Microsoft YaHei UI", "Noto Sans CJK SC", system-ui, sans-serif !important;
+}
+
+html.codex-dream-skin aside.app-shell-left-panel
+  [role="status"][class~="bg-token-main-surface-primary"] {
+  color: var(--dream-ink, #252a27) !important;
+  background: rgb(251 249 243 / 98%) !important;
+  border-color: rgb(66 78 71 / 16%) !important;
+  box-shadow: 0 12px 28px rgb(20 28 24 / 16%) !important;
+}
+
+html.codex-dream-skin aside.app-shell-left-panel
+  [role="status"][class~="bg-token-main-surface-primary"]
+  :is(div, span, p, button, a, label, svg) {
+  color: inherit !important;
+  text-shadow: none !important;
 }
 
 html.codex-dream-skin body::before,
@@ -79,6 +131,13 @@ html.codex-dream-skin aside.app-shell-left-panel {
   background: rgb(250 249 245 / 94%);
   box-shadow: 0 18px 50px rgb(30 37 34 / 20%);
   backdrop-filter: blur(22px) saturate(116%);
+  transform-origin: 68px -8px;
+  animation: dream-theme-panel-in 180ms cubic-bezier(.2, .8, .2, 1) both;
+}
+
+@keyframes dream-theme-panel-in {
+  from { opacity: 0; transform: translateY(-5px) scale(.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 #codex-dream-theme-switcher .dream-theme-panel::before {
@@ -189,5 +248,9 @@ html.codex-dream-skin aside.app-shell-left-panel {
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
+  }
+
+  #codex-dream-theme-switcher .dream-theme-panel {
+    animation: none !important;
   }
 }
