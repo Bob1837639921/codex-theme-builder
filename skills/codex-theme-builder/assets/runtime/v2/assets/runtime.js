@@ -187,11 +187,6 @@
     });
   };
 
-  const THEME_FADE_OUT_MS = 140;
-  const THEME_FADE_IN_MS = 170;
-  const wait = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
-  let themeSwitchInFlight = false;
-
   const applyTheme = (theme, persist = true) => {
     const root = document.documentElement;
     if (!root) throw new Error("Document root is unavailable");
@@ -225,31 +220,17 @@
     renderSwitcherSelection();
   };
 
-  const activateTheme = async (themeId) => {
+  const activateTheme = (themeId) => {
     const next = themeMap.get(themeId);
     if (!next || next === activeTheme) return true;
-    if (themeSwitchInFlight) return false;
     const previousTheme = activeTheme;
-    const root = document.documentElement;
-    const reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false;
-    themeSwitchInFlight = true;
     try {
-      if (!reducedMotion && root) {
-        root.classList.add("dream-theme-transition-out");
-        void root.offsetWidth;
-        await wait(THEME_FADE_OUT_MS);
-      }
       applyTheme(next, true);
-      root?.classList.remove("dream-theme-transition-out");
-      if (!reducedMotion) await wait(THEME_FADE_IN_MS);
       return true;
     } catch (error) {
       try { applyTheme(previousTheme, false); } catch {}
       console.error("Codex theme switch failed and was rolled back", error);
       return false;
-    } finally {
-      root?.classList.remove("dream-theme-transition-out");
-      themeSwitchInFlight = false;
     }
   };
 
@@ -309,11 +290,11 @@
         swatches.appendChild(swatch);
       }
       card.append(preview, label, swatches);
-      card.addEventListener("click", async () => {
+      card.addEventListener("click", () => {
+        activateTheme(item.id);
         panel.hidden = true;
         trigger.setAttribute("aria-expanded", "false");
         trigger.focus();
-        await activateTheme(item.id);
       });
       grid.appendChild(card);
     }

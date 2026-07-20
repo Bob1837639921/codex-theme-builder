@@ -46,7 +46,6 @@
 - Keyboard focus enters, traverses, selects, and exits the switcher predictably.
 - The selected theme persists across reload and a second task, or the UI clearly declares launcher-only fallback behavior.
 - Switching replaces all theme assets and color tokens atomically; failure restores the previous theme.
-- Switching visibly fades out, swaps at the midpoint, and fades back in once; reduced-motion mode switches immediately without the fade.
 - Narrow windows keep the switcher within the viewport without horizontal overflow.
 
 ## Resilience

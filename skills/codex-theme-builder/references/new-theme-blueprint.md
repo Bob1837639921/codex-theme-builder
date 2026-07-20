@@ -38,7 +38,7 @@ Review each surface instead of treating a theme as a background replacement:
 7. **Selected task:** marker, title, pin/archive actions, focus ring, and mutation stability without flashing.
 8. **Output panel:** outer container, sticky headings, URL/environment row, browser row, source list, expanders, thumbnails, and one coherent surface color.
 9. **Portaled UI:** usage/credits card, dialogs, menus, popovers, tooltips, close buttons, progress bars, and disabled text contrast.
-10. **Theme switcher:** trigger, all catalog cards, active state, keyboard flow, persistence, rollback, one-shot fade transition, reduced-motion fallback, narrow viewport, and no redundant success toast.
+10. **Theme switcher:** trigger, all catalog cards, active state, keyboard flow, persistence, rollback, narrow viewport, and no redundant success toast.
 
 ## Composer-edge safety contract
 
