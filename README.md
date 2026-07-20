@@ -4,9 +4,20 @@
 
 它不绑定某一种视觉风格。你可以给 Codex 一段文字需求、截图、设计稿或已有主题，Codex 会完成视觉方案、实现映射、主题开发、实时预览、视觉修正和最终打包。仓库内附带两套示例主题，并提供可扩展主题目录的侧栏切换器；新增主题只需遵循统一主题包结构并加入目录。
 
-<img src="skills/codex-theme-builder/assets/themes/ink-landscape/runtime-preview.webp" alt="水墨山水主题真实运行截图" width="960">
+<table>
+  <tr>
+    <td width="50%"><img src="docs/images/ink-landscape-runtime.webp" alt="墨境主题运行截图"></td>
+    <td width="50%"><img src="docs/images/frost-sword-composer.png" alt="雪魄剑仙主题输入框截图"></td>
+  </tr>
+  <tr>
+    <td align="center"><strong>墨境</strong> · 水墨山水、玉色选中标记、笔触输入框</td>
+    <td align="center"><strong>雪魄剑仙</strong> · 冰雪画布、晶体前景输入框</td>
+  </tr>
+</table>
 
-> 真实 Codex Desktop 运行截图；项目、任务和账户名称已做隐私隐藏。
+> Codex Desktop 运行效果与隐私安全局部展示；公开图片不包含账户、项目或对话隐私。
+
+[查看完整主题与新增功能图鉴](docs/themes-and-features.md)
 
 ## 功能
 
@@ -22,6 +33,8 @@
 - 检测清单、资源大小、SVG 安全性、JavaScript 语法与 CDP 安全边界。
 - 打包主题为可分发 ZIP。
 - Codex 更新后可重新验证并修复选择器兼容性。
+
+新增功能的界面截图、主题包组成和新主题需要覆盖的界面位置，统一记录在 [主题与功能图鉴](docs/themes-and-features.md) 中。
 
 ## 运行要求
 
