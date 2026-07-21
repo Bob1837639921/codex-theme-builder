@@ -38,8 +38,22 @@ if ($commonText -notmatch 'IApplicationActivationManager' -or
   throw 'V2 must activate the Store package through its AppUserModelID, not execute WindowsApps directly.'
 }
 $launchText = Get-Content -LiteralPath (Join-Path $Root 'launch.ps1') -Raw
+$desktopLaunchText = Get-Content -LiteralPath (Join-Path $Root 'desktop-launch.ps1') -Raw -Encoding UTF8
+$expectedCurrentLaunchCopy = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('5Li76aKY5bey5Yqg6L2977yMQ29kZXgg5Y2z5bCG5pi+56S6'))
+$legacyNextLaunchCopy = @(
+  [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('5LiL5qyh5Y+v5Lul57un57ut5L2/55So5qGM6Z2i5b+r5o235pa55byP'))
+  [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('5Lul5ZCO57un57ut5L2/55So5qGM6Z2i5LiK55qE5LiH6LGh5b+r5o235pa55byP'))
+)
 if ($launchText -match '\[string\]\$Theme\s*=\s*\(Join-Path\s+\$PSScriptRoot') {
   throw 'Theme default must be resolved after parameter binding so PSScriptRoot is available.'
+}
+if ($desktopLaunchText -notmatch 'System\.Windows\.Forms' -or
+    $desktopLaunchText -notmatch 'Show-DreamSkinRestartDialog' -or
+    $desktopLaunchText -notmatch 'New-DreamSkinProgressWindow' -or
+    $desktopLaunchText -notmatch [regex]::Escape($expectedCurrentLaunchCopy) -or
+    $desktopLaunchText -match 'WScript\.Shell|\.Popup\(' -or
+    @($legacyNextLaunchCopy | Where-Object { $desktopLaunchText -match [regex]::Escape($_) }).Count -gt 0) {
+  throw 'The desktop launcher must use the branded single-window flow without legacy popups or redundant next-launch copy.'
 }
 if (($runtimeText -join "`n") -match '(?i)config\.toml|appearanceTheme|BaseUrl|ApiKey') {
   throw 'V2 runtime must not read or write Codex configuration or provider settings.'

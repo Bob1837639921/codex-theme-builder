@@ -13,7 +13,7 @@ It does not modify Codex files, `app.asar`, WindowsApps, package registration, o
 
 The start script refuses to continue while Codex is running. It never force-closes Codex. A hidden Node process maintains the theme; no black console must remain open.
 
-The desktop launcher supports a true cold start. When Codex is not running, it shows immediate startup feedback, launches the verified Store package with the loopback CDP arguments, and brings the Codex main window to the foreground after injection verification. Diagnostic milestones are written to `%LOCALAPPDATA%\CodexDreamSkinV2\desktop-launch.log`.
+The desktop launcher supports a true cold start. It uses one branded WinForms flow instead of consecutive system popups: a restart confirmation only when Codex is already running, followed by a single progress window that becomes a brief success state and closes automatically. The success state reports only the current launch result and never tells users to click the shortcut again. The launcher then brings the verified Codex main window to the foreground after injection verification. Diagnostic milestones are written to `%LOCALAPPDATA%\CodexDreamSkinV2\desktop-launch.log`.
 
 Desktop shortcuts must target `powershell.exe` directly with `-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File "<skill>\assets\runtime\v2\desktop-launch.ps1"`. Do not point a shortcut at a localized `.cmd` wrapper: `cmd.exe` can decode the batch file before an in-file `chcp` command takes effect, corrupting Chinese text and the commands that follow it.
 
