@@ -177,16 +177,33 @@ powershell -ExecutionPolicy Bypass -File `
 └─ skills/codex-theme-builder/
    ├─ SKILL.md
    ├─ agents/openai.yaml
-   ├─ scripts/
+   ├─ scripts/                         # 面向用户的创建、预览、验证、恢复与打包入口
    ├─ references/
+   │  ├─ autonomous-workflow.md        # 自动化端到端工作流
+   │  ├─ new-theme-blueprint.md        # 新主题必须覆盖的界面结构
+   │  ├─ runtime-architecture.md       # 运行时分层、依赖方向与边界
+   │  ├─ theme-contract.md             # 可移植主题包契约
+   │  └─ windows-runtime.md            # Windows 安全启动与注入约束
    └─ assets/
       ├─ runtime/
-      │  └─ v2/ui/launcher-ui.ps1
-      ├─ theme-template/
+      │  ├─ windows/scripts/
+      │  │  ├─ common-windows.ps1      # Windows 进程、端口、路径与状态安全原语
+      │  │  └─ config-utf8.ps1
+      │  └─ v2/
+      │     ├─ desktop-launch.ps1      # 桌面启动编排与顶层错误边界
+      │     ├─ launch.ps1              # 启动核心与标准进度阶段
+      │     ├─ restore.ps1             # 安全停止已核验的主题会话
+      │     ├─ ui/launcher-ui.ps1      # 纯 WinForms 展示层
+      │     ├─ scripts/injector.mjs     # CDP 验证、注入、重注入与主题目录加载
+      │     ├─ assets/
+      │     │  ├─ base.css             # 所有主题共享的结构样式
+      │     │  └─ runtime.js            # DOM 标记、切换器与运行时交互
+      │     └─ tests/run-tests.ps1      # 语法、安全、边界与视觉回归测试
+      ├─ theme-template/theme.css       # 中性主题脚手架
       └─ themes/
-         ├─ theme-catalog.json
-         ├─ ink-landscape/
-         └─ frost-sword-immortal/
+         ├─ theme-catalog.json          # 可切换主题目录
+         ├─ ink-landscape/              # 墨境示例主题（独立清单、样式与资源）
+         └─ frost-sword-immortal/       # 雪魄剑仙示例主题
 ```
 
 Skill 的自动工作流、主题格式和 QA 标准分别位于：
