@@ -47,6 +47,15 @@ $legacyNextLaunchCopy = @(
 if ($launchText -match '\[string\]\$Theme\s*=\s*\(Join-Path\s+\$PSScriptRoot') {
   throw 'Theme default must be resolved after parameter binding so PSScriptRoot is available.'
 }
+if ($launchText -notmatch '\[scriptblock\]\$ProgressCallback' -or
+    $launchText -notmatch 'Report-DreamSkinLaunchProgress' -or
+    $launchText -notmatch "Percent 96 -Status" -or
+    $desktopLaunchText -notmatch '-ProgressCallback \$progressCallback' -or
+    $desktopLaunchText -notmatch '\$Window\.Percent\.Text = ''100%''' -or
+    $desktopLaunchText -notmatch '\$Window\.ProgressFill\.Width = \$Window\.ProgressTrack\.ClientSize\.Width' -or
+    $desktopLaunchText -match 'ProgressBarStyle\]::Marquee') {
+  throw 'Desktop progress must be driven by launch milestones and reach a verified 100%, not use an indeterminate marquee.'
+}
 if ($desktopLaunchText -notmatch 'System\.Windows\.Forms' -or
     $desktopLaunchText -notmatch 'Show-DreamSkinRestartDialog' -or
     $desktopLaunchText -notmatch 'New-DreamSkinProgressWindow' -or

@@ -152,29 +152,53 @@ function New-DreamSkinProgressWindow {
   $form.Controls.Add((New-DreamSkinBrandMark))
   $title = New-DreamSkinLabel -Text "正在启动 $ThemeName" -Left 96 -Top 28 -Width 330 -Height 30 -Size 15 -Style Bold
   $status = New-DreamSkinLabel -Text '正在准备主题运行环境…' -Left 96 -Top 64 -Width 330 -Height 24 -Size 9.5 -Color ([System.Drawing.Color]::FromArgb(96, 99, 103))
-  $progress = New-Object System.Windows.Forms.ProgressBar
-  $progress.Location = New-Object System.Drawing.Point(28, 118)
-  $progress.Size = New-Object System.Drawing.Size(404, 8)
-  $progress.Style = [System.Windows.Forms.ProgressBarStyle]::Marquee
-  $progress.MarqueeAnimationSpeed = 24
+  $percent = New-DreamSkinLabel -Text '4%' -Left 374 -Top 94 -Width 58 -Height 20 -Size 9 -Style Bold -Color ([System.Drawing.Color]::FromArgb(66, 105, 96))
+  $percent.TextAlign = [System.Drawing.ContentAlignment]::MiddleRight
+  $progressTrack = New-Object System.Windows.Forms.Panel
+  $progressTrack.Location = New-Object System.Drawing.Point(28, 118)
+  $progressTrack.Size = New-Object System.Drawing.Size(404, 8)
+  $progressTrack.BackColor = [System.Drawing.Color]::FromArgb(224, 222, 216)
+  $progressFill = New-Object System.Windows.Forms.Panel
+  $progressFill.Location = New-Object System.Drawing.Point(0, 0)
+  $progressFill.Size = New-Object System.Drawing.Size(16, 8)
+  $progressFill.BackColor = [System.Drawing.Color]::FromArgb(66, 105, 96)
+  $progressTrack.Controls.Add($progressFill)
   $hint = New-DreamSkinLabel -Text '请稍候，启动期间无需再次操作。' -Left 28 -Top 144 -Width 404 -Height 22 -Size 8.8 -Color ([System.Drawing.Color]::FromArgb(125, 127, 130))
   $form.Controls.Add($title)
   $form.Controls.Add($status)
-  $form.Controls.Add($progress)
+  $form.Controls.Add($percent)
+  $form.Controls.Add($progressTrack)
   $form.Controls.Add($hint)
   $form.Show()
   [System.Windows.Forms.Application]::DoEvents()
-  return [pscustomobject]@{ Form = $form; Title = $title; Status = $status; Progress = $progress; Hint = $hint }
+  return [pscustomobject]@{
+    Form = $form
+    Title = $title
+    Status = $status
+    Percent = $percent
+    ProgressTrack = $progressTrack
+    ProgressFill = $progressFill
+    ProgressValue = 4
+    Hint = $hint
+  }
 }
 
 function Set-DreamSkinProgressStatus {
   param(
     [Parameter(Mandatory)]$Window,
     [Parameter(Mandatory)][string]$Status,
-    [string]$Title = ''
+    [string]$Title = '',
+    [int]$Percent = -1
   )
   if (-not [string]::IsNullOrWhiteSpace($Title)) { $Window.Title.Text = $Title }
   $Window.Status.Text = $Status
+  if ($Percent -ge 0) {
+    $nextValue = [Math]::Min(100, [Math]::Max([int]$Window.ProgressValue, $Percent))
+    $Window.ProgressValue = $nextValue
+    $fillWidth = [Math]::Round($Window.ProgressTrack.ClientSize.Width * ($nextValue / 100.0))
+    $Window.ProgressFill.Width = [Math]::Max(1, $fillWidth)
+    $Window.Percent.Text = "$nextValue%"
+  }
   [System.Windows.Forms.Application]::DoEvents()
 }
 
@@ -184,8 +208,9 @@ function Complete-DreamSkinProgressWindow {
   $Window.Title.ForeColor = [System.Drawing.Color]::FromArgb(54, 112, 91)
   $Window.Status.Text = '主题已加载，Codex 即将显示。'
   $Window.Status.ForeColor = [System.Drawing.Color]::FromArgb(70, 91, 82)
-  $Window.Progress.Style = [System.Windows.Forms.ProgressBarStyle]::Continuous
-  $Window.Progress.Value = 100
+  $Window.ProgressValue = 100
+  $Window.ProgressFill.Width = $Window.ProgressTrack.ClientSize.Width
+  $Window.Percent.Text = '100%'
   $Window.Hint.Text = '正在切换到 Codex 窗口…'
   [System.Windows.Forms.Application]::DoEvents()
   Start-Sleep -Milliseconds 850
@@ -229,9 +254,10 @@ try {
       exit 0
     }
     $progressWindow = New-DreamSkinProgressWindow
-    Set-DreamSkinProgressStatus -Window $progressWindow -Status '正在安全关闭当前 Codex…'
+    Set-DreamSkinProgressStatus -Window $progressWindow -Status '正在安全关闭当前 Codex…' -Percent 6
     Stop-DreamSkinCodex -Codex $codex -AllowForce
     Start-Sleep -Milliseconds 800
+    Set-DreamSkinProgressStatus -Window $progressWindow -Status 'Codex 已关闭，正在准备重新启动…' -Percent 12
   } else {
     Write-DreamSkinDesktopLaunchLog -Message 'Codex 当前未运行，进入冷启动流程。'
     $progressWindow = New-DreamSkinProgressWindow
@@ -239,7 +265,7 @@ try {
 
   $statePath = Join-Path $stateRoot 'state.json'
   if (Test-Path -LiteralPath $statePath) {
-    Set-DreamSkinProgressStatus -Window $progressWindow -Status '正在清理上一次主题会话…'
+    Set-DreamSkinProgressStatus -Window $progressWindow -Status '正在清理上一次主题会话…' -Percent 14
     Write-DreamSkinDesktopLaunchLog -Message '正在检查并清理上一次主题会话状态。'
     $state = Read-DreamSkinState -Path $statePath
     if ($null -ne $state) {
@@ -248,8 +274,12 @@ try {
     Remove-Item -LiteralPath $statePath -Force
   }
 
-  Set-DreamSkinProgressStatus -Window $progressWindow -Status '正在启动 Codex 并加载主题资源…'
-  & (Join-Path $PSScriptRoot 'launch.ps1') -Theme $Theme | Out-Null
+  Set-DreamSkinProgressStatus -Window $progressWindow -Status '正在启动 Codex 并加载主题资源…' -Percent 18
+  $progressCallback = {
+    param([int]$Percent, [string]$Status)
+    Set-DreamSkinProgressStatus -Window $progressWindow -Status $Status -Percent $Percent
+  }
+  & (Join-Path $PSScriptRoot 'launch.ps1') -Theme $Theme -ProgressCallback $progressCallback | Out-Null
   Write-DreamSkinDesktopLaunchLog -Message '主题启动和注入验证已完成。'
   Complete-DreamSkinProgressWindow -Window $progressWindow
   $progressWindow = $null
