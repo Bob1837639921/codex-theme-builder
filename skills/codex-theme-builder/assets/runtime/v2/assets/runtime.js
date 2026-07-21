@@ -21,6 +21,7 @@
   if (previous?.scheduler?.timeout) clearTimeout(previous.scheduler.timeout);
   if (previous?.scheduler?.frame) cancelAnimationFrame(previous.scheduler.frame);
   previous?.removeSwitcherListeners?.();
+  previous?.restoreSidebarControls?.();
   document.getElementById(SWITCHER_ID)?.remove();
   for (const urls of previous?.objectUrls?.values?.() || []) {
     URL.revokeObjectURL(urls.artUrl);
@@ -47,12 +48,33 @@
   const storedThemeId = (() => { try { return localStorage.getItem(STORAGE_KEY); } catch { return null; } })();
   let activeTheme = themeMap.get(storedThemeId) || themeMap.get(initialThemeId);
 
+  const restoreSidebarControl = (node) => {
+    const color = node.dataset.dreamOriginalColor || "";
+    const colorPriority = node.dataset.dreamOriginalColorPriority || "";
+    const opacity = node.dataset.dreamOriginalOpacity || "";
+    const opacityPriority = node.dataset.dreamOriginalOpacityPriority || "";
+    if (color) node.style.setProperty("color", color, colorPriority);
+    else node.style.removeProperty("color");
+    if (opacity) node.style.setProperty("opacity", opacity, opacityPriority);
+    else node.style.removeProperty("opacity");
+    delete node.dataset.dreamSidebarControl;
+    delete node.dataset.dreamOriginalColor;
+    delete node.dataset.dreamOriginalColorPriority;
+    delete node.dataset.dreamOriginalOpacity;
+    delete node.dataset.dreamOriginalOpacityPriority;
+  };
+
+  const restoreSidebarControls = () => {
+    document.querySelectorAll("[data-dream-sidebar-control]").forEach(restoreSidebarControl);
+  };
+
   const clearDetailMarkers = () => {
     document.querySelectorAll(".dream-progress-pill").forEach((node) => node.classList.remove("dream-progress-pill"));
     document.querySelectorAll(".dream-progress-indicator").forEach((node) => node.classList.remove("dream-progress-indicator"));
     document.querySelectorAll(".dream-selected-thread").forEach((node) => node.classList.remove("dream-selected-thread"));
     document.querySelectorAll(".dream-selected-thread-label").forEach((node) => node.classList.remove("dream-selected-thread-label"));
     document.querySelectorAll(".dream-output-panel").forEach((node) => node.classList.remove("dream-output-panel"));
+    restoreSidebarControls();
   };
 
   const markDetailSurfaces = () => {
@@ -89,6 +111,23 @@
 
     const sidebar = document.querySelector("aside.app-shell-left-panel");
     if (sidebar) {
+      const sidebarControls = [...sidebar.querySelectorAll(
+        'button[class*="text-token-input-placeholder-foreground"][class*="opacity-75"]'
+      )];
+      document.querySelectorAll("[data-dream-sidebar-control]").forEach((node) => {
+        if (!sidebarControls.includes(node)) restoreSidebarControl(node);
+      });
+      for (const control of sidebarControls) {
+        if (!control.dataset.dreamSidebarControl) {
+          control.dataset.dreamSidebarControl = "true";
+          control.dataset.dreamOriginalColor = control.style.getPropertyValue("color");
+          control.dataset.dreamOriginalColorPriority = control.style.getPropertyPriority("color");
+          control.dataset.dreamOriginalOpacity = control.style.getPropertyValue("opacity");
+          control.dataset.dreamOriginalOpacityPriority = control.style.getPropertyPriority("opacity");
+        }
+        control.style.setProperty("color", "var(--dream-sidebar-control-text, #eef3ef)", "important");
+        control.style.setProperty("opacity", ".9", "important");
+      }
       const markedThreads = [...sidebar.querySelectorAll(".dream-selected-thread")];
       const selected = [...sidebar.querySelectorAll(
         '[aria-current="page"], [aria-selected="true"], [data-state="active"], [class~="bg-token-list-hover-background"]'
@@ -262,9 +301,12 @@
     trigger.title = "切换主题";
     const panel = document.createElement("div");
     panel.className = "dream-theme-panel";
+    panel.id = `${SWITCHER_ID}-panel`;
     panel.hidden = true;
+    panel.setAttribute("popover", "manual");
     panel.setAttribute("role", "dialog");
     panel.setAttribute("aria-label", "选择 Codex 主题");
+    trigger.setAttribute("aria-controls", panel.id);
     const grid = document.createElement("div");
     grid.className = "dream-theme-grid";
     for (const item of themeCatalog) {
@@ -292,8 +334,7 @@
       card.append(preview, label, swatches);
       card.addEventListener("click", () => {
         activateTheme(item.id);
-        panel.hidden = true;
-        trigger.setAttribute("aria-expanded", "false");
+        close();
         trigger.focus();
       });
       grid.appendChild(card);
@@ -301,9 +342,30 @@
     panel.appendChild(grid);
     switcher.append(trigger, panel);
     sidebar.appendChild(switcher);
+    const panelIsOpen = () => panel.matches(":popover-open") || !panel.hidden;
+    const positionPanel = () => {
+      const rect = trigger.getBoundingClientRect();
+      const panelWidth = Math.min(286, Math.max(0, window.innerWidth - 24));
+      const left = Math.min(
+        Math.max(12, window.innerWidth - panelWidth - 12),
+        Math.max(12, rect.left - 54)
+      );
+      panel.style.setProperty("--dream-theme-panel-left", `${Math.round(left)}px`);
+      panel.style.setProperty("--dream-theme-panel-top", `${Math.round(rect.bottom + 10)}px`);
+    };
     const close = () => {
+      if (panel.matches(":popover-open")) panel.hidePopover();
       panel.hidden = true;
       trigger.setAttribute("aria-expanded", "false");
+    };
+    const open = () => {
+      positionPanel();
+      panel.hidden = false;
+      if (typeof panel.showPopover === "function" && !panel.matches(":popover-open")) {
+        panel.showPopover();
+      }
+      trigger.setAttribute("aria-expanded", "true");
+      panel.querySelector(".is-selected")?.focus();
     };
     const onDocumentPointer = (event) => { if (!switcher.contains(event.target)) close(); };
     const onDocumentKey = (event) => {
@@ -313,15 +375,19 @@
       }
     };
     trigger.addEventListener("click", () => {
-      panel.hidden = !panel.hidden;
-      trigger.setAttribute("aria-expanded", String(!panel.hidden));
-      if (!panel.hidden) panel.querySelector(".is-selected")?.focus();
+      if (panelIsOpen()) close();
+      else open();
     });
+    const onViewportChange = () => { if (panelIsOpen()) positionPanel(); };
     document.addEventListener("pointerdown", onDocumentPointer, true);
     document.addEventListener("keydown", onDocumentKey, true);
+    window.addEventListener("resize", onViewportChange);
+    window.addEventListener("scroll", onViewportChange, true);
     removeSwitcherListeners = () => {
       document.removeEventListener("pointerdown", onDocumentPointer, true);
       document.removeEventListener("keydown", onDocumentKey, true);
+      window.removeEventListener("resize", onViewportChange);
+      window.removeEventListener("scroll", onViewportChange, true);
     };
     if (window[STATE_KEY]) window[STATE_KEY].removeSwitcherListeners = removeSwitcherListeners;
     renderSwitcherSelection();
@@ -513,6 +579,7 @@
     objectUrls,
     activateTheme,
     removeSwitcherListeners,
+    restoreSidebarControls,
     get activeThemeId() { return activeTheme.id; },
     themeCount: themeCatalog.length,
     version: RUNTIME_VERSION,

@@ -16,6 +16,7 @@
 - Four action blocks appear, align, and retain icons.
 - Clicking an action fills the native composer without submitting.
 - Sidebar, menus, project selection, and window controls remain usable.
+- Expand and collapse a long project list; the resulting show-more/show-less control remains readable over the sidebar artwork.
 
 ## Conversation view
 

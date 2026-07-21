@@ -75,6 +75,21 @@ html.codex-dream-skin aside.app-shell-left-panel {
   position: relative !important;
 }
 
+html.codex-dream-skin aside.app-shell-left-panel
+  button[class*="text-token-input-placeholder-foreground"][class*="opacity-75"] {
+  color: var(--dream-sidebar-control-text, #eef3ef) !important;
+  opacity: .9 !important;
+  text-shadow: none !important;
+}
+
+html.codex-dream-skin aside.app-shell-left-panel
+  button[class*="text-token-input-placeholder-foreground"][class*="opacity-75"]:hover,
+html.codex-dream-skin aside.app-shell-left-panel
+  button[class*="text-token-input-placeholder-foreground"][class*="opacity-75"]:focus-visible {
+  color: var(--dream-sidebar-control-text, #fff) !important;
+  opacity: 1 !important;
+}
+
 #codex-dream-theme-switcher {
   position: absolute;
   z-index: 2147483000;
@@ -82,6 +97,11 @@ html.codex-dream-skin aside.app-shell-left-panel {
   right: 48px;
   color: var(--dream-ink, #252a27);
   font-family: "Microsoft YaHei UI", system-ui, sans-serif;
+}
+
+html.codex-dream-skin aside.app-shell-left-panel #codex-dream-theme-switcher,
+html.codex-dream-skin aside.app-shell-left-panel #codex-dream-theme-switcher * {
+  text-shadow: none !important;
 }
 
 #codex-dream-theme-switcher [hidden] {
@@ -120,19 +140,24 @@ html.codex-dream-skin aside.app-shell-left-panel {
 }
 
 #codex-dream-theme-switcher .dream-theme-panel {
-  position: absolute;
-  top: 44px;
-  left: -54px;
-  width: 286px;
-  padding: 12px;
-  border: 1px solid rgb(96 104 99 / 18%);
-  border-radius: 18px;
-  color: var(--dream-ink, #252a27);
-  background: rgb(250 249 245 / 94%);
-  box-shadow: 0 18px 50px rgb(30 37 34 / 20%);
+  position: fixed !important;
+  z-index: 2147483001 !important;
+  inset: auto !important;
+  top: var(--dream-theme-panel-top, 52px) !important;
+  left: var(--dream-theme-panel-left, 12px) !important;
+  width: min(286px, calc(100vw - 24px)) !important;
+  max-width: calc(100vw - 24px) !important;
+  margin: 0 !important;
+  padding: 12px !important;
+  border: 1px solid rgb(96 104 99 / 18%) !important;
+  border-radius: 18px !important;
+  color: #252a27 !important;
+  background: rgb(250 249 245 / 96%) !important;
+  box-shadow: 0 18px 50px rgb(30 37 34 / 20%) !important;
   backdrop-filter: blur(22px) saturate(116%);
   transform-origin: 68px -8px;
   animation: dream-theme-panel-in 180ms cubic-bezier(.2, .8, .2, 1) both;
+  overflow: visible !important;
 }
 
 @keyframes dream-theme-panel-in {
@@ -147,9 +172,9 @@ html.codex-dream-skin aside.app-shell-left-panel {
   left: 67px;
   width: 13px;
   height: 13px;
-  border-top: 1px solid rgb(96 104 99 / 18%);
-  border-left: 1px solid rgb(96 104 99 / 18%);
-  background: rgb(250 249 245 / 96%);
+  border-top: 1px solid rgb(96 104 99 / 18%) !important;
+  border-left: 1px solid rgb(96 104 99 / 18%) !important;
+  background: rgb(250 249 245 / 96%) !important;
   transform: rotate(45deg);
 }
 
@@ -166,24 +191,25 @@ html.codex-dream-skin aside.app-shell-left-panel {
   gap: 4px 8px;
   min-width: 0;
   padding: 6px;
-  border: 1px solid rgb(96 104 99 / 15%);
-  border-radius: 12px;
-  color: #26302b;
+  border: 1px solid rgb(96 104 99 / 15%) !important;
+  border-radius: 12px !important;
+  color: #26302b !important;
   text-align: left;
-  background: rgb(255 255 255 / 68%);
+  background: rgb(255 255 255 / 82%) !important;
+  box-shadow: none !important;
   cursor: pointer;
   transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
 }
 
 #codex-dream-theme-switcher .dream-theme-card:hover {
-  transform: translateY(-1px);
-  border-color: color-mix(in srgb, var(--dream-accent, #5f7c72) 58%, transparent);
-  box-shadow: 0 8px 18px rgb(33 42 37 / 10%);
+  transform: translateY(-1px) !important;
+  border-color: color-mix(in srgb, var(--dream-accent, #5f7c72) 58%, transparent) !important;
+  box-shadow: 0 8px 18px rgb(33 42 37 / 10%) !important;
 }
 
 #codex-dream-theme-switcher .dream-theme-card.is-selected {
-  border-color: var(--dream-accent, #5f7c72);
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--dream-accent, #5f7c72) 18%, transparent);
+  border-color: var(--dream-accent, #5f7c72) !important;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--dream-accent, #5f7c72) 18%, transparent) !important;
 }
 
 #codex-dream-theme-switcher .dream-theme-preview {
@@ -221,6 +247,7 @@ html.codex-dream-skin aside.app-shell-left-panel {
   line-height: 18px;
   text-overflow: ellipsis;
   white-space: nowrap;
+  color: #26302b !important;
 }
 
 #codex-dream-theme-switcher .dream-theme-swatches {

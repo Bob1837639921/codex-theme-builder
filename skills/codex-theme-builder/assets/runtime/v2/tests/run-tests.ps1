@@ -108,6 +108,11 @@ if ($runtimeJs -notmatch 'codex-dream-theme-switcher' -or
     $runtimeJs -notmatch 'activateTheme' -or
     $runtimeJs -notmatch 'rolled back' -or
     $runtimeJs -notmatch 'event\.key === "Escape"' -or
+    $runtimeJs -notmatch 'panel\.setAttribute\("popover", "manual"\)' -or
+    $runtimeJs -notmatch 'positionPanel' -or
+    $runtimeJs -notmatch 'window\.addEventListener\("resize", onViewportChange\)' -or
+    $baseCss -notmatch '(?s)\.dream-theme-panel\s*\{[^}]*position:\s*fixed\s*!important' -or
+    $baseCss -notmatch '(?s)\.dream-theme-card\s*\{[^}]*background:\s*rgb\(255 255 255 / 82%\)\s*!important' -or
     $baseCss -notmatch 'dream-theme-panel-in' -or
     $runtimeJs -match 'dream-theme-feedback' -or
     $baseCss -match 'dream-theme-feedback' -or
@@ -123,6 +128,10 @@ if ($themeCss -notmatch '(?s)\[role="dialog"\]\s*\{[^}]*color:\s*var\(--dream-in
 if ($baseCss -notmatch '(?s)aside\.app-shell-left-panel\s+\[role="status"\]\[class~="bg-token-main-surface-primary"\]\s*\{[^}]*color:\s*var\(--dream-ink') {
   throw 'The sidebar usage card must keep readable dark text on its light surface.'
 }
+if ($baseCss -notmatch '(?s)button\[class\*="text-token-input-placeholder-foreground"\]\[class\*="opacity-75"\]\s*\{[^}]*color:\s*var\(--dream-sidebar-control-text[^}]*opacity:\s*\.9\s*!important' -or
+    $themeCss -notmatch '--dream-sidebar-control-text:') {
+  throw 'Collapsed sidebar project controls must use a theme-owned readable foreground instead of the native dim placeholder color.'
+}
 if ($themeCss -notmatch '(?s)\[data-radix-popper-content-wrapper\].*?color:\s*var\(--dream-ink\)\s*!important') {
   throw 'Role-less Radix popovers must keep readable dark text after Codex updates.'
 }
@@ -137,6 +146,12 @@ if ($runtimeJs -notmatch 'markDetailSurfaces' -or
   $runtimeJs -notmatch 'outputCandidates\.find\(intersectsViewport\)' -or
   $runtimeJs -notmatch 'document\.querySelectorAll\("\.dream-output-panel"\)\.forEach') {
   throw 'Detail-surface markers must remain scoped, stable, frame-coalesced, and available for theme polish.'
+}
+if ($runtimeJs -notmatch 'data-dream-sidebar-control' -or
+    $runtimeJs -notmatch 'restoreSidebarControls' -or
+    $runtimeJs -notmatch 'setProperty\("color", "var\(--dream-sidebar-control-text, #eef3ef\)", "important"\)' -or
+    $runtimeJs -notmatch 'setProperty\("opacity", "\.9", "important"\)') {
+  throw 'Sidebar collapse controls must receive reversible inline-important contrast because native important utilities override theme styles.'
 }
 if ($themeCss -notmatch '@keyframes\s+dream-progress-turn' -or
   $themeCss -notmatch '(?s)\.dream-progress-indicator\s*\{[^}]*animation:' -or

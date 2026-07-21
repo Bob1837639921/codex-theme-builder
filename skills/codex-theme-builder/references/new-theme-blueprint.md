@@ -30,7 +30,7 @@ Use `scripts/new-theme.ps1` to copy the supplied home, conversation, sidebar, se
 Review each surface instead of treating a theme as a background replacement:
 
 1. **Global canvas:** main paper/surface color, full-height artwork coverage, scrollbar edge, and title-bar transition.
-2. **Sidebar:** background or texture, logo/header contrast, navigation, pinned tasks, projects, account area, hover, focus, and current-task state.
+2. **Sidebar:** background or texture, logo/header contrast, navigation, pinned tasks, projects, project expand/collapse controls, account area, hover, focus, and current-task state. Define `--dream-sidebar-control-text` with sufficient contrast against the sidebar artwork.
 3. **Home:** hero crop, title/subtitle safe area, all four action blocks, project selector, and initial composer.
 4. **Conversation:** prose, links, code, diffs, tool rows, image previews, timestamps, feedback buttons, and long-scroll readability.
 5. **Progress and file changes:** progress pill/indicator plus the file-change summary rail; neither may create opaque white strips.
