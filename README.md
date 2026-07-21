@@ -6,8 +6,8 @@
 
 <table>
   <tr>
-    <td width="50%"><img src="docs/images/ink-landscape-runtime.webp" alt="墨境主题运行截图"></td>
-    <td width="50%"><img src="docs/images/frost-sword-composer.png" alt="雪魄剑仙主题输入框截图"></td>
+    <td width="50%"><img src="docs/images/ink-landscape-runtime.webp" alt="墨境完整主题运行截图" width="960" height="540"></td>
+    <td width="50%"><img src="docs/images/frost-sword-runtime.webp" alt="雪魄剑仙完整主题运行截图" width="960" height="540"></td>
   </tr>
   <tr>
     <td align="center"><strong>墨境</strong> · 水墨山水、玉色选中标记、笔触输入框</td>
@@ -15,7 +15,7 @@
   </tr>
 </table>
 
-> Codex Desktop 运行效果与隐私安全局部展示；公开图片不包含账户、项目或对话隐私。
+> 两套 Codex Desktop 完整主题运行效果；公开图片已匿名化，不包含账户、项目或对话隐私。
 
 [查看完整主题与新增功能图鉴](docs/themes-and-features.md)
 
