@@ -181,6 +181,7 @@ powershell -ExecutionPolicy Bypass -File `
    ├─ references/
    └─ assets/
       ├─ runtime/
+      │  └─ v2/ui/launcher-ui.ps1
       ├─ theme-template/
       └─ themes/
          ├─ theme-catalog.json
@@ -192,6 +193,7 @@ Skill 的自动工作流、主题格式和 QA 标准分别位于：
 
 - `references/autonomous-workflow.md`
 - `references/theme-contract.md`
+- `references/runtime-architecture.md`
 - `references/qa-checklist.md`
 - `references/windows-runtime.md`
 

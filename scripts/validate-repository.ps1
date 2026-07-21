@@ -10,8 +10,23 @@ $themesRoot = Join-Path $skill 'assets\themes'
 $catalogPath = Join-Path $themesRoot 'theme-catalog.json'
 $setupScript = Join-Path $PSScriptRoot 'setup-windows.ps1'
 $shortcutInstaller = Join-Path $skill 'scripts\install-desktop-shortcut.ps1'
+$runtimeArchitecture = Join-Path $skill 'references\runtime-architecture.md'
+$desktopLauncher = Join-Path $skill 'assets\runtime\v2\desktop-launch.ps1'
+$launcherUi = Join-Path $skill 'assets\runtime\v2\ui\launcher-ui.ps1'
+$launchCore = Join-Path $skill 'assets\runtime\v2\launch.ps1'
 
-foreach ($required in @($manifest, $agentMetadata, $themesRoot, $catalogPath, $setupScript, $shortcutInstaller)) {
+foreach ($required in @(
+  $manifest,
+  $agentMetadata,
+  $themesRoot,
+  $catalogPath,
+  $setupScript,
+  $shortcutInstaller,
+  $runtimeArchitecture,
+  $desktopLauncher,
+  $launcherUi,
+  $launchCore
+)) {
   if (-not (Test-Path -LiteralPath $required)) {
     throw "Required repository item is missing: $required"
   }
@@ -33,6 +48,7 @@ $parseErrors = @()
 @(
   Get-ChildItem -LiteralPath $PSScriptRoot -Filter '*.ps1' -File
   Get-ChildItem -LiteralPath (Join-Path $skill 'scripts') -Filter '*.ps1' -File
+  Get-ChildItem -LiteralPath (Join-Path $skill 'assets\runtime') -Filter '*.ps1' -File -Recurse
 ) | ForEach-Object {
   $tokens = $null
   $errors = $null

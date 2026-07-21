@@ -39,6 +39,25 @@ if ($commonText -notmatch 'IApplicationActivationManager' -or
 }
 $launchText = Get-Content -LiteralPath (Join-Path $Root 'launch.ps1') -Raw
 $desktopLaunchText = Get-Content -LiteralPath (Join-Path $Root 'desktop-launch.ps1') -Raw -Encoding UTF8
+$launcherUiPath = Join-Path $Root 'ui\launcher-ui.ps1'
+if (-not (Test-Path -LiteralPath $launcherUiPath -PathType Leaf)) {
+  throw 'The desktop launcher UI module is missing.'
+}
+$launcherUiText = Get-Content -LiteralPath $launcherUiPath -Raw -Encoding UTF8
+$launcherScripts = @(
+  (Join-Path $Root 'launch.ps1')
+  (Join-Path $Root 'desktop-launch.ps1')
+  $launcherUiPath
+)
+foreach ($launcherScript in $launcherScripts) {
+  $parseErrors = $null
+  [void][System.Management.Automation.Language.Parser]::ParseFile(
+    $launcherScript, [ref]$null, [ref]$parseErrors
+  )
+  if ($parseErrors.Count -gt 0) {
+    throw "Launcher PowerShell syntax failed: $launcherScript"
+  }
+}
 $expectedCurrentLaunchCopy = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('5Li76aKY5bey5Yqg6L2977yMQ29kZXgg5Y2z5bCG5pi+56S6'))
 $legacyNextLaunchCopy = @(
   [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('5LiL5qyh5Y+v5Lul57un57ut5L2/55So5qGM6Z2i5b+r5o235pa55byP'))
@@ -49,19 +68,24 @@ if ($launchText -match '\[string\]\$Theme\s*=\s*\(Join-Path\s+\$PSScriptRoot') {
 }
 if ($launchText -notmatch '\[scriptblock\]\$ProgressCallback' -or
     $launchText -notmatch 'Report-DreamSkinLaunchProgress' -or
-    $launchText -notmatch "Percent 96 -Status" -or
+    $launchText -notmatch 'Report-DreamSkinLaunchStage' -or
+    $launchText -notmatch "Verified = \[pscustomobject\]@\{ Percent = 96" -or
+    $launchText -notmatch "-Stage WaitForCdp" -or
     $desktopLaunchText -notmatch '-ProgressCallback \$progressCallback' -or
-    $desktopLaunchText -notmatch '\$Window\.Percent\.Text = ''100%''' -or
-    $desktopLaunchText -notmatch '\$Window\.ProgressFill\.Width = \$Window\.ProgressTrack\.ClientSize\.Width' -or
-    $desktopLaunchText -match 'ProgressBarStyle\]::Marquee') {
+    $launcherUiText -notmatch '\$Window\.Percent\.Text = ''100%''' -or
+    $launcherUiText -notmatch '\$Window\.ProgressFill\.Width = \$Window\.ProgressTrack\.ClientSize\.Width' -or
+    ($desktopLaunchText + $launcherUiText) -match 'ProgressBarStyle\]::Marquee') {
   throw 'Desktop progress must be driven by launch milestones and reach a verified 100%, not use an indeterminate marquee.'
 }
-if ($desktopLaunchText -notmatch 'System\.Windows\.Forms' -or
-    $desktopLaunchText -notmatch 'Show-DreamSkinRestartDialog' -or
-    $desktopLaunchText -notmatch 'New-DreamSkinProgressWindow' -or
-    $desktopLaunchText -notmatch [regex]::Escape($expectedCurrentLaunchCopy) -or
-    $desktopLaunchText -match 'WScript\.Shell|\.Popup\(' -or
-    @($legacyNextLaunchCopy | Where-Object { $desktopLaunchText -match [regex]::Escape($_) }).Count -gt 0) {
+if ($desktopLaunchText -notmatch "ui\\launcher-ui\.ps1" -or
+    $desktopLaunchText -match 'function\s+(?:New-DreamSkinLaunchForm|New-DreamSkinLabel|New-DreamSkinProgressWindow)' -or
+    $launcherUiText -notmatch 'System\.Windows\.Forms' -or
+    $launcherUiText -notmatch 'Show-DreamSkinRestartDialog' -or
+    $launcherUiText -notmatch 'New-DreamSkinProgressWindow' -or
+    $launcherUiText -notmatch [regex]::Escape($expectedCurrentLaunchCopy) -or
+    $launcherUiText -match 'Get-DreamSkinCodexInstall|Stop-DreamSkinCodex|launch\.ps1' -or
+    ($desktopLaunchText + $launcherUiText) -match 'WScript\.Shell|\.Popup\(' -or
+    @($legacyNextLaunchCopy | Where-Object { ($desktopLaunchText + $launcherUiText) -match [regex]::Escape($_) }).Count -gt 0) {
   throw 'The desktop launcher must use the branded single-window flow without legacy popups or redundant next-launch copy.'
 }
 if (($runtimeText -join "`n") -match '(?i)config\.toml|appearanceTheme|BaseUrl|ApiKey') {
