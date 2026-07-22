@@ -7,13 +7,6 @@
     "conversationImage":  "conversation.webp",
     "sidebarImage":  "sidebar.webp",
     "selectedLeaf":  "selected-marker.webp",
-    "composerEdge":  {
-                         "image":  "composer-edge-small.webp",
-                         "horizontal":  "right",
-                         "vertical":  "bottom",
-                         "maxHeight":  176,
-                         "opacity":  0.76
-                     },
     "icons":  {
                   "build":  "icon-build.svg",
                   "analyze":  "icon-analyze.svg",

@@ -22,7 +22,7 @@
   </tr>
   <tr>
     <td align="center"><strong>沉歌剧院</strong> · 深海剧院、完整竖琴、深靛玻璃界面</td>
-    <td align="center"><strong>潮汐圣歌</strong> · 珍珠水光、海洋歌姬、明亮全局画布</td>
+    <td align="center"><strong>潮汐圣歌</strong> · 珍珠水光、海洋歌姬、珍珠玻璃输入框</td>
   </tr>
 </table>
 

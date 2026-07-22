@@ -229,28 +229,35 @@ html.codex-dream-skin .dream-home {
 
 html.codex-dream-skin .composer-surface-chrome {
   overflow: hidden !important;
-  color: #eaf7fc !important;
-  background: linear-gradient(135deg, rgba(6, 20, 37, .94), rgba(16, 35, 58, .86)) !important;
-  border: 1px solid rgba(119, 205, 228, .52) !important;
-  border-radius: 16px !important;
-  box-shadow: inset 0 1px rgba(224, 249, 255, .08), 0 12px 34px rgba(0, 8, 18, .24) !important;
-  backdrop-filter: blur(12px) saturate(1.08) !important;
+  color: #193246 !important;
+  background: linear-gradient(145deg, rgba(255, 255, 255, .93), rgba(234, 247, 252, .86)) !important;
+  border: 1px solid rgba(64, 137, 161, .30) !important;
+  border-radius: 20px !important;
+  box-shadow: inset 0 1px rgba(255, 255, 255, .92), inset 0 -1px rgba(92, 171, 196, .10), 0 12px 30px rgba(46, 101, 121, .13) !important;
+  backdrop-filter: blur(16px) saturate(1.04) !important;
   transition: border-color var(--dream-motion-fast) var(--dream-ease), box-shadow var(--dream-motion-fast) var(--dream-ease) !important;
 }
 
 html.codex-dream-skin .composer-surface-chrome:focus-within {
-  border-color: rgba(118, 224, 238, .78) !important;
-  box-shadow: inset 0 1px rgba(224, 249, 255, .10), 0 0 0 2px rgba(71, 178, 206, .12), 0 14px 38px rgba(0, 8, 18, .28) !important;
+  border-color: rgba(54, 151, 181, .58) !important;
+  box-shadow: inset 0 1px rgba(255, 255, 255, .96), inset 0 -1px rgba(92, 171, 196, .12), 0 0 0 3px rgba(75, 169, 196, .10), 0 14px 34px rgba(46, 101, 121, .16) !important;
 }
 
 html.codex-dream-skin .composer-surface-chrome .ProseMirror {
-  color: #effaff !important;
-  caret-color: #72d6e8 !important;
+  color: #193246 !important;
+  -webkit-text-fill-color: #193246 !important;
+  caret-color: #347f98 !important;
 }
 
 html.codex-dream-skin .composer-surface-chrome :is(button, [role="button"], svg, span) {
-  color: #dff4fa !important;
-  -webkit-text-fill-color: #dff4fa !important;
+  color: #26485c !important;
+  -webkit-text-fill-color: #26485c !important;
+}
+
+html.codex-dream-skin .composer-surface-chrome button[class*="bg-token-foreground"],
+html.codex-dream-skin .composer-surface-chrome button[class*="bg-token-foreground"] :is(svg, span) {
+  color: #f4fbfe !important;
+  -webkit-text-fill-color: #f4fbfe !important;
 }
 
 html.codex-dream-skin .composer-surface-chrome [class*="text-orange"],
@@ -260,22 +267,18 @@ html.codex-dream-skin .composer-surface-chrome [class*="text-orange"] * {
 }
 
 html.codex-dream-skin .composer-surface-chrome .ProseMirror p.is-editor-empty:first-child::before {
-  color: #91aeba !important;
+  color: #78909d !important;
+  -webkit-text-fill-color: #78909d !important;
 }
 
 html.codex-dream-skin div:has(> .composer-surface-chrome)::after {
-  inset: auto -10px -8px auto !important;
-  width: 210px !important;
-  height: 124px !important;
-  border-radius: 0 !important;
-  background-position: right bottom !important;
-  background-size: auto 110px !important;
-  filter: hue-rotate(35deg) saturate(.58) brightness(.94) !important;
-  transform: translate3d(0, 0, 0);
+  display: none !important;
+  content: none !important;
 }
 
 html.codex-dream-skin div:has(> .composer-surface-chrome):focus-within::after {
-  transform: translate3d(-2px, -1px, 0);
+  display: none !important;
+  content: none !important;
 }
 
 html.codex-dream-skin main.dream-home-shell .composer-surface-chrome {
