@@ -112,6 +112,15 @@ html.codex-dream-skin [role="main"].dream-conversation {
   background-image: none !important;
 }
 
+html.codex-dream-skin main.main-surface.dream-home-shell,
+html.codex-dream-skin [role="main"].dream-home {
+  background-color: rgba(230, 243, 249, .10) !important;
+  background-image: var(--dream-art) !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-size: cover !important;
+}
+
 html.codex-dream-skin main.main-surface.dream-conversation-shell::before {
   display: none !important;
   content: none !important;
@@ -188,6 +197,7 @@ html.codex-dream-skin .dream-home {
   font-weight: 600;
   letter-spacing: .08em;
   text-shadow: 0 2px 16px rgba(241, 250, 253, .72);
+  white-space: nowrap;
 }
 
 .dream-action-grid {
@@ -200,9 +210,10 @@ html.codex-dream-skin .dream-home {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   padding: 12px clamp(42px, 6vw, 96px) 18px;
-  background: rgba(244, 250, 252, .84);
-  border-top: 1px solid rgba(54, 111, 132, .16);
-  backdrop-filter: blur(10px);
+  background: rgba(244, 250, 252, .40);
+  border-top: 1px solid rgba(54, 111, 132, .22);
+  box-shadow: inset 0 1px rgba(255, 255, 255, .48);
+  backdrop-filter: blur(9px) saturate(1.06);
 }
 
 .dream-action-button {
@@ -223,24 +234,77 @@ html.codex-dream-skin .dream-home {
 
 .dream-action-button:last-child { border-right: 0 !important; }
 .dream-action-button:hover { background: rgba(82, 184, 209, .12) !important; }
-.dream-action-button strong { color: #193246 !important; font-size: 18px; }
-.dream-action-button span { color: #5c7180 !important; font-size: 12px; white-space: nowrap; }
-.dream-action-button img { width: 42px; height: 42px; object-fit: contain; filter: saturate(.72) hue-rotate(148deg); }
+.dream-action-button strong { color: #12344a !important; font-size: 18px; text-shadow: 0 1px 6px rgba(255, 255, 255, .82); }
+.dream-action-button span { color: #405e70 !important; font-size: 12px; white-space: nowrap; text-shadow: 0 1px 5px rgba(255, 255, 255, .86); }
+.dream-action-button img { width: 42px; height: 42px; object-fit: contain; filter: saturate(.9) contrast(1.12) hue-rotate(148deg) drop-shadow(0 2px 4px rgba(255, 255, 255, .48)); }
 
 html.codex-dream-skin .composer-surface-chrome {
   overflow: hidden !important;
   color: #193246 !important;
-  background: linear-gradient(145deg, rgba(255, 255, 255, .93), rgba(234, 247, 252, .86)) !important;
-  border: 1px solid rgba(64, 137, 161, .30) !important;
-  border-radius: 20px !important;
-  box-shadow: inset 0 1px rgba(255, 255, 255, .92), inset 0 -1px rgba(92, 171, 196, .10), 0 12px 30px rgba(46, 101, 121, .13) !important;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, .94), rgba(232, 247, 252, .88)) padding-box,
+    linear-gradient(112deg, rgba(255, 255, 255, .98) 0%, rgba(86, 188, 215, .76) 24%, rgba(190, 157, 226, .58) 52%, rgba(93, 192, 214, .74) 78%, rgba(255, 255, 255, .96) 100%) border-box !important;
+  border: 2px solid transparent !important;
+  border-radius: 22px !important;
+  box-shadow:
+    inset 0 1px rgba(255, 255, 255, .96),
+    inset 0 -8px 18px rgba(86, 183, 207, .07),
+    0 0 0 1px rgba(255, 255, 255, .42),
+    0 12px 32px rgba(37, 105, 129, .16),
+    0 0 24px rgba(145, 204, 224, .10) !important;
   backdrop-filter: blur(16px) saturate(1.04) !important;
   transition: border-color var(--dream-motion-fast) var(--dream-ease), box-shadow var(--dream-motion-fast) var(--dream-ease) !important;
 }
 
+/* Pearl-tide detailing stays attached to the panel edge, so it remains stable
+   when the native composer grows from one line to many. */
+html.codex-dream-skin .composer-surface-chrome::before {
+  content: "" !important;
+  display: block !important;
+  position: absolute !important;
+  z-index: 1 !important;
+  inset: 5px !important;
+  border-radius: 17px !important;
+  border: 1px solid rgba(255, 255, 255, .62) !important;
+  box-shadow: inset 0 0 0 1px rgba(77, 165, 190, .08) !important;
+  pointer-events: none !important;
+}
+
+html.codex-dream-skin .composer-surface-chrome::after {
+  content: "" !important;
+  display: block !important;
+  position: absolute !important;
+  z-index: 2 !important;
+  inset: 0 !important;
+  border-radius: inherit !important;
+  background:
+    radial-gradient(circle 11px at 6.6% 7px, #ffffff 0 18%, #e6fbff 31%, #8ed9e8 50%, rgba(124, 113, 203, .70) 66%, transparent 74%),
+    radial-gradient(circle 8px at 8.7% 7px, #ffffff 0 18%, #eafcff 34%, #9bddea 54%, rgba(172, 142, 220, .62) 68%, transparent 76%),
+    radial-gradient(circle 6px at 10.4% 7px, #ffffff 0 18%, #eafcff 36%, #a8e1eb 56%, rgba(111, 170, 212, .58) 69%, transparent 78%),
+    radial-gradient(circle 11px at 72.4% calc(100% - 7px), #ffffff 0 18%, #e8faff 31%, #91d8e8 50%, rgba(160, 130, 216, .70) 66%, transparent 74%),
+    radial-gradient(circle 8px at 70.3% calc(100% - 7px), #ffffff 0 18%, #eafcff 34%, #9bddea 54%, rgba(172, 142, 220, .62) 68%, transparent 76%),
+    radial-gradient(circle 6px at 68.6% calc(100% - 7px), #ffffff 0 18%, #eafcff 36%, #a8e1eb 56%, rgba(111, 170, 212, .58) 69%, transparent 78%),
+    radial-gradient(ellipse 58px 16px at 7.8% 3px, rgba(102, 197, 220, .34), transparent 72%),
+    radial-gradient(ellipse 58px 16px at 71.2% calc(100% - 3px), rgba(169, 142, 222, .30), transparent 72%),
+    linear-gradient(90deg, transparent 3%, rgba(91, 191, 214, .62) 20%, rgba(210, 181, 235, .42) 50%, rgba(91, 191, 214, .62) 80%, transparent 97%) top / 100% 2px no-repeat,
+    linear-gradient(90deg, transparent 8%, rgba(115, 202, 220, .26) 32%, rgba(192, 164, 228, .30) 68%, transparent 92%) bottom / 100% 2px no-repeat !important;
+  opacity: .96 !important;
+  pointer-events: none !important;
+  transition: opacity var(--dream-motion-fast) var(--dream-ease), filter var(--dream-motion-fast) var(--dream-ease) !important;
+}
+
 html.codex-dream-skin .composer-surface-chrome:focus-within {
-  border-color: rgba(54, 151, 181, .58) !important;
-  box-shadow: inset 0 1px rgba(255, 255, 255, .96), inset 0 -1px rgba(92, 171, 196, .12), 0 0 0 3px rgba(75, 169, 196, .10), 0 14px 34px rgba(46, 101, 121, .16) !important;
+  box-shadow:
+    inset 0 1px rgba(255, 255, 255, .98),
+    inset 0 -9px 20px rgba(86, 183, 207, .10),
+    0 0 0 3px rgba(93, 188, 213, .12),
+    0 14px 36px rgba(37, 105, 129, .18),
+    0 0 30px rgba(171, 150, 221, .12) !important;
+}
+
+html.codex-dream-skin .composer-surface-chrome:focus-within::after {
+  opacity: 1 !important;
+  filter: saturate(1.08) brightness(1.03) !important;
 }
 
 html.codex-dream-skin .composer-surface-chrome .ProseMirror {
@@ -282,9 +346,9 @@ html.codex-dream-skin div:has(> .composer-surface-chrome):focus-within::after {
 }
 
 html.codex-dream-skin main.dream-home-shell .composer-surface-chrome {
-  min-height: 176px !important;
-  padding-top: 20px !important;
-  padding-bottom: 16px !important;
+  min-height: 118px !important;
+  padding-top: 14px !important;
+  padding-bottom: 12px !important;
 }
 
 html.codex-dream-skin main.dream-conversation-shell .sticky.bottom-0 [class~="bg-gradient-to-t"] {
@@ -358,6 +422,26 @@ html.codex-dream-skin [data-radix-popper-content-wrapper] :is(h1, h2, h3, p, spa
   text-shadow: none !important;
 }
 
+html.codex-dream-skin .dream-home .dream-home-stage {
+  flex: 0 0 clamp(500px, 64vh, 650px) !important;
+  min-height: clamp(500px, 64vh, 650px) !important;
+  align-items: stretch !important;
+  padding-bottom: 0 !important;
+}
+
+html.codex-dream-skin .dream-home .dream-home-hero {
+  position: relative !important;
+  isolation: isolate !important;
+  height: clamp(500px, 64vh, 650px) !important;
+  min-height: 500px !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
 @media (max-width: 1000px) {
   html.codex-dream-skin .dream-home { --thread-content-max-width: min(920px, calc(100cqw - 32px)) !important; }
   .dream-action-grid { padding-inline: 24px; }
@@ -369,10 +453,12 @@ html.codex-dream-skin [data-radix-popper-content-wrapper] :is(h1, h2, h3, p, spa
   .dream-home > div:first-child > div:first-child > div:first-child { height: 470px !important; min-height: 470px !important; flex-basis: 470px !important; }
   .dream-title { top: 150px; }
   .dream-action-grid { height: 136px; padding-block: 8px 14px; }
-  html.codex-dream-skin main.dream-home-shell .composer-surface-chrome { min-height: 148px !important; padding-top: 14px !important; padding-bottom: 12px !important; }
+  html.codex-dream-skin main.dream-home-shell .composer-surface-chrome { min-height: 118px !important; padding-top: 12px !important; padding-bottom: 10px !important; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   html.codex-dream-skin .dream-progress-indicator { animation: none !important; }
+  html.codex-dream-skin .composer-surface-chrome,
+  html.codex-dream-skin .composer-surface-chrome::after,
   html.codex-dream-skin div:has(> .composer-surface-chrome)::after { transition: none !important; transform: none !important; }
 }

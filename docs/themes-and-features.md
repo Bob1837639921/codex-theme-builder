@@ -18,13 +18,13 @@
 
 ### 沉歌剧院 `sunken-opera`
 
-![沉歌剧院主题视觉](../skills/codex-theme-builder/assets/themes/sunken-opera/home.webp)
+![沉歌剧院主题视觉](images/sunken-opera-preview.webp)
 
 沉歌剧院使用一张连续的深海剧院画布贯穿侧栏与内容区，海洋歌姬和完整竖琴保留在右侧视觉焦点。侧栏、标题栏、正文、输入框、输出面板、产品菜单、账号菜单和用量面板统一采用深靛半透明表面，并对门户浮层的嵌套文字与 `-webkit-text-fill-color` 做显式亮色适配。
 
 ### 潮汐圣歌 `tidal-hymn`
 
-![潮汐圣歌主题视觉](../skills/codex-theme-builder/assets/themes/tidal-hymn/home.webp)
+![潮汐圣歌主题视觉](images/tidal-hymn-preview.webp)
 
 潮汐圣歌使用珍珠水光的连续全局画布，侧栏仅叠加青蓝半透明遮罩，不再单独裁切背景。正文与浮层保持深色文字，输入框使用收在原生边界内的珍珠白半透明玻璃、青色细描边与轻水光阴影，不再叠加深色竖琴角饰；人物、竖琴与原生内容在宽、窄窗口中保持完整层级。
 
@@ -121,3 +121,5 @@ assets/themes/<theme-id>/
 ```
 
 新增主题时只把视觉身份放进主题目录；DOM 探测、资源校验、标记稳定性、主题切换和失败回滚继续由共享运行时负责。
+
+完整的依赖边界、界面实现矩阵、资源预算和发布步骤见 [主题开发架构](theme-development-architecture.md)。运行时如何在不移除效果的情况下减少滚动与长对话开销，见 [运行时性能](runtime-performance.md)。

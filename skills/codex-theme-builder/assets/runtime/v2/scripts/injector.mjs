@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, "..");
-const SKIN_VERSION = "2.1.0-prototype";
+const SKIN_VERSION = "2.1.1-performance";
 const MAX_ART_BYTES = 8 * 1024 * 1024;
 const LOOPBACK_HOSTS = new Set(["127.0.0.1", "localhost", "[::1]", "::1"]);
 const BROWSER_ID_PATTERN = /^[A-Za-z0-9._-]{1,200}$/;
@@ -533,6 +533,8 @@ async function removeFromSession(session) {
     document.getElementById('codex-dream-skin-chrome')?.remove();
     document.getElementById('codex-dream-skin-actions')?.remove();
     document.getElementById('codex-dream-skin-title')?.remove();
+    document.getElementById('codex-dream-home-overlay')?.remove();
+    document.querySelectorAll('.dream-project-picker').forEach((node) => node.classList.remove('dream-project-picker'));
     document.getElementById('codex-dream-theme-switcher')?.remove();
     delete window.__CODEX_DREAM_SKIN_STATE__;
     return true;
@@ -549,6 +551,7 @@ async function verifyRemovedSession(session) {
     !document.getElementById('codex-dream-skin-chrome') &&
     !document.getElementById('codex-dream-skin-actions') &&
     !document.getElementById('codex-dream-skin-title') &&
+    !document.getElementById('codex-dream-home-overlay') &&
     !document.getElementById('codex-dream-theme-switcher') &&
     !window.__CODEX_DREAM_SKIN_STATE__
   )()`);

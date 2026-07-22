@@ -93,6 +93,7 @@ if (($runtimeText -join "`n") -match '(?i)config\.toml|appearanceTheme|BaseUrl|A
 }
 $themeCss = Get-Content -LiteralPath (Join-Path $theme 'theme.css') -Raw
 $baseCss = Get-Content -LiteralPath (Join-Path $Root 'assets\base.css') -Raw
+$templateCss = Get-Content -LiteralPath (Join-Path $Root '..\..\theme-template\theme.css') -Raw
 $runtimeJs = Get-Content -LiteralPath (Join-Path $Root 'assets\runtime.js') -Raw
 $injectorText = Get-Content -LiteralPath $injector -Raw
 $catalogPath = Join-Path (Split-Path -Parent $theme) 'theme-catalog.json'
@@ -122,6 +123,14 @@ if ($runtimeJs -notmatch 'codex-dream-theme-switcher' -or
 if ($themeCss -notmatch '(?s)main\.dream-conversation-shell\s+\.sticky\.bottom-0\s+\[class~="bg-gradient-to-t"\]\s*\{[^}]*background-image:\s*none\s*!important') {
   throw 'Conversation composer fades must stay transparent, including the in-progress file-summary state.'
 }
+if ($themeCss -match 'group\\/project-selector' -or
+    $baseCss -notmatch '(?s)main\.dream-home-shell \.dream-project-picker\s*\{[^}]*overflow:\s*hidden\s*!important' -or
+    $baseCss -match '(?s)\.dream-project-picker\s*\{[^}]*(?:background|border(?:-radius)?|box-shadow|clip-path|margin|padding|position|z-index|width|height)\s*:') {
+  throw 'Themes and shared CSS must leave the native project selector geometry and styling untouched.'
+}
+if ($baseCss -notmatch '(?s)aside\.app-shell-left-panel\s+\[class~="bg-token-bg-secondary/40"\]\s*\{[^}]*background-color:\s*transparent\s*!important[^}]*background-image:\s*none\s*!important') {
+  throw 'The native light-mode sidebar carrier must stay transparent so it cannot veil theme artwork.'
+}
 if ($themeCss -notmatch '(?s)\[role="dialog"\]\s*\{[^}]*color:\s*var\(--dream-ink\)\s*!important[^}]*background-color:') {
   throw 'Portaled light dialogs must keep readable dark text after Codex updates.'
 }
@@ -137,7 +146,11 @@ if ($themeCss -notmatch '(?s)\[data-radix-popper-content-wrapper\].*?color:\s*va
 }
 if ($runtimeJs -notmatch 'markDetailSurfaces' -or
   $runtimeJs -notmatch 'main\.dream-conversation-shell \.sticky\.bottom-0' -or
-  $runtimeJs -notmatch 'markedThreads\.filter' -or
+  $runtimeJs -notmatch 'detailState\.selectedThread' -or
+  $runtimeJs -notmatch 'MUTATION_COALESCE_MS = 96' -or
+  $runtimeJs -notmatch 'setTextIfChanged' -or
+  $runtimeJs -notmatch 'mutationIsRuntimeOwned' -or
+  $runtimeJs -notmatch 'outputScanRequested' -or
   $runtimeJs -notmatch 'requestAnimationFrame' -or
   $runtimeJs -match 'setTimeout\(\(\) => \{\s*scheduler\.timeout = null;\s*ensure\(\);\s*\}, 180\)' -or
   $runtimeJs -notmatch 'dream-selected-thread' -or
@@ -146,6 +159,17 @@ if ($runtimeJs -notmatch 'markDetailSurfaces' -or
   $runtimeJs -notmatch 'outputCandidates\.find\(intersectsViewport\)' -or
   $runtimeJs -notmatch 'document\.querySelectorAll\("\.dream-output-panel"\)\.forEach') {
   throw 'Detail-surface markers must remain scoped, stable, frame-coalesced, and available for theme polish.'
+}
+if ($runtimeJs -notmatch 'codex-dream-home-overlay' -or
+    $runtimeJs -notmatch 'dream-home-stage' -or
+    $runtimeJs -notmatch 'dream-home-hero' -or
+    $runtimeJs -notmatch 'dream-project-picker' -or
+    $baseCss -notmatch '#codex-dream-home-overlay') {
+  throw 'The reusable home overlay, full-width stage, and project-picker hooks must remain present.'
+}
+if ($templateCss -notmatch '(?s)main\.main-surface\.dream-home-shell.*?background-image:\s*var\(--dream-art\)\s*!important' -or
+    $templateCss -notmatch '(?s)\.dream-home \.dream-home-hero\s*\{[^}]*border-radius:\s*0\s*!important[^}]*background:\s*transparent\s*!important') {
+  throw 'New themes must paint home artwork on the full home shell and keep the native hero free of inset photo-frame styling.'
 }
 if ($runtimeJs -notmatch 'data-dream-sidebar-control' -or
     $runtimeJs -notmatch 'restoreSidebarControls' -or

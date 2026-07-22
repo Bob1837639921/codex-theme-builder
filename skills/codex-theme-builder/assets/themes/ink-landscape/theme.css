@@ -378,15 +378,9 @@ html.codex-dream-skin main.dream-home-shell .composer-surface-chrome {
 }
 
 html.codex-dream-skin .composer-surface-chrome::before,
-html.codex-dream-skin div:has(> .composer-surface-chrome)::before,
-.dream-home div:has(> .horizontal-scroll-fade-mask .group\/project-selector)::before {
+html.codex-dream-skin div:has(> .composer-surface-chrome)::before {
   display: none !important;
   content: none !important;
-}
-
-html.codex-dream-skin .horizontal-scroll-fade-mask {
-  -webkit-mask-image: none !important;
-  mask-image: none !important;
 }
 
 /* Codex paints two separate white fades around the composer: the main bottom
@@ -476,21 +470,6 @@ html.codex-dream-skin .dream-output-panel [aria-expanded] svg {
 
 html.codex-dream-skin .dream-output-panel [aria-expanded="true"] svg {
   transform: rotate(90deg);
-}
-
-.dream-home div:has(> .horizontal-scroll-fade-mask .group\/project-selector) {
-  padding-top: 0 !important;
-  background: transparent !important;
-  border: 0 !important;
-}
-
-.dream-home .horizontal-scroll-fade-mask:has(.group\/project-selector),
-.dream-home .group\/project-selector {
-  width: max-content !important;
-  max-width: 100% !important;
-  background: transparent !important;
-  border-color: transparent !important;
-  box-shadow: none !important;
 }
 
 .dream-home-promo {

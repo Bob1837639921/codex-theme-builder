@@ -13,7 +13,20 @@
   --dream-ease: cubic-bezier(.2, .8, .2, 1);
 }
 
-html.codex-dream-skin body,
+html.codex-dream-skin body {
+  background-color: var(--dream-paper) !important;
+  background-image: linear-gradient(180deg, #f8fbff 0, #f8fbff 36px, transparent 36px), var(--dream-conversation-art) !important;
+  background-repeat: no-repeat !important;
+  background-position: center, center !important;
+  background-size: 100% 100%, cover !important;
+  background-attachment: fixed, fixed !important;
+  color: var(--dream-ink) !important;
+}
+
+html.codex-dream-skin body:has(main.dream-home-shell) {
+  background-image: linear-gradient(180deg, #f8fbff 0, #f8fbff 36px, transparent 36px), var(--dream-art) !important;
+}
+
 html.codex-dream-skin main.main-surface,
 html.codex-dream-skin [role="main"] {
   background: var(--dream-paper) !important;
@@ -47,6 +60,11 @@ html.codex-dream-skin aside.app-shell-left-panel {
   outline: 0 !important;
 }
 
+html.codex-dream-skin body:has(main.dream-home-shell) aside.app-shell-left-panel {
+  background-color: rgba(15, 27, 43, .72) !important;
+  background-image: linear-gradient(180deg, rgba(6, 15, 26, .48), rgba(3, 11, 21, .68)) !important;
+}
+
 html.codex-dream-skin aside.app-shell-left-panel::before,
 html.codex-dream-skin aside.app-shell-left-panel::after {
   display: none !important;
@@ -57,6 +75,15 @@ html.codex-dream-skin main.main-surface.dream-conversation-shell,
 html.codex-dream-skin [role="main"].dream-conversation {
   background-color: var(--dream-paper) !important;
   background-image: none !important;
+}
+
+html.codex-dream-skin main.main-surface.dream-home-shell,
+html.codex-dream-skin [role="main"].dream-home {
+  background-color: rgba(232, 241, 249, .10) !important;
+  background-image: var(--dream-art) !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-size: cover !important;
 }
 
 html.codex-dream-skin main.main-surface.dream-conversation-shell::before {
@@ -205,11 +232,7 @@ html.codex-dream-skin .dream-home {
   overflow: hidden !important;
   border: 0 !important;
   border-radius: 0 !important;
-  background-color: #e8f1f9 !important;
-  background-image: var(--dream-art) !important;
-  background-repeat: no-repeat !important;
-  background-size: cover !important;
-  background-position: center top !important;
+  background: rgba(232, 241, 249, .08) !important;
   box-shadow: none !important;
 }
 
@@ -284,9 +307,9 @@ html.codex-dream-skin .dream-home {
   grid-template-columns: repeat(4, minmax(0, 1fr));
   overflow: hidden;
   padding: 12px clamp(42px, 6vw, 96px) 18px;
-  background: rgba(248, 245, 237, .90);
-  border-top: 0;
-  backdrop-filter: blur(3px);
+  background: rgba(248, 251, 255, .54);
+  border-top: 1px solid rgba(85, 121, 168, .16);
+  backdrop-filter: blur(8px) saturate(.96);
 }
 
 .dream-action-button {
@@ -395,15 +418,9 @@ html.codex-dream-skin main.dream-home-shell .composer-surface-chrome {
 }
 
 html.codex-dream-skin .composer-surface-chrome::before,
-html.codex-dream-skin div:has(> .composer-surface-chrome)::before,
-.dream-home div:has(> .horizontal-scroll-fade-mask .group\/project-selector)::before {
+html.codex-dream-skin div:has(> .composer-surface-chrome)::before {
   display: none !important;
   content: none !important;
-}
-
-html.codex-dream-skin .horizontal-scroll-fade-mask {
-  -webkit-mask-image: none !important;
-  mask-image: none !important;
 }
 
 /* Codex paints two separate white fades around the composer: the main bottom
@@ -493,21 +510,6 @@ html.codex-dream-skin .dream-output-panel [aria-expanded] svg {
 
 html.codex-dream-skin .dream-output-panel [aria-expanded="true"] svg {
   transform: rotate(90deg);
-}
-
-.dream-home div:has(> .horizontal-scroll-fade-mask .group\/project-selector) {
-  padding-top: 0 !important;
-  background: transparent !important;
-  border: 0 !important;
-}
-
-.dream-home .horizontal-scroll-fade-mask:has(.group\/project-selector),
-.dream-home .group\/project-selector {
-  width: max-content !important;
-  max-width: 100% !important;
-  background: transparent !important;
-  border-color: transparent !important;
-  box-shadow: none !important;
 }
 
 .dream-home-promo {

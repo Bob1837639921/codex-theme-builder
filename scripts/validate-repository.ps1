@@ -69,7 +69,7 @@ if ($catalog.schemaVersion -ne 1 -or $themeIds.Count -lt 1) {
 if (@($themeIds | Select-Object -Unique).Count -ne $themeIds.Count) {
   throw 'theme-catalog.json must not contain duplicate theme IDs.'
 }
-$expectedThemes = @('ink-landscape', 'frost-sword-immortal')
+$expectedThemes = @('ink-landscape', 'frost-sword-immortal', 'sunken-opera', 'tidal-hymn')
 if (@($expectedThemes | Where-Object { $_ -notin $themeIds }).Count -gt 0) {
   throw "Bundled theme catalog must include: $($expectedThemes -join ', ')"
 }
@@ -86,6 +86,23 @@ foreach ($themeId in $themeIds) {
   }
   & (Join-Path $skill 'scripts\test-theme.ps1') -ThemePath $theme
   if ($LASTEXITCODE -ne 0) { throw "Bundled theme validation failed: $themeId" }
+}
+
+$documentationImages = @(
+  'ink-landscape-runtime.webp',
+  'frost-sword-runtime.webp',
+  'sunken-opera-preview.webp',
+  'tidal-hymn-preview.webp'
+)
+$documentationImagesRoot = Join-Path $repositoryRoot 'docs\images'
+foreach ($imageName in $documentationImages) {
+  $imagePath = Join-Path $documentationImagesRoot $imageName
+  if (-not (Test-Path -LiteralPath $imagePath -PathType Leaf)) {
+    throw "Documentation theme preview is missing: $imageName"
+  }
+  if ((Get-Item -LiteralPath $imagePath).Length -gt 300KB) {
+    throw "Documentation theme preview must remain at or below 300 KB: $imageName"
+  }
 }
 
 Write-Host 'Repository validation passed.'

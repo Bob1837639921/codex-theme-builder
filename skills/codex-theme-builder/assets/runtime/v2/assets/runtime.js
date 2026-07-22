@@ -4,9 +4,11 @@
   const CHROME_ID = "codex-dream-skin-chrome";
   const ACTIONS_ID = "codex-dream-skin-actions";
   const TITLE_ID = "codex-dream-skin-title";
+  const HOME_OVERLAY_ID = "codex-dream-home-overlay";
   const SWITCHER_ID = "codex-dream-theme-switcher";
   const STORAGE_KEY = "codex-dream-theme-active";
-  const RUNTIME_VERSION = "2.1.0-prototype";
+  const RUNTIME_VERSION = "2.1.1-performance";
+  const MUTATION_COALESCE_MS = 96;
   const actions = [
     ["build", "构建", "编码实现与应用", "帮我构建一个新的应用"],
     ["analyze", "分析", "数据分析与洞察", "分析这个项目的结构与风险"],
@@ -47,6 +49,35 @@
   };
   const storedThemeId = (() => { try { return localStorage.getItem(STORAGE_KEY); } catch { return null; } })();
   let activeTheme = themeMap.get(storedThemeId) || themeMap.get(initialThemeId);
+  const markerState = {
+    home: document.querySelector(".dream-home"),
+    homeStage: document.querySelector(".dream-home-stage"),
+    homeHero: document.querySelector(".dream-home-hero"),
+    conversation: document.querySelector(".dream-conversation"),
+    promo: document.querySelector(".dream-home-promo"),
+    projectPicker: document.querySelector(".dream-project-picker"),
+  };
+  const detailState = {
+    selectedThread: document.querySelector(".dream-selected-thread"),
+    selectedLabel: document.querySelector(".dream-selected-thread-label"),
+    lastProgressScan: 0,
+    lastOutputScan: 0,
+    progressScanRequested: true,
+    outputScanRequested: true,
+  };
+  const syncMarker = (key, node, className) => {
+    const previousNode = markerState[key];
+    if (previousNode === node && (!node || node.classList.contains(className))) return;
+    if (previousNode && previousNode !== node) previousNode.classList.remove(className);
+    if (node && !node.classList.contains(className)) node.classList.add(className);
+    markerState[key] = node || null;
+  };
+  const setTextIfChanged = (node, value) => {
+    if (node && node.textContent !== value) node.textContent = value;
+  };
+  const setStyleIfChanged = (node, property, value) => {
+    if (node && node.style.getPropertyValue(property) !== value) node.style.setProperty(property, value);
+  };
 
   const restoreSidebarControl = (node) => {
     const color = node.dataset.dreamOriginalColor || "";
@@ -84,28 +115,33 @@
       progress?.classList.remove("dream-progress-pill");
       document.querySelectorAll(".dream-progress-indicator").forEach((node) =>
         node.classList.remove("dream-progress-indicator"));
-      const progressRoot = document.querySelector("main.dream-conversation-shell .sticky.bottom-0") || document.body;
-      const progressText = [...progressRoot.querySelectorAll("span, p, div")]
-        .filter((node) => progressPattern.test(node.textContent || ""))
-        .sort((left, right) => {
-          const a = left.getBoundingClientRect();
-          const b = right.getBoundingClientRect();
-          return (a.width * a.height) - (b.width * b.height);
-        })[0];
-      progress = progressText;
-      while (progress && progress !== progressRoot.parentElement) {
-        const rect = progress.getBoundingClientRect();
-        if (rect.width >= 150 && rect.width <= 520 && rect.height >= 28 && rect.height <= 64) {
-          progress.classList.add("dream-progress-pill");
-          const indicator = [...progress.querySelectorAll("svg, span, div")].find((node) => {
-            const box = node.getBoundingClientRect();
-            return box.width >= 10 && box.width <= 22 && box.height >= 10 && box.height <= 22 &&
-              box.left < rect.left + 40;
-          });
-          indicator?.classList.add("dream-progress-indicator");
-          break;
+      const now = performance.now();
+      if (detailState.progressScanRequested || now - detailState.lastProgressScan >= 800) {
+        detailState.progressScanRequested = false;
+        detailState.lastProgressScan = now;
+        const progressRoot = document.querySelector("main.dream-conversation-shell .sticky.bottom-0") || document.body;
+        const progressText = [...progressRoot.querySelectorAll("span, p, div")]
+          .filter((node) => progressPattern.test(node.textContent || ""))
+          .sort((left, right) => {
+            const a = left.getBoundingClientRect();
+            const b = right.getBoundingClientRect();
+            return (a.width * a.height) - (b.width * b.height);
+          })[0];
+        progress = progressText;
+        while (progress && progress !== progressRoot.parentElement) {
+          const rect = progress.getBoundingClientRect();
+          if (rect.width >= 150 && rect.width <= 520 && rect.height >= 28 && rect.height <= 64) {
+            progress.classList.add("dream-progress-pill");
+            const indicator = [...progress.querySelectorAll("svg, span, div")].find((node) => {
+              const box = node.getBoundingClientRect();
+              return box.width >= 10 && box.width <= 22 && box.height >= 10 && box.height <= 22 &&
+                box.left < rect.left + 40;
+            });
+            indicator?.classList.add("dream-progress-indicator");
+            break;
+          }
+          progress = progress.parentElement;
         }
-        progress = progress.parentElement;
       }
     }
 
@@ -128,52 +164,68 @@
         control.style.setProperty("color", "var(--dream-sidebar-control-text, #eef3ef)", "important");
         control.style.setProperty("opacity", ".9", "important");
       }
-      const markedThreads = [...sidebar.querySelectorAll(".dream-selected-thread")];
-      const selected = [...sidebar.querySelectorAll(
-        '[aria-current="page"], [aria-selected="true"], [data-state="active"], [class~="bg-token-list-hover-background"]'
-      )].filter((node) => {
-        const rect = node.getBoundingClientRect();
-        return rect.width >= 160 && rect.height >= 28 && rect.height <= 64;
-      }).sort((left, right) => {
-        const a = left.getBoundingClientRect();
-        const b = right.getBoundingClientRect();
-        return (a.width * a.height) - (b.width * b.height);
-      })[0] || [...sidebar.querySelectorAll("div, a")].filter((node) => {
-        const rect = node.getBoundingClientRect();
-        const style = getComputedStyle(node);
-        const hasAction = node.querySelectorAll(":scope button").length >= 1;
-        return hasAction && rect.width >= 160 && rect.width <= 280 && rect.height >= 28 && rect.height <= 64 &&
-          style.backgroundColor !== "rgba(0, 0, 0, 0)";
-      }).sort((left, right) => {
-        const a = left.getBoundingClientRect();
-        const b = right.getBoundingClientRect();
-        return (a.width * a.height) - (b.width * b.height);
-      })[0];
-      markedThreads.filter((node) => node !== selected).forEach((node) =>
-        node.classList.remove("dream-selected-thread"));
-      selected?.classList.add("dream-selected-thread");
+      let selected = detailState.selectedThread;
+      const cachedSelectionIsCurrent = selected?.isConnected && sidebar.contains(selected) &&
+        selected.matches('[aria-current="page"], [aria-selected="true"], [data-state="active"], [class~="bg-token-list-hover-background"]');
+      if (!cachedSelectionIsCurrent) {
+        selected = [...sidebar.querySelectorAll(
+          '[aria-current="page"], [aria-selected="true"], [data-state="active"], [class~="bg-token-list-hover-background"]'
+        )].filter((node) => {
+          const rect = node.getBoundingClientRect();
+          return rect.width >= 160 && rect.height >= 28 && rect.height <= 64;
+        }).sort((left, right) => {
+          const a = left.getBoundingClientRect();
+          const b = right.getBoundingClientRect();
+          return (a.width * a.height) - (b.width * b.height);
+        })[0] || [...sidebar.querySelectorAll("div, a")].filter((node) => {
+          const rect = node.getBoundingClientRect();
+          const style = getComputedStyle(node);
+          const hasAction = node.querySelectorAll(":scope button").length >= 1;
+          return hasAction && rect.width >= 160 && rect.width <= 280 && rect.height >= 28 && rect.height <= 64 &&
+            style.backgroundColor !== "rgba(0, 0, 0, 0)";
+        }).sort((left, right) => {
+          const a = left.getBoundingClientRect();
+          const b = right.getBoundingClientRect();
+          return (a.width * a.height) - (b.width * b.height);
+        })[0];
+        if (detailState.selectedThread && detailState.selectedThread !== selected) {
+          detailState.selectedThread.classList.remove("dream-selected-thread");
+        }
+        sidebar.querySelectorAll(".dream-selected-thread").forEach((node) => {
+          if (node !== selected) node.classList.remove("dream-selected-thread");
+        });
+        selected?.classList.add("dream-selected-thread");
+        detailState.selectedThread = selected || null;
+      }
 
-      const markedLabels = [...sidebar.querySelectorAll(".dream-selected-thread-label")];
-      const selectedLabel = selected ? [...selected.querySelectorAll("span, p, div")].filter((node) => {
-        if (node.closest("button") || node.querySelector("button")) return false;
-        const directText = [...node.childNodes]
-          .filter((child) => child.nodeType === Node.TEXT_NODE)
-          .map((child) => child.textContent || "")
-          .join("")
-          .trim();
-        const text = directText || (node.children.length === 0 ? (node.textContent || "").trim() : "");
-        const rect = node.getBoundingClientRect();
-        const row = selected.getBoundingClientRect();
-        return Boolean(text) && rect.width >= 12 && rect.height >= 14 && rect.height <= 32 &&
-          rect.left >= row.left && rect.right <= row.right + 1;
-      }).sort((left, right) => {
-        const a = left.getBoundingClientRect();
-        const b = right.getBoundingClientRect();
-        return a.left - b.left || a.width - b.width;
-      })[0] : null;
-      markedLabels.filter((node) => node !== selectedLabel).forEach((node) =>
-        node.classList.remove("dream-selected-thread-label"));
-      selectedLabel?.classList.add("dream-selected-thread-label");
+      let selectedLabel = detailState.selectedLabel;
+      if (!selectedLabel?.isConnected || !selected?.contains(selectedLabel)) {
+        selectedLabel = selected ? [...selected.querySelectorAll("span, p, div")].filter((node) => {
+          if (node.closest("button") || node.querySelector("button")) return false;
+          const directText = [...node.childNodes]
+            .filter((child) => child.nodeType === Node.TEXT_NODE)
+            .map((child) => child.textContent || "")
+            .join("")
+            .trim();
+          const text = directText || (node.children.length === 0 ? (node.textContent || "").trim() : "");
+          const rect = node.getBoundingClientRect();
+          const row = selected.getBoundingClientRect();
+          return Boolean(text) && rect.width >= 12 && rect.height >= 14 && rect.height <= 32 &&
+            rect.left >= row.left && rect.right <= row.right + 1;
+        }).sort((left, right) => {
+          const a = left.getBoundingClientRect();
+          const b = right.getBoundingClientRect();
+          return a.left - b.left || a.width - b.width;
+        })[0] : null;
+        if (detailState.selectedLabel && detailState.selectedLabel !== selectedLabel) {
+          detailState.selectedLabel.classList.remove("dream-selected-thread-label");
+        }
+        sidebar.querySelectorAll(".dream-selected-thread-label").forEach((node) => {
+          if (node !== selectedLabel) node.classList.remove("dream-selected-thread-label");
+        });
+        selectedLabel?.classList.add("dream-selected-thread-label");
+        detailState.selectedLabel = selectedLabel || null;
+      }
     }
 
     const findOutputContainer = (seed) => {
@@ -195,12 +247,6 @@
       }
       return candidate;
     };
-    const outputTexts = [...document.querySelectorAll("span, p, div")].filter((node) => {
-        const value = (node.textContent || "").trim();
-        return (value === "\u8f93\u51fa" || value === "\u73af\u5883\u4fe1\u606f" ||
-          /^(?:output|environment information)$/i.test(value)) && node.children.length === 0;
-      });
-    const outputCandidates = [...new Set(outputTexts.map(findOutputContainer).filter(Boolean))];
     const intersectsViewport = (node) => {
       const rect = node.getBoundingClientRect();
       const style = getComputedStyle(node);
@@ -208,11 +254,23 @@
         rect.width >= 240 && rect.height >= 80 && style.display !== "none" &&
         style.visibility !== "hidden" && Number.parseFloat(style.opacity || "1") > 0;
     };
-    const output = outputCandidates.find(intersectsViewport) || outputCandidates[0] || null;
-    document.querySelectorAll(".dream-output-panel").forEach((node) => {
-      if (node !== output) node.classList.remove("dream-output-panel");
-    });
-    output?.classList.add("dream-output-panel");
+    const markedOutput = [...document.querySelectorAll(".dream-output-panel")].find(intersectsViewport) || null;
+    const now = performance.now();
+    if (!markedOutput && (detailState.outputScanRequested || now - detailState.lastOutputScan >= 1000)) {
+      detailState.outputScanRequested = false;
+      detailState.lastOutputScan = now;
+      const outputTexts = [...document.querySelectorAll("span, p, div")].filter((node) => {
+          const value = (node.textContent || "").trim();
+          return (value === "\u8f93\u51fa" || value === "\u73af\u5883\u4fe1\u606f" ||
+            /^(?:output|environment information)$/i.test(value)) && node.children.length === 0;
+        });
+      const outputCandidates = [...new Set(outputTexts.map(findOutputContainer).filter(Boolean))];
+      const output = outputCandidates.find(intersectsViewport) || outputCandidates[0] || null;
+      document.querySelectorAll(".dream-output-panel").forEach((node) => {
+        if (node !== output) node.classList.remove("dream-output-panel");
+      });
+      output?.classList.add("dream-output-panel");
+    }
   };
 
   const renderSwitcherSelection = () => {
@@ -411,18 +469,17 @@
 
     const shellMain = document.querySelector("main.main-surface") || document.querySelector("main");
     const home = document.querySelector('[role="main"]:has([data-testid="home-icon"])');
-    for (const candidate of document.querySelectorAll('[role="main"].dream-home')) {
-      if (candidate !== home) candidate.classList.remove("dream-home");
-    }
-    if (home) home.classList.add("dream-home");
-    for (const candidate of document.querySelectorAll('[role="main"].dream-conversation')) {
-      if (candidate === home) candidate.classList.remove("dream-conversation");
-    }
+    syncMarker("home", home, "dream-home");
+    const homeStage = home?.querySelector(":scope > div:first-child > div:first-child") ?? null;
+    const homeHero = homeStage?.querySelector(":scope > div:first-child") ?? null;
+    syncMarker("homeStage", homeStage, "dream-home-stage");
+    syncMarker("homeHero", homeHero, "dream-home-hero");
     const conversation = !home ? document.querySelector('[role="main"]') : null;
-    conversation?.classList.add("dream-conversation");
+    syncMarker("conversation", conversation, "dream-conversation");
 
-    document.querySelectorAll(".dream-home-promo").forEach((node) => node.classList.remove("dream-home-promo"));
-    if (home) {
+    if (!home) {
+      syncMarker("promo", null, "dream-home-promo");
+    } else if (!markerState.promo?.isConnected || !home.contains(markerState.promo)) {
       const promoText = [...document.querySelectorAll("div, span, p")].find((node) => {
         const value = (node.textContent || "").trim();
         return value.startsWith("启用快速模式") && value.length < 180;
@@ -431,20 +488,29 @@
       while (promo && promo !== home) {
         const rect = promo.getBoundingClientRect();
         if (rect.width > 500 && rect.height > 40 && rect.height < 130 && promo.querySelectorAll("button").length >= 1) {
-          promo.classList.add("dream-home-promo");
           break;
         }
         promo = promo.parentElement;
       }
+      syncMarker("promo", promo && promo !== home ? promo : null, "dream-home-promo");
     }
 
     const existingActions = document.getElementById(ACTIONS_ID);
     const existingTitle = document.getElementById(TITLE_ID);
+    const existingHomeOverlay = document.getElementById(HOME_OVERLAY_ID);
     if (!home) {
       existingActions?.remove();
       existingTitle?.remove();
+      existingHomeOverlay?.remove();
     } else {
-      const hero = home.querySelector(":scope > div:first-child > div:first-child > div:first-child");
+      let hero = existingHomeOverlay;
+      if (!hero || hero.parentElement !== home) {
+        hero?.remove();
+        hero = document.createElement("div");
+        hero.id = HOME_OVERLAY_ID;
+        hero.setAttribute("aria-hidden", "false");
+        home.appendChild(hero);
+      }
       if (hero) {
         let title = existingTitle;
         if (!title || title.parentElement !== hero) {
@@ -499,6 +565,31 @@
       editor?.setAttribute("data-placeholder", "随心输入，Codex 为你构建未来");
     }
 
+    if (!home) {
+      syncMarker("projectPicker", null, "dream-project-picker");
+    } else if (!markerState.projectPicker?.isConnected || !home.contains(markerState.projectPicker)) {
+      const composer = document.querySelector(".composer-surface-chrome");
+      const composerRect = composer?.getBoundingClientRect();
+      let branch = composer;
+      let projectPicker = null;
+      while (branch?.parentElement && branch.parentElement !== home && composerRect) {
+        const siblings = [...branch.parentElement.children];
+        const branchIndex = siblings.indexOf(branch);
+        const candidate = siblings.slice(0, Math.max(0, branchIndex)).reverse().find((node) => {
+          const rect = node.getBoundingClientRect();
+          return rect.bottom <= composerRect.top + 4 &&
+            rect.height >= 28 && rect.height <= 72 &&
+            rect.width >= composerRect.width * 0.65;
+        });
+        if (candidate) {
+          projectPicker = candidate;
+          break;
+        }
+        branch = branch.parentElement;
+      }
+      syncMarker("projectPicker", projectPicker, "dream-project-picker");
+    }
+
     if (!shellMain || !document.body) return;
     shellMain.classList.toggle("dream-home-shell", Boolean(home));
     shellMain.classList.toggle("dream-conversation-shell", !home);
@@ -517,15 +608,15 @@
         <div class="dream-polaroid"></div>`;
       document.body.appendChild(chrome);
     }
-    chrome.style.pointerEvents = "none";
-    chrome.querySelector(".dream-brand b").textContent = activeTheme.name;
-    chrome.querySelector(".dream-brand small").textContent = activeTheme.subtitle;
-    chrome.querySelector(".dream-signature").textContent = activeTheme.id;
+    setStyleIfChanged(chrome, "pointer-events", "none");
+    setTextIfChanged(chrome.querySelector(".dream-brand b"), activeTheme.name);
+    setTextIfChanged(chrome.querySelector(".dream-brand small"), activeTheme.subtitle);
+    setTextIfChanged(chrome.querySelector(".dream-signature"), activeTheme.id);
     const shellBox = shellMain.getBoundingClientRect();
-    chrome.style.left = `${Math.round(shellBox.left)}px`;
-    chrome.style.top = `${Math.round(shellBox.top)}px`;
-    chrome.style.width = `${Math.round(shellBox.width)}px`;
-    chrome.style.height = `${Math.round(shellBox.height)}px`;
+    setStyleIfChanged(chrome, "left", `${Math.round(shellBox.left)}px`);
+    setStyleIfChanged(chrome, "top", `${Math.round(shellBox.top)}px`);
+    setStyleIfChanged(chrome, "width", `${Math.round(shellBox.width)}px`);
+    setStyleIfChanged(chrome, "height", `${Math.round(shellBox.height)}px`);
     chrome.classList.toggle("dream-home-shell", Boolean(home));
   };
 
@@ -535,6 +626,8 @@
     document.documentElement?.style.removeProperty("--dream-art");
     document.documentElement?.style.removeProperty("--dream-conversation-art");
     document.querySelectorAll(".dream-home").forEach((node) => node.classList.remove("dream-home"));
+    document.querySelectorAll(".dream-home-stage").forEach((node) => node.classList.remove("dream-home-stage"));
+    document.querySelectorAll(".dream-home-hero").forEach((node) => node.classList.remove("dream-home-hero"));
     document.querySelectorAll(".dream-conversation").forEach((node) => node.classList.remove("dream-conversation"));
     document.querySelectorAll(".dream-home-shell").forEach((node) => node.classList.remove("dream-home-shell"));
     document.querySelectorAll(".dream-conversation-shell").forEach((node) => node.classList.remove("dream-conversation-shell"));
@@ -542,6 +635,7 @@
     document.getElementById(CHROME_ID)?.remove();
     document.getElementById(ACTIONS_ID)?.remove();
     document.getElementById(TITLE_ID)?.remove();
+    document.getElementById(HOME_OVERLAY_ID)?.remove();
     document.getElementById(SWITCHER_ID)?.remove();
     removeSwitcherListeners?.();
     document.querySelectorAll(".dream-home-promo").forEach((node) => node.classList.remove("dream-home-promo"));
@@ -559,23 +653,67 @@
     return true;
   };
 
-  const scheduler = { frame: null };
-  const scheduleEnsure = () => {
-    if (scheduler.frame !== null) return;
-    scheduler.frame = requestAnimationFrame(() => {
-      scheduler.frame = null;
-      ensure();
-    });
+  const scheduler = { frame: null, timeout: null, lastRun: 0, pending: false, runCount: 0 };
+  const runtimeOwnerSelector = `#${STYLE_ID}, #${CHROME_ID}, #${HOME_OVERLAY_ID}, #${SWITCHER_ID}`;
+  const isRuntimeOwnedNode = (node) => {
+    const element = node?.nodeType === Node.ELEMENT_NODE ? node : node?.parentElement;
+    return Boolean(element?.matches?.(runtimeOwnerSelector) || element?.closest?.(runtimeOwnerSelector));
   };
-  const observer = new MutationObserver(scheduleEnsure);
+  const mutationIsRuntimeOwned = (mutation) => {
+    if (isRuntimeOwnedNode(mutation.target)) return true;
+    const changedNodes = [...mutation.addedNodes, ...mutation.removedNodes];
+    return changedNodes.length > 0 && changedNodes.every(isRuntimeOwnedNode);
+  };
+  const requestDetailScansFor = (mutations) => {
+    for (const mutation of mutations) {
+      for (const node of mutation.addedNodes) {
+        const value = (node.textContent || "").trim();
+        if (!value || value.length > 4000) continue;
+        if (/\u7b2c\s*\d+\s*\/\s*\d+\s*\u6b65|\d+\s*\u4e2a?\u6587\u4ef6\u5df2\u66f4/.test(value)) {
+          detailState.progressScanRequested = true;
+        }
+        if (/(?:^|\n)(?:\u8f93\u51fa|\u73af\u5883\u4fe1\u606f|output|environment information)(?:\n|$)/i.test(value)) {
+          detailState.outputScanRequested = true;
+        }
+      }
+    }
+  };
+  const scheduleEnsure = (mutations = []) => {
+    if (mutations.length) requestDetailScansFor(mutations);
+    scheduler.pending = true;
+    if (scheduler.frame !== null || scheduler.timeout !== null) return;
+    const elapsed = performance.now() - scheduler.lastRun;
+    const delay = Math.max(0, MUTATION_COALESCE_MS - elapsed);
+    const queueFrame = () => {
+      scheduler.timeout = null;
+      scheduler.frame = requestAnimationFrame(() => {
+        scheduler.frame = null;
+        scheduler.pending = false;
+        scheduler.lastRun = performance.now();
+        scheduler.runCount += 1;
+        ensure();
+      });
+    };
+    if (delay > 1) scheduler.timeout = setTimeout(queueFrame, delay);
+    else queueFrame();
+  };
+  const observer = new MutationObserver((mutations) => {
+    const relevantMutations = mutations.filter((mutation) => !mutationIsRuntimeOwned(mutation));
+    if (relevantMutations.length) scheduleEnsure(relevantMutations);
+  });
   observer.observe(document.documentElement, { childList: true, subtree: true });
-  const timer = setInterval(ensure, 5000);
+  const timer = setInterval(() => {
+    detailState.progressScanRequested = true;
+    detailState.outputScanRequested = true;
+    scheduleEnsure();
+  }, 5000);
   window[STATE_KEY] = {
     ensure,
     cleanup,
     observer,
     timer,
     scheduler,
+    detailState,
     objectUrls,
     activateTheme,
     removeSwitcherListeners,
@@ -586,5 +724,7 @@
   };
   applyTheme(activeTheme, false);
   ensure();
+  scheduler.lastRun = performance.now();
+  scheduler.runCount = 1;
   return { installed: true, version: RUNTIME_VERSION, activeThemeId: activeTheme.id, themeCount: themeCatalog.length };
 })(__DREAM_THEME_CATALOG_JSON__, __DREAM_INITIAL_THEME_ID_JSON__)

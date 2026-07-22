@@ -6,8 +6,8 @@
 
 <table>
   <tr>
-    <td width="50%"><img src="docs/images/ink-landscape-runtime.webp" alt="墨境完整主题运行截图" width="960" height="540"></td>
-    <td width="50%"><img src="docs/images/frost-sword-runtime.webp" alt="雪魄剑仙完整主题运行截图" width="960" height="540"></td>
+    <td width="50%"><img src="docs/images/ink-landscape-runtime.webp" alt="墨境完整主题运行截图" width="960" height="540" loading="lazy"></td>
+    <td width="50%"><img src="docs/images/frost-sword-runtime.webp" alt="雪魄剑仙完整主题运行截图" width="960" height="540" loading="lazy"></td>
   </tr>
   <tr>
     <td align="center"><strong>墨境</strong> · 水墨山水、玉色选中标记、笔触输入框</td>
@@ -17,8 +17,8 @@
 
 <table>
   <tr>
-    <td width="50%"><img src="skills/codex-theme-builder/assets/themes/sunken-opera/home.webp" alt="沉歌剧院主题视觉" width="960"></td>
-    <td width="50%"><img src="skills/codex-theme-builder/assets/themes/tidal-hymn/home.webp" alt="潮汐圣歌主题视觉" width="960"></td>
+    <td width="50%"><img src="docs/images/sunken-opera-preview.webp" alt="沉歌剧院主题视觉" width="960" height="458" loading="lazy"></td>
+    <td width="50%"><img src="docs/images/tidal-hymn-preview.webp" alt="潮汐圣歌主题视觉" width="960" height="513" loading="lazy"></td>
   </tr>
   <tr>
     <td align="center"><strong>沉歌剧院</strong> · 深海剧院、完整竖琴、深靛玻璃界面</td>
@@ -26,7 +26,7 @@
   </tr>
 </table>
 
-> 前两张为匿名化 Codex Desktop 运行效果，后两张为主题包内的隐私安全视觉素材；均不包含账户、项目或对话隐私。
+> 四张图均为隐私安全、面向文档单独压缩的 WebP 展示图；不包含账户、项目或对话隐私，也不会让 README 加载完整运行时原图。
 
 [查看完整主题与新增功能图鉴](docs/themes-and-features.md)
 
@@ -45,8 +45,9 @@
 - 检测清单、资源大小、SVG 安全性、JavaScript 语法与 CDP 安全边界。
 - 打包主题为可分发 ZIP。
 - Codex 更新后可重新验证并修复选择器兼容性。
+- 运行时合并高频 DOM 变更、复用有效标记并限制昂贵扫描，在保留全部视觉效果的前提下降低长对话和侧栏滚动开销。
 
-新增功能的界面截图、主题包组成和新主题需要覆盖的界面位置，统一记录在 [主题与功能图鉴](docs/themes-and-features.md) 中。
+新增功能的界面截图、主题包组成和新主题需要覆盖的界面位置，统一记录在 [主题与功能图鉴](docs/themes-and-features.md) 中。开发边界与复用步骤见 [主题开发架构](docs/theme-development-architecture.md)，性能策略与测量结果见 [运行时性能](docs/runtime-performance.md)。
 
 ## 运行要求
 
@@ -182,6 +183,11 @@ powershell -ExecutionPolicy Bypass -File `
 ```text
 .
 ├─ README.md
+├─ docs/
+│  ├─ images/                           # 经过体积约束的隐私安全 WebP 展示图
+│  ├─ theme-development-architecture.md # 新主题的分层、界面契约和交付流程
+│  ├─ runtime-performance.md            # 保留效果前提下的运行时性能策略
+│  └─ themes-and-features.md            # 四套主题与界面能力图鉴
 ├─ scripts/
 │  ├─ install-skill.ps1
 │  └─ validate-repository.ps1
@@ -226,6 +232,12 @@ Skill 的自动工作流、主题格式和 QA 标准分别位于：
 - `references/runtime-architecture.md`
 - `references/qa-checklist.md`
 - `references/windows-runtime.md`
+
+仓库级说明位于：
+
+- [`docs/theme-development-architecture.md`](docs/theme-development-architecture.md)
+- [`docs/runtime-performance.md`](docs/runtime-performance.md)
+- [`docs/themes-and-features.md`](docs/themes-and-features.md)
 
 ## 验证仓库
 

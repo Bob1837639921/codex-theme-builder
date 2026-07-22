@@ -2,6 +2,7 @@
 param(
   [Parameter(Mandatory)][string]$ThemePath,
   [Parameter(Mandatory)][string]$ScreenshotPath,
+  [string]$ThemeId,
   [switch]$OpenHome,
   [switch]$HoverSelectedThread
 )
@@ -33,6 +34,7 @@ $arguments = @(
   '--theme-dir', $theme, '--screenshot', $screenshot
 )
 if ($OpenHome) { $arguments += '--open-home' }
+if ($ThemeId) { $arguments += @('--select-theme', $ThemeId) }
 if ($HoverSelectedThread) { $arguments += '--hover-selected-thread' }
 
 & $node @arguments

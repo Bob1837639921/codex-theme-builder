@@ -72,6 +72,9 @@ Rules:
 Start every override from `:root.codex-dream-skin` or one of the runtime classes beneath it. Useful stable runtime hooks include:
 
 - `.dream-home` and `.dream-home-shell`
+- `.dream-home-stage` and `.dream-home-hero` for the full-width native home structure
+- `#codex-dream-home-overlay` for the title and four reusable home actions
+- `.dream-project-picker` for the project selector immediately above the home composer
 - `.dream-conversation`
 - `.composer-surface-chrome`
 - `#codex-dream-skin-title`
@@ -85,6 +88,12 @@ The runtime exposes `--dream-art`, `--dream-conversation-art`, the optional `--d
 Use detail marker classes only when their native surfaces are present. Scope searches to the composer, sidebar, or output region, and retain connected markers instead of rescanning the entire conversation on every mutation.
 
 Codex uses sticky gradient layers around the composer. The bundled base runtime neutralizes the native `bg-gradient-to-t` rails around both the ordinary composer and the file-changes summary. Do not reintroduce opaque backgrounds on those ancestors.
+
+The home title and action grid must be mounted in `#codex-dream-home-overlay`, not inside Codex's narrow native hero child. The runtime may mark the native project selector with `.dream-project-picker` for inspection. Preserve the selector's native geometry, spacing, radius, colors, shadow, stacking, and interaction styling. Shared CSS may only clip overflow from the native selector carrier when it extends beyond its own row and bleeds through a translucent themed composer. Do not reconstruct or visually reskin the selector itself.
+
+Home artwork must cover the real `.dream-home-shell` / `.dream-home` canvas. Treat `.dream-home-hero` only as a transparent, square-cornered layout host; do not paint the main raster, add a card border, rounded corners, outer margins, or a drop shadow there. The default home direction is a full-scene workspace, not an inset photograph.
+
+Codex's native `.app-shell-main-content-top-fade` is a white home-route gradient. Preserve it for light themes when it supports the toolbar transition, but disable it inside an individual dark theme when it produces a conspicuous horizontal glow. This is theme-level styling, not a shared-runtime default.
 
 ## Visual asset guidance
 

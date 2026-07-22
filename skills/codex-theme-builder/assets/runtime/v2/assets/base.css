@@ -68,11 +68,50 @@ html.codex-dream-skin body::before,
 }
 
 html.codex-dream-skin .dream-home {
+  position: relative !important;
+  min-width: 0 !important;
   overflow-x: hidden !important;
+}
+
+html.codex-dream-skin .dream-home-stage,
+html.codex-dream-skin .dream-home-hero {
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  align-self: stretch !important;
+}
+
+#codex-dream-home-overlay {
+  position: absolute !important;
+  z-index: 12 !important;
+  inset: 0 0 clamp(190px, 27vh, 230px) !important;
+  overflow: hidden !important;
+  pointer-events: none !important;
+}
+
+#codex-dream-home-overlay #codex-dream-skin-actions,
+#codex-dream-home-overlay #codex-dream-skin-actions * {
+  pointer-events: auto !important;
+}
+
+/* Preserve Codex's native selector styling and geometry. Its internal carrier
+   currently overflows the native row by 22px; clip only that overflow so it
+   cannot paint a blank strip across a translucent themed composer. */
+html.codex-dream-skin main.dream-home-shell .dream-project-picker {
+  overflow: hidden !important;
 }
 
 html.codex-dream-skin aside.app-shell-left-panel {
   position: relative !important;
+}
+
+/* Recent Codex builds paint a light-mode secondary wash inside the sidebar.
+   The theme already owns the outer sidebar artwork and surface, so keep this
+   structural carrier transparent instead of letting it veil every theme. */
+html.codex-dream-skin aside.app-shell-left-panel
+  [class~="bg-token-bg-secondary/40"] {
+  background-color: transparent !important;
+  background-image: none !important;
 }
 
 html.codex-dream-skin aside.app-shell-left-panel

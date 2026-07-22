@@ -6,6 +6,33 @@
   --dream-sidebar-control-text: #eef3ef;
 }
 
+/* Home artwork belongs to the real full-size home shell. The native hero is
+   only a layout host; painting the raster there creates an inset photo frame. */
+:root.codex-dream-skin body:has(main.dream-home-shell) {
+  background-image: var(--dream-art) !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-size: cover !important;
+  background-attachment: fixed !important;
+}
+
+:root.codex-dream-skin main.main-surface.dream-home-shell,
+:root.codex-dream-skin [role="main"].dream-home {
+  background-color: color-mix(in srgb, var(--dream-surface, #f4f0e6) 10%, transparent) !important;
+  background-image: var(--dream-art) !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-size: cover !important;
+}
+
+:root.codex-dream-skin .dream-home .dream-home-hero {
+  overflow: hidden !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
 :root.codex-dream-skin .composer-surface-chrome {
   background: var(--theme-panel) !important;
   border-color: var(--theme-border) !important;
