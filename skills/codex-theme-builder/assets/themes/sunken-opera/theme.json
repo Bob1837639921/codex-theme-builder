@@ -1,0 +1,29 @@
+{
+    "schemaVersion":  1,
+    "id":  "sunken-opera",
+    "name":  "沉歌剧院",
+    "subtitle":  "SUNKEN OPERA · CODEX",
+    "image":  "home.webp",
+    "conversationImage":  "conversation.webp",
+    "sidebarImage":  "sidebar.webp",
+    "selectedLeaf":  "selected-marker.webp",
+    "composerEdge":  {
+                         "image":  "composer-edge-small.webp",
+                         "horizontal":  "right",
+                         "vertical":  "bottom",
+                         "maxHeight":  176,
+                         "opacity":  0.82
+                     },
+    "icons":  {
+                  "build":  "icon-build.svg",
+                  "analyze":  "icon-analyze.svg",
+                  "automate":  "icon-automate.svg",
+                  "debug":  "icon-debug.svg"
+              },
+    "colors":  {
+                   "accent":  "#52B8D1",
+                   "accentAlt":  "#8D78C7",
+                   "surface":  "#091A2D",
+                   "text":  "#E9F4FA"
+               }
+}

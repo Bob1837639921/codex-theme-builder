@@ -16,6 +16,18 @@
 
 雪魄剑仙使用冰雪蓝全局画布、冷色场景侧栏、半透明内容表面、冰剑选中标记与晶体前景装饰。晶体锚定在输入框右下角，保持原始比例，不会随着输入框变宽或多行增高而拉伸；原生模型、麦克风和提交/停止控件保持在装饰层上方。
 
+### 沉歌剧院 `sunken-opera`
+
+![沉歌剧院主题视觉](../skills/codex-theme-builder/assets/themes/sunken-opera/home.webp)
+
+沉歌剧院使用一张连续的深海剧院画布贯穿侧栏与内容区，海洋歌姬和完整竖琴保留在右侧视觉焦点。侧栏、标题栏、正文、输入框、输出面板、产品菜单、账号菜单和用量面板统一采用深靛半透明表面，并对门户浮层的嵌套文字与 `-webkit-text-fill-color` 做显式亮色适配。
+
+### 潮汐圣歌 `tidal-hymn`
+
+![潮汐圣歌主题视觉](../skills/codex-theme-builder/assets/themes/tidal-hymn/home.webp)
+
+潮汐圣歌使用珍珠水光的连续全局画布，侧栏仅叠加青蓝半透明遮罩，不再单独裁切背景。正文与浮层保持深色文字，输入框沿用深靛玻璃和竖琴前景装饰；人物、竖琴与原生内容在宽、窄窗口中保持完整层级。
+
 ## 新增界面能力
 
 ### 1. 可扩展的多主题切换
@@ -28,7 +40,7 @@
 
 ### 2. 输入框前景装饰
 
-- 每套主题可以提供独立的透明 `composer-edge.png`。
+- 每套主题可以提供独立的透明 `composer-edge.png` 或 `composer-edge.webp`。
 - 清单支持左/中/右、上/中/下锚点、最大高度和透明度。
 - 素材按比例渲染，不随输入框宽高变化拉伸。
 - 装饰层不接收鼠标事件，原生输入、附件、模型、麦克风和提交/停止按钮仍可操作。
@@ -83,6 +95,8 @@
 9. 弹出层：用量卡、菜单、对话框、提示和禁用状态对比度。
 10. 主题切换器：入口、主题列表、当前状态、键盘、持久化、失败回滚和窄窗口。
 
+连续构图主题必须把主背景挂在全局 `body` 画布，侧栏、标题栏和内容区只叠加半透明表面；不能把同一张图分别作为侧栏和正文背景重复 `cover`，否则人物、建筑或乐器会被二次裁切。深色主题还必须逐项打开产品菜单、账号/用量菜单、消息操作菜单和输出面板，检查所有嵌套行的 `color` 与 `-webkit-text-fill-color`。
+
 对应的字段、资源限制、实现边界和验收清单见：
 
 - [`new-theme-blueprint.md`](../skills/codex-theme-builder/references/new-theme-blueprint.md)
@@ -95,11 +109,11 @@
 assets/themes/<theme-id>/
 ├─ theme.json
 ├─ theme.css
-├─ background.webp
-├─ conversation-background.webp
-├─ sidebar-background.webp      # 可选
-├─ selected-marker.png          # 可选
-├─ composer-edge.png            # 可选
+├─ home.webp
+├─ conversation.webp
+├─ sidebar.webp                 # 可选；连续全局画布可只作为回退资源
+├─ selected-marker.webp         # 可选
+├─ composer-edge.webp           # 可选
 ├─ icon-build.svg
 ├─ icon-analyze.svg
 ├─ icon-automate.svg

@@ -2,7 +2,7 @@
 
 一个可被 Codex 自动调用的 Codex Desktop 主题设计、开发、预览、验证与打包 Skill。
 
-它不绑定某一种视觉风格。你可以给 Codex 一段文字需求、截图、设计稿或已有主题，Codex 会完成视觉方案、实现映射、主题开发、实时预览、视觉修正和最终打包。仓库内附带两套示例主题，并提供可扩展主题目录的侧栏切换器；新增主题只需遵循统一主题包结构并加入目录。
+它不绑定某一种视觉风格。你可以给 Codex 一段文字需求、截图、设计稿或已有主题，Codex 会完成视觉方案、实现映射、主题开发、实时预览、视觉修正和最终打包。仓库内附带四套示例主题，并提供可扩展主题目录的侧栏切换器；新增主题只需遵循统一主题包结构并加入目录。
 
 <table>
   <tr>
@@ -15,7 +15,18 @@
   </tr>
 </table>
 
-> 两套 Codex Desktop 完整主题运行效果；公开图片已匿名化，不包含账户、项目或对话隐私。
+<table>
+  <tr>
+    <td width="50%"><img src="skills/codex-theme-builder/assets/themes/sunken-opera/home.webp" alt="沉歌剧院主题视觉" width="960"></td>
+    <td width="50%"><img src="skills/codex-theme-builder/assets/themes/tidal-hymn/home.webp" alt="潮汐圣歌主题视觉" width="960"></td>
+  </tr>
+  <tr>
+    <td align="center"><strong>沉歌剧院</strong> · 深海剧院、完整竖琴、深靛玻璃界面</td>
+    <td align="center"><strong>潮汐圣歌</strong> · 珍珠水光、海洋歌姬、明亮全局画布</td>
+  </tr>
+</table>
+
+> 前两张为匿名化 Codex Desktop 运行效果，后两张为主题包内的隐私安全视觉素材；均不包含账户、项目或对话隐私。
 
 [查看完整主题与新增功能图鉴](docs/themes-and-features.md)
 
@@ -203,7 +214,9 @@ powershell -ExecutionPolicy Bypass -File `
       └─ themes/
          ├─ theme-catalog.json          # 可切换主题目录
          ├─ ink-landscape/              # 墨境示例主题（独立清单、样式与资源）
-         └─ frost-sword-immortal/       # 雪魄剑仙示例主题
+         ├─ frost-sword-immortal/       # 雪魄剑仙示例主题
+         ├─ sunken-opera/               # 沉歌剧院：深色连续全局画布
+         └─ tidal-hymn/                 # 潮汐圣歌：明亮连续全局画布
 ```
 
 Skill 的自动工作流、主题格式和 QA 标准分别位于：

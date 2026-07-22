@@ -40,6 +40,12 @@ Review each surface instead of treating a theme as a background replacement:
 9. **Portaled UI:** usage/credits card, dialogs, menus, popovers, tooltips, close buttons, progress bars, and disabled text contrast.
 10. **Theme switcher:** trigger, all catalog cards, active state, keyboard flow, persistence, rollback, narrow viewport, and no redundant success toast.
 
+### Continuous-art direction
+
+When the selected design is one continuous scene across sidebar and conversation, mount the conversation artwork once on the global `body` canvas. Treat the sidebar, title bar, main shell, output panel, and composer as translucent overlays. Do not apply the same raster independently with `background-size: cover` to sidebar and main: each container would calculate a different crop and split characters, instruments, architecture, or horizon lines. Keep `sidebarImage` only as a packaged fallback when the manifest contract requires it.
+
+For dark directions, opening a panel is part of implementation, not optional QA. Explicitly verify the product-mode menu, profile/usage menu, message-actions menu, output panel, dialogs, popovers, listboxes, disabled rows, and nested sticky rows. Utility-token colors may bypass inherited `color`, so theme rules must also set `-webkit-text-fill-color` on relevant descendants.
+
 ## Composer-edge safety contract
 
 Treat composer art as a foreground accent with a transparent canvas, not as a second background.
@@ -58,6 +64,7 @@ Treat composer art as a foreground accent with a transparent canvas, not as a se
 - Avoid continuous full-canvas filters, animated backgrounds, layout-changing transitions, and repeated whole-document scans.
 - Coalesce mutation work to animation frames and retain valid marker nodes.
 - Add `prefers-reduced-motion` behavior for every theme-specific animation.
+- Convert full-canvas artwork to quality-controlled WebP and resize tiny transparent markers or corner ornaments close to their maximum rendered dimensions. Do not ship multi-megapixel 20px icons. Re-run payload validation after compression and visually compare the live result.
 
 ## Completion gate
 

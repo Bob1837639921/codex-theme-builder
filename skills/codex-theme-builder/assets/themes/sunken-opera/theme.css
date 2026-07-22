@@ -1,0 +1,405 @@
+:root.codex-dream-skin {
+  color-scheme: dark !important;
+  --dream-ink: #e9f4fa;
+  --dream-muted: #a9c0ce;
+  --dream-accent: #52b8d1;
+  --dream-accent-alt: #8d78c7;
+  --dream-paper: #071728;
+  --dream-panel: rgba(8, 24, 43, .84);
+  --dream-line: rgba(151, 211, 230, .22);
+  --dream-sidebar-control-text: #eaf7fc;
+  --dream-motion-fast: 180ms;
+  --dream-motion-panel: 200ms;
+  --dream-ease: cubic-bezier(.2, .8, .2, 1);
+}
+
+html.codex-dream-skin body {
+  color: #263746 !important;
+  background-color: #071728 !important;
+  background-image: linear-gradient(180deg, #eef4f8 0, #eef4f8 36px, transparent 36px), var(--dream-conversation-art) !important;
+  background-repeat: no-repeat !important;
+  background-position: center, center !important;
+  background-size: 100% 100%, cover !important;
+  background-attachment: fixed, fixed !important;
+}
+
+html.codex-dream-skin body:has(main.dream-home-shell) {
+  background-image: linear-gradient(180deg, #eef4f8 0, #eef4f8 36px, transparent 36px), var(--dream-art) !important;
+}
+
+html.codex-dream-skin main.main-surface,
+html.codex-dream-skin [role="main"] {
+  color: var(--dream-ink) !important;
+  background: var(--dream-paper) !important;
+}
+
+html.codex-dream-skin main.main-surface {
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+html.codex-dream-skin main.main-surface > header.app-header-tint {
+  color: var(--dream-ink) !important;
+  background: rgba(5, 18, 33, .94) !important;
+  border-bottom: 1px solid var(--dream-line) !important;
+  box-shadow: none !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+html.codex-dream-skin main.main-surface > header.app-header-tint * {
+  color: #eaf7fc !important;
+}
+
+html.codex-dream-skin aside.app-shell-left-panel {
+  color: #eaf7fc !important;
+  background-color: rgba(4, 17, 30, .72) !important;
+  background-image: linear-gradient(180deg, rgba(2, 10, 20, .18), rgba(2, 9, 17, .38)) !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-size: cover !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: inset -1px 0 rgba(145, 205, 224, .12) !important;
+}
+
+html.codex-dream-skin aside.app-shell-left-panel,
+html.codex-dream-skin aside.app-shell-left-panel * {
+  color: #eaf7fc !important;
+  text-shadow: 0 1px 2px rgba(0, 8, 18, .42) !important;
+}
+
+html.codex-dream-skin aside.app-shell-left-panel button {
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+html.codex-dream-skin aside.app-shell-left-panel button:hover {
+  background: rgba(118, 196, 217, .10) !important;
+}
+
+html.codex-dream-skin aside.app-shell-left-panel .dream-selected-thread {
+  overflow: hidden !important;
+  padding-left: 3px !important;
+  padding-right: 6px !important;
+  background: rgba(57, 137, 166, .25) !important;
+  border: 1px solid rgba(140, 212, 230, .38) !important;
+  box-shadow: inset 2px 0 0 rgba(92, 202, 220, .94), 0 5px 16px rgba(0, 8, 18, .18) !important;
+  transition: background-color var(--dream-motion-fast) var(--dream-ease), border-color var(--dream-motion-fast) var(--dream-ease) !important;
+}
+
+html.codex-dream-skin aside.app-shell-left-panel .dream-selected-thread-label {
+  min-width: 0;
+  padding-left: 23px !important;
+  background-image: var(--dream-selected-leaf);
+  background-repeat: no-repeat;
+  background-position: left center;
+  background-size: 19px 19px;
+}
+
+html.codex-dream-skin aside.app-shell-left-panel .dream-selected-thread button {
+  width: 26px !important;
+  min-width: 26px !important;
+  height: 26px !important;
+  border-radius: 8px !important;
+  opacity: .82;
+}
+
+html.codex-dream-skin aside.app-shell-left-panel .dream-selected-thread button:focus-visible {
+  outline: 2px solid rgba(126, 218, 235, .78) !important;
+  outline-offset: 1px !important;
+}
+
+html.codex-dream-skin main.main-surface.dream-conversation-shell,
+html.codex-dream-skin [role="main"].dream-conversation {
+  background-color: rgba(5, 18, 33, .16) !important;
+  background-image: none !important;
+}
+
+html.codex-dream-skin main.main-surface.dream-conversation-shell::before {
+  display: none !important;
+  content: none !important;
+}
+
+html.codex-dream-skin main.main-surface.dream-conversation-shell > div:nth-child(2) {
+  position: relative;
+  z-index: 1;
+}
+
+html.codex-dream-skin .dream-conversation :is(p, li, h1, h2, h3, h4),
+html.codex-dream-skin .dream-conversation [data-message-author-role] {
+  color: var(--dream-ink) !important;
+}
+
+html.codex-dream-skin main.dream-conversation-shell .thread-scroll-container {
+  color: #e9f4fa !important;
+}
+
+html.codex-dream-skin main.dream-conversation-shell .thread-scroll-container :is(p, li, h1, h2, h3, h4, span) {
+  color: #e9f4fa !important;
+  -webkit-text-fill-color: #e9f4fa !important;
+}
+
+html.codex-dream-skin main.dream-conversation-shell .thread-scroll-container a {
+  color: #73d4e6 !important;
+  -webkit-text-fill-color: #73d4e6 !important;
+}
+
+html.codex-dream-skin main.dream-conversation-shell .thread-scroll-container [class*="text-green"] {
+  color: #52d692 !important;
+  -webkit-text-fill-color: #52d692 !important;
+}
+
+html.codex-dream-skin main.dream-conversation-shell .thread-scroll-container [class*="text-red"] {
+  color: #ff7f8f !important;
+  -webkit-text-fill-color: #ff7f8f !important;
+}
+
+html.codex-dream-skin .dream-home {
+  --thread-content-max-width: min(1180px, calc(100cqw - 72px)) !important;
+  scrollbar-color: rgba(82, 184, 209, .48) transparent;
+}
+
+.dream-home > div:first-child { padding-top: 0 !important; }
+.dream-home > div:first-child > div:first-child {
+  flex: 0 0 clamp(520px, 66vh, 680px) !important;
+  min-height: clamp(520px, 66vh, 680px) !important;
+  align-items: flex-start !important;
+  padding-bottom: 0 !important;
+}
+
+.dream-home > div:first-child > div:first-child > div:first-child {
+  position: relative !important;
+  isolation: isolate;
+  width: 100% !important;
+  max-width: none !important;
+  height: clamp(520px, 66vh, 680px) !important;
+  min-height: 520px !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: rgba(5, 18, 33, .10) !important;
+  box-shadow: none !important;
+}
+
+.dream-home > div:first-child > div:first-child > div:first-child > div:first-child {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  align-items: flex-start !important;
+  justify-content: flex-start !important;
+  padding: clamp(150px, 22vh, 230px) 0 148px clamp(54px, 5.5vw, 82px) !important;
+}
+
+.dream-home > div:first-child > div:first-child > div:first-child > div:first-child > div:first-child {
+  width: 55% !important;
+  align-items: flex-start !important;
+  gap: 4px !important;
+}
+
+.dream-home [data-testid="home-icon"], .dream-home [data-feature="game-source"] { display: none !important; }
+.dream-title {
+  position: absolute;
+  z-index: 3;
+  left: clamp(54px, 5.5vw, 82px);
+  top: clamp(150px, 22vh, 230px);
+  pointer-events: none;
+}
+
+.dream-title h1 {
+  margin: 0;
+  color: #f0f9fc;
+  font-family: "STSong", "Songti SC", "Noto Serif CJK SC", serif;
+  font-size: clamp(34px, 3.2vw, 48px);
+  line-height: 1.28;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-shadow: 0 2px 16px rgba(0, 8, 20, .72);
+}
+
+.dream-action-grid {
+  position: absolute;
+  z-index: 4;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 148px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  padding: 12px clamp(42px, 6vw, 96px) 18px;
+  background: rgba(4, 17, 31, .84);
+  border-top: 1px solid rgba(139, 207, 225, .18);
+  backdrop-filter: blur(10px);
+}
+
+.dream-action-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 10px 12px;
+  color: #eaf7fc !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-right: 1px solid rgba(151, 211, 230, .16) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.dream-action-button:last-child { border-right: 0 !important; }
+.dream-action-button:hover { background: rgba(82, 184, 209, .12) !important; }
+.dream-action-button strong { color: #effaff !important; font-size: 18px; }
+.dream-action-button span { color: #aec7d3 !important; font-size: 12px; white-space: nowrap; }
+.dream-action-button img { width: 42px; height: 42px; object-fit: contain; filter: brightness(1.55) saturate(.65) hue-rotate(150deg); }
+
+html.codex-dream-skin .composer-surface-chrome {
+  overflow: hidden !important;
+  color: #eaf7fc !important;
+  background: linear-gradient(135deg, rgba(6, 20, 37, .94), rgba(16, 35, 58, .86)) !important;
+  border: 1px solid rgba(119, 205, 228, .52) !important;
+  border-radius: 16px !important;
+  box-shadow: inset 0 1px rgba(224, 249, 255, .08), 0 12px 34px rgba(0, 8, 18, .24) !important;
+  backdrop-filter: blur(12px) saturate(1.08) !important;
+  transition: border-color var(--dream-motion-fast) var(--dream-ease), box-shadow var(--dream-motion-fast) var(--dream-ease) !important;
+}
+
+html.codex-dream-skin .composer-surface-chrome:focus-within {
+  border-color: rgba(118, 224, 238, .78) !important;
+  box-shadow: inset 0 1px rgba(224, 249, 255, .10), 0 0 0 2px rgba(71, 178, 206, .12), 0 14px 38px rgba(0, 8, 18, .28) !important;
+}
+
+html.codex-dream-skin .composer-surface-chrome .ProseMirror {
+  color: #effaff !important;
+  caret-color: #72d6e8 !important;
+}
+
+html.codex-dream-skin .composer-surface-chrome :is(button, [role="button"], svg, span) {
+  color: #dff4fa !important;
+  -webkit-text-fill-color: #dff4fa !important;
+}
+
+html.codex-dream-skin .composer-surface-chrome [class*="text-orange"],
+html.codex-dream-skin .composer-surface-chrome [class*="text-orange"] * {
+  color: #ff7424 !important;
+  -webkit-text-fill-color: #ff7424 !important;
+}
+
+html.codex-dream-skin .composer-surface-chrome .ProseMirror p.is-editor-empty:first-child::before {
+  color: #91aeba !important;
+}
+
+html.codex-dream-skin div:has(> .composer-surface-chrome)::after {
+  inset: auto -10px -8px auto !important;
+  width: 210px !important;
+  height: 124px !important;
+  border-radius: 0 !important;
+  background-position: right bottom !important;
+  background-size: auto 110px !important;
+  filter: hue-rotate(35deg) saturate(.58) brightness(.94) !important;
+  transform: translate3d(0, 0, 0);
+}
+
+html.codex-dream-skin div:has(> .composer-surface-chrome):focus-within::after {
+  transform: translate3d(-2px, -1px, 0);
+}
+
+html.codex-dream-skin main.dream-home-shell .composer-surface-chrome {
+  min-height: 176px !important;
+  padding-top: 20px !important;
+  padding-bottom: 16px !important;
+}
+
+html.codex-dream-skin main.dream-conversation-shell .sticky.bottom-0 [class~="bg-gradient-to-t"] {
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
+html.codex-dream-skin .dream-progress-pill {
+  color: #eaf7fc !important;
+  background: rgba(7, 24, 42, .94) !important;
+  border: 1px solid rgba(111, 201, 224, .38) !important;
+  box-shadow: 0 8px 24px rgba(0, 9, 20, .25) !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+html.codex-dream-skin .dream-progress-indicator { animation: deepsea-progress-turn 1.25s linear infinite; }
+@keyframes deepsea-progress-turn { to { transform: rotate(360deg); } }
+
+html.codex-dream-skin .dream-output-panel {
+  overflow: hidden !important;
+  color: #dff4fa !important;
+  background: rgba(7, 22, 39, .92) !important;
+  border: 1px solid rgba(122, 202, 222, .28) !important;
+  border-radius: 22px !important;
+  box-shadow: inset 2px 0 rgba(85, 191, 211, .72), 0 16px 38px rgba(0, 8, 18, .26) !important;
+  backdrop-filter: blur(14px) !important;
+}
+
+html.codex-dream-skin .dream-output-panel > *,
+html.codex-dream-skin .dream-output-panel [class~="bg-token-dropdown-background"] {
+  color: inherit !important;
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
+/* Portaled panels do not inherit from the themed app shell. Keep every nested
+   row readable even when Codex utility classes carry light-theme token colors. */
+html.codex-dream-skin .dream-output-panel :is(div, span, p, a, button, label, strong, small, svg),
+html.codex-dream-skin [role="menu"] :is(div, span, p, a, button, label, strong, small, svg),
+html.codex-dream-skin [role="listbox"] :is(div, span, p, a, button, label, strong, small, svg),
+html.codex-dream-skin [data-radix-popper-content-wrapper] > * :is(div, span, p, a, button, label, strong, small, svg) {
+  color: #eaf7fc !important;
+  -webkit-text-fill-color: #eaf7fc !important;
+  text-shadow: none !important;
+}
+
+html.codex-dream-skin [role="menu"],
+html.codex-dream-skin [role="listbox"],
+html.codex-dream-skin [data-radix-popper-content-wrapper] > * {
+  color: #eaf7fc !important;
+  background-color: rgba(7, 22, 39, .98) !important;
+  border-color: rgba(126, 202, 222, .28) !important;
+  box-shadow: 0 16px 38px rgba(0, 8, 18, .34) !important;
+}
+
+html.codex-dream-skin [role="menuitem"]:is(:hover, :focus, [data-highlighted]),
+html.codex-dream-skin [role="option"]:is(:hover, :focus, [data-highlighted]) {
+  background-color: rgba(82, 184, 209, .16) !important;
+}
+
+html.codex-dream-skin [role="dialog"],
+html.codex-dream-skin [data-radix-popper-content-wrapper] > * {
+  color: #eaf7fc !important;
+  background-color: rgba(7, 22, 39, .98) !important;
+  border-color: rgba(126, 202, 222, .28) !important;
+}
+
+html.codex-dream-skin [role="dialog"] :is(h1, h2, h3, p, span, button, label),
+html.codex-dream-skin [data-radix-popper-content-wrapper] :is(h1, h2, h3, p, span, button, label) {
+  color: inherit !important;
+  -webkit-text-fill-color: currentColor !important;
+  text-shadow: none !important;
+}
+
+@media (max-width: 1000px) {
+  html.codex-dream-skin .dream-home { --thread-content-max-width: min(920px, calc(100cqw - 32px)) !important; }
+  .dream-action-grid { padding-inline: 24px; }
+  html.codex-dream-skin div:has(> .composer-surface-chrome)::after { right: -34px !important; width: 260px !important; }
+}
+
+@media (max-height: 900px) {
+  .dream-home > div:first-child > div:first-child,
+  .dream-home > div:first-child > div:first-child > div:first-child { height: 470px !important; min-height: 470px !important; flex-basis: 470px !important; }
+  .dream-title { top: 150px; }
+  .dream-action-grid { height: 136px; padding-block: 8px 14px; }
+  html.codex-dream-skin main.dream-home-shell .composer-surface-chrome { min-height: 148px !important; padding-top: 14px !important; padding-bottom: 12px !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.codex-dream-skin .dream-progress-indicator { animation: none !important; }
+  html.codex-dream-skin div:has(> .composer-surface-chrome)::after { transition: none !important; transform: none !important; }
+}
