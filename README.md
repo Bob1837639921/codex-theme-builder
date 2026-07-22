@@ -6,8 +6,8 @@
 
 <table>
   <tr>
-    <td width="50%"><img src="docs/images/ink-landscape-runtime.webp" alt="墨境完整主题运行截图" width="960" height="540" loading="lazy"></td>
-    <td width="50%"><img src="docs/images/frost-sword-runtime.webp" alt="雪魄剑仙完整主题运行截图" width="960" height="540" loading="lazy"></td>
+    <td width="50%"><img src="docs/images/ink-landscape-runtime.webp" alt="墨境当前主题首页" width="960" height="595" loading="lazy"></td>
+    <td width="50%"><img src="docs/images/frost-sword-runtime.webp" alt="雪魄剑仙当前主题首页" width="960" height="595" loading="lazy"></td>
   </tr>
   <tr>
     <td align="center"><strong>墨境</strong> · 水墨山水、玉色选中标记、笔触输入框</td>
@@ -17,8 +17,8 @@
 
 <table>
   <tr>
-    <td width="50%"><img src="docs/images/sunken-opera-preview.webp" alt="沉歌剧院主题视觉" width="960" height="458" loading="lazy"></td>
-    <td width="50%"><img src="docs/images/tidal-hymn-preview.webp" alt="潮汐圣歌主题视觉" width="960" height="513" loading="lazy"></td>
+    <td width="50%"><img src="docs/images/sunken-opera-preview.webp" alt="沉歌剧院当前主题首页" width="960" height="595" loading="lazy"></td>
+    <td width="50%"><img src="docs/images/tidal-hymn-preview.webp" alt="潮汐圣歌当前主题首页" width="960" height="595" loading="lazy"></td>
   </tr>
   <tr>
     <td align="center"><strong>沉歌剧院</strong> · 深海剧院、完整竖琴、深靛玻璃界面</td>
@@ -26,7 +26,7 @@
   </tr>
 </table>
 
-> 四张图均为隐私安全、面向文档单独压缩的 WebP 展示图；不包含账户、项目或对话隐私，也不会让 README 加载完整运行时原图。
+> 四张图均为当前版本的真实主题首页，并经过隐私安全裁切与独立 WebP 压缩；不包含侧栏、账户、项目或对话内容，也不会让 README 加载完整运行时原图。
 
 [查看完整主题与新增功能图鉴](docs/themes-and-features.md)
 
