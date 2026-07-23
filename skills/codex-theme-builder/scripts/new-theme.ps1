@@ -5,6 +5,7 @@ param(
   [Parameter(Mandatory)][ValidateScript({ Test-Path -LiteralPath $_ -PathType Leaf })][string]$HomeImage,
   [ValidateScript({ -not $_ -or (Test-Path -LiteralPath $_ -PathType Leaf) })][string]$ConversationImage = '',
   [ValidateScript({ -not $_ -or (Test-Path -LiteralPath $_ -PathType Leaf) })][string]$SidebarImage = '',
+  [ValidateScript({ -not $_ -or (Test-Path -LiteralPath $_ -PathType Leaf) })][string]$MotionImage = '',
   [ValidateScript({ -not $_ -or (Test-Path -LiteralPath $_ -PathType Leaf) })][string]$SelectedMarkerImage = '',
   [ValidateScript({ -not $_ -or (Test-Path -LiteralPath $_ -PathType Leaf) })][string]$ComposerEdgeImage = '',
   [ValidateSet('left', 'center', 'right')][string]$ComposerEdgeHorizontal = 'left',
@@ -61,6 +62,9 @@ $conversationName = if ([System.IO.Path]::GetFullPath($conversationSource) -eq [
 $sidebarName = if ([string]::IsNullOrWhiteSpace($SidebarImage)) { '' } else {
   Copy-ThemeAsset -Source $SidebarImage -Stem 'sidebar' -AllowedExtensions @('.png', '.jpg', '.jpeg', '.webp')
 }
+$motionName = if ([string]::IsNullOrWhiteSpace($MotionImage)) { '' } else {
+  Copy-ThemeAsset -Source $MotionImage -Stem 'motion' -AllowedExtensions @('.webp')
+}
 $selectedMarkerName = if ([string]::IsNullOrWhiteSpace($SelectedMarkerImage)) { '' } else {
   Copy-ThemeAsset -Source $SelectedMarkerImage -Stem 'selected-marker' -AllowedExtensions @('.png', '.webp')
 }
@@ -85,6 +89,7 @@ $manifest = [ordered]@{
   conversationImage = $conversationName
 }
 if ($sidebarName) { $manifest.sidebarImage = $sidebarName }
+if ($motionName) { $manifest.motionImage = $motionName }
 if ($selectedMarkerName) { $manifest.selectedLeaf = $selectedMarkerName }
 if ($composerEdgeName) {
   $manifest.composerEdge = [ordered]@{

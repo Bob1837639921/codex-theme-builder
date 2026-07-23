@@ -10,6 +10,62 @@
   --dream-motion-fast: 180ms;
   --dream-motion-panel: 200ms;
   --dream-ease: cubic-bezier(.2, .8, .2, 1);
+  --tidal-drift-duration: 16s;
+  --tidal-drift-opacity-start: .28;
+  --tidal-drift-opacity-peak: .46;
+  --tidal-drift-opacity-end: .34;
+  --tidal-drift-start-x: 4px;
+  --tidal-drift-start-y: 16px;
+  --tidal-drift-start-scale: .985;
+  --tidal-drift-end-x: -12px;
+  --tidal-drift-end-y: -24px;
+  --tidal-drift-end-scale: 1.015;
+  --tidal-spark-display: block;
+  --tidal-spark-duration: 13s;
+  --tidal-spark-opacity-start: .18;
+  --tidal-spark-opacity-peak: .42;
+  --tidal-spark-opacity-end: .24;
+  --tidal-spark-start-x: 14px;
+  --tidal-spark-start-y: 24px;
+  --tidal-spark-end-x: -10px;
+  --tidal-spark-end-y: -34px;
+  --tidal-spark-rotation: 3deg;
+}
+
+:root.codex-dream-skin[data-dream-motion="low"] {
+  --tidal-drift-duration: 18s;
+  --tidal-drift-opacity-start: .26;
+  --tidal-drift-opacity-peak: .43;
+  --tidal-drift-opacity-end: .32;
+  --tidal-drift-start-x: 3px;
+  --tidal-drift-start-y: 14px;
+  --tidal-drift-start-scale: .987;
+  --tidal-drift-end-x: -10px;
+  --tidal-drift-end-y: -22px;
+  --tidal-drift-end-scale: 1.012;
+  --tidal-spark-display: none;
+}
+
+:root.codex-dream-skin[data-dream-motion="high"] {
+  --tidal-drift-duration: 11s;
+  --tidal-drift-opacity-start: .38;
+  --tidal-drift-opacity-peak: .60;
+  --tidal-drift-opacity-end: .48;
+  --tidal-drift-start-x: 8px;
+  --tidal-drift-start-y: 24px;
+  --tidal-drift-start-scale: .975;
+  --tidal-drift-end-x: -18px;
+  --tidal-drift-end-y: -32px;
+  --tidal-drift-end-scale: 1.025;
+  --tidal-spark-duration: 8.5s;
+  --tidal-spark-opacity-start: .34;
+  --tidal-spark-opacity-peak: .72;
+  --tidal-spark-opacity-end: .42;
+  --tidal-spark-start-x: 28px;
+  --tidal-spark-start-y: 46px;
+  --tidal-spark-end-x: -22px;
+  --tidal-spark-end-y: -66px;
+  --tidal-spark-rotation: 7deg;
 }
 
 html.codex-dream-skin body {
@@ -442,10 +498,176 @@ html.codex-dream-skin .dream-home .dream-home-hero {
   box-shadow: none !important;
 }
 
+/* A small atmospheric layer adds life without moving or resampling the 4K
+   artwork. It stays on the quiet right edge and animates only compositor-safe
+   transform/opacity properties. */
+html.codex-dream-skin main.main-surface.dream-home-shell::before,
+html.codex-dream-skin main.main-surface.dream-conversation-shell::before {
+  content: "" !important;
+  display: block !important;
+  position: fixed !important;
+  z-index: 0 !important;
+  right: clamp(22px, 5vw, 96px) !important;
+  bottom: clamp(54px, 7vh, 92px) !important;
+  width: clamp(260px, 30vw, 500px) !important;
+  height: clamp(360px, 62vh, 620px) !important;
+  border-radius: 50% !important;
+  background:
+    radial-gradient(circle at 15% 86%, transparent 0 10px, rgba(245, 254, 255, .76) 11px 12px, rgba(145, 218, 237, .32) 13px, transparent 16px),
+    radial-gradient(circle at 39% 69%, transparent 0 6px, rgba(247, 254, 255, .72) 7px 8px, rgba(149, 218, 236, .28) 9px, transparent 12px),
+    radial-gradient(circle at 66% 91%, transparent 0 14px, rgba(242, 253, 255, .68) 15px 16px, rgba(157, 212, 238, .27) 17px, transparent 21px),
+    radial-gradient(circle at 84% 53%, transparent 0 8px, rgba(248, 254, 255, .70) 9px 10px, rgba(177, 219, 240, .25) 11px, transparent 14px),
+    radial-gradient(circle at 58% 34%, transparent 0 4px, rgba(250, 255, 255, .78) 5px 6px, transparent 9px),
+    radial-gradient(ellipse 40% 20% at 58% 40%, rgba(224, 250, 255, .24), transparent 72%),
+    linear-gradient(116deg, transparent 8%, rgba(225, 250, 255, .08) 24%, rgba(231, 252, 255, .24) 34%, transparent 45%, rgba(213, 243, 253, .16) 62%, transparent 78%) !important;
+  background-size:
+    196px 252px,
+    236px 294px,
+    284px 344px,
+    214px 276px,
+    166px 226px,
+    100% 100%,
+    100% 100% !important;
+  mask-image: radial-gradient(ellipse at center, #000 22%, rgba(0, 0, 0, .92) 58%, transparent 86%) !important;
+  opacity: .48;
+  transform: translate3d(0, 18px, 0) scale(.985);
+  transform-origin: 62% 72% !important;
+  pointer-events: none !important;
+  will-change: transform, opacity;
+  animation: tidal-hymn-drift var(--tidal-drift-duration) cubic-bezier(.42, .05, .58, .95) infinite alternate !important;
+}
+
+/* Medium adds a separate field of drifting pearl motes. High replaces that
+   field with a denser constellation and brighter cross-shaped glints. This is
+   a real content-tier change, not merely an opacity adjustment. */
+html.codex-dream-skin main.main-surface.dream-home-shell::after,
+html.codex-dream-skin main.main-surface.dream-conversation-shell::after {
+  content: "" !important;
+  display: var(--tidal-spark-display) !important;
+  position: fixed !important;
+  z-index: 0 !important;
+  right: clamp(54px, 10vw, 180px) !important;
+  bottom: clamp(76px, 11vh, 150px) !important;
+  width: clamp(220px, 25vw, 430px) !important;
+  height: clamp(300px, 48vh, 520px) !important;
+  border-radius: 48% !important;
+  background:
+    radial-gradient(circle at 12% 78%, #fff 0 2px, rgba(139, 213, 240, .72) 3px, rgba(139, 213, 240, .18) 5px, transparent 8px),
+    radial-gradient(circle at 27% 42%, #fff 0 3px, rgba(149, 220, 244, .68) 4px, rgba(149, 220, 244, .16) 7px, transparent 10px),
+    radial-gradient(circle at 43% 88%, #fff 0 2px, rgba(127, 207, 237, .68) 3px, rgba(127, 207, 237, .16) 5px, transparent 8px),
+    radial-gradient(circle at 61% 28%, #fff 0 2px, rgba(161, 226, 247, .72) 3px, rgba(161, 226, 247, .18) 6px, transparent 9px),
+    radial-gradient(circle at 76% 64%, #fff 0 3px, rgba(135, 211, 240, .70) 4px, rgba(135, 211, 240, .16) 7px, transparent 10px),
+    radial-gradient(circle at 91% 18%, #fff 0 2px, rgba(155, 222, 245, .68) 3px, rgba(155, 222, 245, .15) 5px, transparent 8px),
+    linear-gradient(90deg, transparent 42%, rgba(250, 255, 255, .82) 48% 52%, transparent 58%) 64% 52% / 30px 3px no-repeat,
+    linear-gradient(0deg, transparent 42%, rgba(250, 255, 255, .82) 48% 52%, transparent 58%) 64% 52% / 3px 30px no-repeat,
+    radial-gradient(ellipse at 58% 58%, rgba(139, 215, 242, .18), transparent 64%) !important;
+  mask-image: radial-gradient(ellipse at center, #000 20%, rgba(0, 0, 0, .9) 62%, transparent 91%) !important;
+  opacity: var(--tidal-spark-opacity-start);
+  transform: translate3d(var(--tidal-spark-start-x), var(--tidal-spark-start-y), 0) rotate(-2deg) scale(.98);
+  transform-origin: 56% 64% !important;
+  pointer-events: none !important;
+  will-change: transform, opacity;
+  animation: tidal-hymn-spark-drift var(--tidal-spark-duration) cubic-bezier(.34, .06, .44, 1) infinite alternate !important;
+}
+
+:root.codex-dream-skin[data-dream-motion="high"] main.main-surface.dream-home-shell::after,
+:root.codex-dream-skin[data-dream-motion="high"] main.main-surface.dream-conversation-shell::after {
+  right: clamp(-140px, -5vw, -42px) !important;
+  bottom: clamp(-150px, -8vh, -62px) !important;
+  width: clamp(560px, 48vw, 920px) !important;
+  height: clamp(560px, 76vh, 920px) !important;
+  border-radius: 42% !important;
+  background: var(--dream-motion-art, none) center / cover no-repeat !important;
+  mask-image:
+    radial-gradient(ellipse 72% 66% at 62% 62%, #000 20%, rgba(0, 0, 0, .92) 56%, transparent 92%) !important;
+  filter:
+    brightness(1.22)
+    contrast(1.08)
+    drop-shadow(0 0 26px rgba(97, 205, 241, .30)) !important;
+  mix-blend-mode: screen;
+  contain: paint;
+  opacity: .56;
+  transform: translate3d(0, 0, 0) rotate(-7deg) scale(1.05);
+  animation: tidal-hymn-caustic-breathe 12s ease-in-out infinite alternate !important;
+}
+
+:root.codex-dream-skin[data-dream-motion="high"] main.main-surface.dream-home-shell::before,
+:root.codex-dream-skin[data-dream-motion="high"] main.main-surface.dream-conversation-shell::before {
+  filter:
+    drop-shadow(0 0 4px rgba(176, 239, 255, .66))
+    drop-shadow(0 0 12px rgba(104, 194, 233, .28)) !important;
+}
+
+@keyframes tidal-hymn-drift {
+  0% {
+    opacity: var(--tidal-drift-opacity-start);
+    transform: translate3d(var(--tidal-drift-start-x), var(--tidal-drift-start-y), 0) scale(var(--tidal-drift-start-scale));
+  }
+  48% {
+    opacity: var(--tidal-drift-opacity-peak);
+  }
+  100% {
+    opacity: var(--tidal-drift-opacity-end);
+    transform: translate3d(var(--tidal-drift-end-x), var(--tidal-drift-end-y), 0) scale(var(--tidal-drift-end-scale));
+  }
+}
+
+@keyframes tidal-hymn-spark-drift {
+  0% {
+    opacity: var(--tidal-spark-opacity-start);
+    transform: translate3d(var(--tidal-spark-start-x), var(--tidal-spark-start-y), 0) rotate(-2deg) scale(.98);
+  }
+  46% {
+    opacity: var(--tidal-spark-opacity-peak);
+  }
+  100% {
+    opacity: var(--tidal-spark-opacity-end);
+    transform: translate3d(var(--tidal-spark-end-x), var(--tidal-spark-end-y), 0) rotate(var(--tidal-spark-rotation)) scale(1.025);
+  }
+}
+
+@keyframes tidal-hymn-caustic-breathe {
+  0% {
+    opacity: .46;
+    transform: translate3d(-1.4%, 1.2%, 0) rotate(-7deg) scale(1.04);
+  }
+  46% {
+    opacity: .64;
+  }
+  100% {
+    opacity: .54;
+    transform: translate3d(1.8%, -1.4%, 0) rotate(-4deg) scale(1.12);
+  }
+}
+
+:root.codex-dream-skin[data-dream-motion="off"] main.main-surface.dream-home-shell::before,
+:root.codex-dream-skin[data-dream-motion="off"] main.main-surface.dream-conversation-shell::before,
+:root.codex-dream-skin[data-dream-motion="off"] main.main-surface.dream-home-shell::after,
+:root.codex-dream-skin[data-dream-motion="off"] main.main-surface.dream-conversation-shell::after {
+  display: none !important;
+  animation: none !important;
+  will-change: auto;
+}
+
 @media (max-width: 1000px) {
   html.codex-dream-skin .dream-home { --thread-content-max-width: min(920px, calc(100cqw - 32px)) !important; }
   .dream-action-grid { padding-inline: 24px; }
   html.codex-dream-skin div:has(> .composer-surface-chrome)::after { right: -34px !important; width: 260px !important; }
+  html.codex-dream-skin main.main-surface.dream-home-shell::before,
+  html.codex-dream-skin main.main-surface.dream-conversation-shell::before,
+  html.codex-dream-skin main.main-surface.dream-home-shell::after,
+  html.codex-dream-skin main.main-surface.dream-conversation-shell::after {
+    right: 12px !important;
+    width: clamp(220px, 36vw, 320px) !important;
+    opacity: .38 !important;
+  }
+  :root.codex-dream-skin[data-dream-motion="high"] main.main-surface.dream-home-shell::after,
+  :root.codex-dream-skin[data-dream-motion="high"] main.main-surface.dream-conversation-shell::after {
+    right: -86px !important;
+    width: clamp(470px, 62vw, 680px) !important;
+    height: clamp(470px, 70vh, 680px) !important;
+    opacity: .36 !important;
+  }
 }
 
 @media (max-height: 900px) {
@@ -458,6 +680,15 @@ html.codex-dream-skin .dream-home .dream-home-hero {
 
 @media (prefers-reduced-motion: reduce) {
   html.codex-dream-skin .dream-progress-indicator { animation: none !important; }
+  html.codex-dream-skin main.main-surface.dream-home-shell::before,
+  html.codex-dream-skin main.main-surface.dream-conversation-shell::before,
+  html.codex-dream-skin main.main-surface.dream-home-shell::after,
+  html.codex-dream-skin main.main-surface.dream-conversation-shell::after {
+    animation: none !important;
+    opacity: .24 !important;
+    transform: none !important;
+    will-change: auto;
+  }
   html.codex-dream-skin .composer-surface-chrome,
   html.codex-dream-skin .composer-surface-chrome::after,
   html.codex-dream-skin div:has(> .composer-surface-chrome)::after { transition: none !important; transform: none !important; }

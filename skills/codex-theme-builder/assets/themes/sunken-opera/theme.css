@@ -401,6 +401,48 @@ html.codex-dream-skin .dream-progress-pill {
 html.codex-dream-skin .dream-progress-indicator { animation: deepsea-progress-turn 1.25s linear infinite; }
 @keyframes deepsea-progress-turn { to { transform: rotate(360deg); } }
 
+/* File-change cards retain light native dropdown tokens even inside dark
+   conversations. The shared runtime marks the complete card so every row
+   uses one coherent deep-sea surface without flattening diff semantics. */
+html.codex-dream-skin main.dream-conversation-shell .dream-file-changes-summary {
+  color: #eaf7fc !important;
+  background: linear-gradient(145deg, rgba(8, 28, 49, .97), rgba(12, 38, 63, .94)) !important;
+  border: 1px solid rgba(121, 207, 228, .34) !important;
+  box-shadow: inset 0 1px rgba(223, 248, 255, .06), 0 12px 30px rgba(0, 8, 18, .24) !important;
+  backdrop-filter: blur(12px) saturate(1.06) !important;
+}
+
+html.codex-dream-skin main.dream-conversation-shell .dream-file-changes-summary .group\/turn-diff-header {
+  color: #eaf7fc !important;
+  background: rgba(75, 127, 158, .20) !important;
+  border-bottom: 1px solid rgba(126, 205, 225, .22) !important;
+}
+
+html.codex-dream-skin main.dream-conversation-shell .dream-file-changes-summary :is(div, span, p, button, a, svg) {
+  color: #eaf7fc !important;
+  -webkit-text-fill-color: #eaf7fc !important;
+  text-shadow: none !important;
+}
+
+html.codex-dream-skin main.dream-conversation-shell .dream-file-changes-summary button {
+  background-color: rgba(104, 159, 184, .13) !important;
+  border-color: rgba(143, 213, 229, .18) !important;
+}
+
+html.codex-dream-skin main.dream-conversation-shell .dream-file-changes-summary button:is(:hover, :focus-visible) {
+  background-color: rgba(82, 184, 209, .24) !important;
+}
+
+html.codex-dream-skin main.dream-conversation-shell .dream-file-changes-summary [class*="text-green"] {
+  color: #64dda0 !important;
+  -webkit-text-fill-color: #64dda0 !important;
+}
+
+html.codex-dream-skin main.dream-conversation-shell .dream-file-changes-summary [class*="text-red"] {
+  color: #ff8998 !important;
+  -webkit-text-fill-color: #ff8998 !important;
+}
+
 html.codex-dream-skin .dream-output-panel {
   overflow: hidden !important;
   color: #dff4fa !important;
@@ -450,11 +492,32 @@ html.codex-dream-skin [data-radix-popper-content-wrapper] > * {
   border-color: rgba(126, 202, 222, .28) !important;
 }
 
-html.codex-dream-skin [role="dialog"] :is(h1, h2, h3, p, span, button, label),
+html.codex-dream-skin [role="dialog"] :is(div, h1, h2, h3, p, span, strong, small, a, button, label, svg),
 html.codex-dream-skin [data-radix-popper-content-wrapper] :is(h1, h2, h3, p, span, button, label) {
-  color: inherit !important;
-  -webkit-text-fill-color: currentColor !important;
+  color: #eaf7fc !important;
+  -webkit-text-fill-color: #eaf7fc !important;
   text-shadow: none !important;
+}
+
+html.codex-dream-skin [role="dialog"] :is(
+  [class*="text-token-text-secondary"],
+  [class*="text-token-foreground-secondary"],
+  [class*="text-token-text-tertiary"],
+  [class*="text-token-input-placeholder"]
+) {
+  color: #b6ced9 !important;
+  -webkit-text-fill-color: #b6ced9 !important;
+}
+
+html.codex-dream-skin [role="dialog"] a {
+  color: #73d4e6 !important;
+  -webkit-text-fill-color: #73d4e6 !important;
+}
+
+html.codex-dream-skin [role="dialog"] :disabled {
+  color: #8ca7b5 !important;
+  -webkit-text-fill-color: #8ca7b5 !important;
+  opacity: .72 !important;
 }
 
 html.codex-dream-skin .dream-home .dream-home-stage {
@@ -494,4 +557,154 @@ html.codex-dream-skin .dream-home .dream-home-hero {
 @media (prefers-reduced-motion: reduce) {
   html.codex-dream-skin .dream-progress-indicator { animation: none !important; }
   html.codex-dream-skin div:has(> .composer-surface-chrome)::after { transition: none !important; transform: none !important; }
+}
+
+/* Motion tiers: low = drifting bioluminescent plankton, medium = plankton
+   plus a sonar ring, high = a denser cyan/violet field and abyssal pulse. */
+:root.codex-dream-skin {
+  --abyss-drift-duration: 16.4s;
+  --abyss-drift-opacity: .46;
+  --abyss-drift-x: -18px;
+  --abyss-drift-y: -38px;
+}
+
+:root.codex-dream-skin[data-dream-motion="low"] {
+  --abyss-drift-duration: 20.2s;
+  --abyss-drift-opacity: .36;
+  --abyss-drift-x: -10px;
+  --abyss-drift-y: -24px;
+}
+
+:root.codex-dream-skin[data-dream-motion="high"] {
+  --abyss-drift-duration: 9.8s;
+  --abyss-drift-opacity: .82;
+  --abyss-drift-x: -32px;
+  --abyss-drift-y: -58px;
+}
+
+html.codex-dream-skin main.main-surface.dream-home-shell::after,
+html.codex-dream-skin main.main-surface.dream-conversation-shell::after {
+  content: "" !important;
+  display: block !important;
+  position: fixed !important;
+  z-index: 0 !important;
+  right: clamp(14px, 5vw, 90px) !important;
+  bottom: clamp(54px, 8vh, 104px) !important;
+  width: clamp(250px, 29vw, 500px) !important;
+  height: clamp(350px, 60vh, 640px) !important;
+  border-radius: 50% !important;
+  background:
+    radial-gradient(circle at 11% 79%, #dffcff 0 1.5px, rgba(56, 211, 232, .66) 2.5px, transparent 6px),
+    radial-gradient(circle at 26% 37%, #f0e9ff 0 2px, rgba(149, 116, 224, .60) 3px, transparent 7px),
+    radial-gradient(circle at 43% 91%, #e4fdff 0 1px, rgba(66, 207, 230, .62) 2px, transparent 5px),
+    radial-gradient(circle at 58% 22%, #e9faff 0 2px, rgba(77, 194, 224, .62) 3px, transparent 7px),
+    radial-gradient(circle at 73% 66%, #f2eaff 0 1.5px, rgba(139, 111, 216, .58) 2.5px, transparent 6px),
+    radial-gradient(circle at 91% 43%, #defbff 0 2px, rgba(48, 201, 226, .64) 3px, transparent 7px),
+    radial-gradient(ellipse at 58% 58%, rgba(48, 182, 213, .14), transparent 66%) !important;
+  mask-image: radial-gradient(ellipse at center, #000 22%, rgba(0, 0, 0, .9) 66%, transparent 93%) !important;
+  opacity: var(--abyss-drift-opacity);
+  transform: translate3d(12px, 30px, 0) scale(.98);
+  pointer-events: none !important;
+  will-change: transform, opacity;
+  animation: abyss-plankton-drift var(--abyss-drift-duration) ease-in-out infinite alternate !important;
+}
+
+:root.codex-dream-skin[data-dream-motion="high"] main.main-surface.dream-home-shell::after,
+:root.codex-dream-skin[data-dream-motion="high"] main.main-surface.dream-conversation-shell::after {
+  background:
+    radial-gradient(circle at 8% 76%, #fff 0 2px, #4be0ef 3px, rgba(75, 224, 239, .18) 7px, transparent 11px),
+    radial-gradient(circle at 21% 31%, #fff 0 2.5px, #a590f0 3.5px, rgba(165, 144, 240, .18) 8px, transparent 12px),
+    radial-gradient(circle at 35% 87%, #fff 0 1.5px, #50d9ea 2.5px, transparent 8px),
+    radial-gradient(circle at 49% 48%, #fff 0 2px, #72e4ef 3px, rgba(114, 228, 239, .16) 8px, transparent 12px),
+    radial-gradient(circle at 62% 18%, #fff 0 2.5px, #927fe0 3.5px, rgba(146, 127, 224, .18) 8px, transparent 12px),
+    radial-gradient(circle at 76% 73%, #fff 0 2px, #49d6e8 3px, transparent 9px),
+    radial-gradient(circle at 91% 39%, #fff 0 2.5px, #ad93ef 3.5px, rgba(173, 147, 239, .16) 8px, transparent 12px),
+    linear-gradient(90deg, transparent 39%, rgba(225, 253, 255, .92) 48% 52%, transparent 61%) 27% 57% / 48px 3px no-repeat,
+    linear-gradient(0deg, transparent 39%, rgba(225, 253, 255, .92) 48% 52%, transparent 61%) 27% 57% / 3px 48px no-repeat,
+    linear-gradient(90deg, transparent 39%, rgba(225, 214, 255, .88) 48% 52%, transparent 61%) 79% 28% / 38px 3px no-repeat,
+    linear-gradient(0deg, transparent 39%, rgba(225, 214, 255, .88) 48% 52%, transparent 61%) 79% 28% / 3px 38px no-repeat !important;
+  filter: drop-shadow(0 0 6px rgba(69, 218, 235, .68)) drop-shadow(0 0 18px rgba(134, 103, 218, .34)) !important;
+  animation:
+    abyss-plankton-drift var(--abyss-drift-duration) ease-in-out infinite alternate,
+    abyss-bioglow-flicker 6.7s ease-in-out infinite !important;
+  animation-delay: 0s, -3.2s !important;
+}
+
+:root.codex-dream-skin[data-dream-motion="medium"] body::after,
+:root.codex-dream-skin[data-dream-motion="high"] body::after {
+  content: "" !important;
+  display: block !important;
+  position: fixed !important;
+  z-index: 0 !important;
+  right: clamp(24px, 7vw, 126px) !important;
+  top: clamp(120px, 22vh, 240px) !important;
+  width: clamp(130px, 13vw, 220px) !important;
+  height: clamp(130px, 13vw, 220px) !important;
+  border-radius: 50% !important;
+  background:
+    radial-gradient(circle, rgba(57, 200, 224, .10) 0 26%, transparent 38%),
+    radial-gradient(circle, transparent 0 52%, rgba(105, 218, 235, .58) 53% 54%, transparent 56% 68%, rgba(145, 115, 221, .34) 69% 70%, transparent 72%) !important;
+  mask-image: radial-gradient(circle, #000 0 70%, rgba(0, 0, 0, .74) 80%, transparent 94%) !important;
+  opacity: .42;
+  pointer-events: none !important;
+  will-change: transform, opacity;
+  animation: abyss-sonar-pulse 11.6s ease-out infinite !important;
+  animation-delay: -5.1s !important;
+}
+
+:root.codex-dream-skin[data-dream-motion="high"] body::after {
+  background:
+    conic-gradient(from 18deg, transparent 0 15%, rgba(91, 229, 239, .62) 20%, transparent 27% 54%, rgba(157, 123, 229, .56) 61%, transparent 68%),
+    radial-gradient(circle, rgba(50, 205, 229, .18) 0 22%, transparent 35%),
+    radial-gradient(circle, transparent 0 49%, rgba(205, 251, 255, .82) 50% 51%, rgba(73, 208, 231, .34) 52%, transparent 54% 66%, rgba(169, 133, 232, .54) 67% 68%, transparent 70%) !important;
+  -webkit-backdrop-filter: blur(1.4px) saturate(1.20) !important;
+  backdrop-filter: blur(1.4px) saturate(1.20) !important;
+  filter: drop-shadow(0 0 8px rgba(65, 219, 235, .72)) drop-shadow(0 0 24px rgba(142, 103, 224, .46)) !important;
+  animation: abyss-gate-pulse 7.8s cubic-bezier(.2, .72, .26, 1) infinite !important;
+  animation-delay: -4.4s !important;
+}
+
+:root.codex-dream-skin[data-dream-motion="off"] main.main-surface.dream-home-shell::after,
+:root.codex-dream-skin[data-dream-motion="off"] main.main-surface.dream-conversation-shell::after {
+  display: none !important;
+  animation: none !important;
+}
+
+@keyframes abyss-plankton-drift {
+  from { transform: translate3d(12px, 30px, 0) scale(.98); }
+  to { transform: translate3d(var(--abyss-drift-x), var(--abyss-drift-y), 0) scale(1.03); }
+}
+
+@keyframes abyss-bioglow-flicker {
+  0%, 100% { opacity: .52; }
+  21% { opacity: .88; }
+  38% { opacity: .58; }
+  67% { opacity: .94; }
+  82% { opacity: .62; }
+}
+
+@keyframes abyss-sonar-pulse {
+  0%, 45% { opacity: 0; transform: scale(.14); }
+  50% { opacity: .58; transform: scale(.24); }
+  64% { opacity: .42; transform: scale(1.08); }
+  78% { opacity: .16; transform: scale(1.88); }
+  86%, 100% { opacity: 0; transform: scale(2.35); }
+}
+
+@keyframes abyss-gate-pulse {
+  0%, 32% { opacity: .10; transform: rotate(-6deg) scale(.22); }
+  38% { opacity: .82; transform: rotate(-2deg) scale(.34); }
+  57% { opacity: .68; transform: rotate(7deg) scale(1.06); }
+  76% { opacity: .28; transform: rotate(15deg) scale(1.82); }
+  86%, 100% { opacity: .06; transform: rotate(19deg) scale(2.26); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.codex-dream-skin main.main-surface.dream-home-shell::after,
+  html.codex-dream-skin main.main-surface.dream-conversation-shell::after,
+  :root.codex-dream-skin body::after {
+    display: none !important;
+    animation: none !important;
+    will-change: auto;
+  }
 }

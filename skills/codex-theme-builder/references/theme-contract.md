@@ -11,6 +11,7 @@ theme-id/
   home.png
   conversation.png
   sidebar.png       # optional sidebar texture
+  motion.webp       # optional pre-rendered localized motion loop
   selected-leaf.png  # optional selected-state raster marker
   composer-edge.png  # optional transparent composer-edge artwork
   icon-build.svg
@@ -32,6 +33,7 @@ The image names are configurable. `theme.css` is optional to the runtime but gen
   "image": "home.png",
   "conversationImage": "conversation.png",
   "sidebarImage": "sidebar.png",
+  "motionImage": "motion.webp",
   "selectedLeaf": "selected-leaf.png",
   "composerEdge": {
     "image": "composer-edge.png",
@@ -61,6 +63,7 @@ Rules:
 - Keep every asset filename local: no directories, URLs, data URLs, or traversal.
 - Use PNG, JPEG, or WebP raster images no larger than 8 MB each.
 - `sidebarImage` is optional. When present it must be a local PNG, JPEG, or WebP image no larger than 8 MB; the runtime exposes it as `--dream-sidebar-art`.
+- `motionImage` is optional. It must be a local animated or static WebP no larger than 2 MB; the runtime exposes it as `--dream-motion-art`. Keep it localized and masked instead of stretching it over the full workspace.
 - Provide all four SVG icons. Keep each below 64 KB and omit scripts, external references, event handlers, embedded images, and CSS `url()` values.
 - Use six-digit hexadecimal colors.
 - `conversationImage` may equal `image`.
@@ -80,12 +83,17 @@ Start every override from `:root.codex-dream-skin` or one of the runtime classes
 - `#codex-dream-skin-title`
 - `#codex-dream-skin-actions`
 - `.dream-progress-pill` and `.dream-progress-indicator`
+- `.dream-file-changes-summary` for the complete native file-change card, including its `.group\/turn-diff-header`
 - `.dream-selected-thread` and `.dream-selected-thread-label`
 - `.dream-output-panel`
 
-The runtime exposes `--dream-art`, `--dream-conversation-art`, the optional `--dream-sidebar-art`, `--dream-selected-leaf`, and `--dream-composer-edge` as data-backed CSS values, plus color tokens derived from the manifest. Keep pseudo-elements non-interactive with `pointer-events: none`.
+The runtime exposes `--dream-art`, `--dream-conversation-art`, the optional `--dream-sidebar-art`, `--dream-motion-art`, `--dream-selected-leaf`, and `--dream-composer-edge` as data-backed CSS values, plus color tokens derived from the manifest. Keep pseudo-elements non-interactive with `pointer-events: none`.
 
 Use detail marker classes only when their native surfaces are present. Scope searches to the composer, sidebar, or output region, and retain connected markers instead of rescanning the entire conversation on every mutation.
+
+The neutral scaffold already treats `.dream-file-changes-summary` and portaled `[role="dialog"]` content as mandatory semantic surfaces. Preserve those blocks when creating a theme. Override their tokens or presentation for the visual direction; do not remove the complete-card styling, explicit descendant foregrounds, muted text, links, disabled states, or green/red diff semantics. In dark themes, setting only the outer `color` is insufficient because Codex utility classes may assign nested foreground and WebKit text-fill values.
+
+The shared switcher persists a global motion preference on the root as `data-dream-motion="off|low|medium|high"`. New theme motion must use these four levels rather than inventing a separate toggle. The levels are effect tiers, not opacity presets: low keeps one quiet primary accent; medium adds a second kind of atmosphere; high adds a deliberately richer third treatment such as denser motes, glints, or a second trajectory. Speed, travel, and opacity may reinforce those differences but must not be the only differences. Use the neutral `--theme-atmosphere-*` variables or define theme-local variables per level. Add `.dream-theme-motion` and the appropriate secondary/tertiary tier class to real decoration nodes; for pseudo-elements, add equivalent theme-scoped selectors. `prefers-reduced-motion: reduce` always wins and must stop every custom animation regardless of the selected level.
 
 Codex uses sticky gradient layers around the composer. The bundled base runtime neutralizes the native `bg-gradient-to-t` rails around both the ordinary composer and the file-changes summary. Do not reintroduce opaque backgrounds on those ancestors.
 

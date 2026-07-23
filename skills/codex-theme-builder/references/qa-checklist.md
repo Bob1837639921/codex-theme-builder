@@ -31,6 +31,7 @@
 - Composer aligns with the content column.
 - No opaque white side rails appear beside or behind the composer.
 - Trigger a file change and verify no white strip appears behind the file-changes summary pill.
+- Inspect a populated file-change summary card: header, file paths, added/deleted counts, undo/review controls, hover state, and expanded rows must remain readable on one coherent themed surface.
 - Model, microphone, access mode, attachment, and submit/stop controls remain usable.
 - Running progress uses only small-area motion and stops under reduced-motion preferences.
 - Current thread remains legible when pin/archive controls appear; controls do not shift the title.
@@ -43,6 +44,7 @@
 
 - Open the usage/credits card and verify light cards use dark readable text.
 - Open menus, dialogs, and popovers from both the sidebar and conversation toolbar.
+- Open the full-access confirmation dialog and independently verify the title, explanatory paragraph, three permission descriptions, risk warning, link, cancel action, primary action, and disabled states.
 - Check headings, secondary copy, close buttons, progress indicators, and links independently.
 - Remember that portaled overlays may sit outside the themed main surface and need explicit scoped colors.
 
@@ -54,6 +56,9 @@
 - The selected theme persists across reload and a second task, or the UI clearly declares launcher-only fallback behavior.
 - Switching replaces all theme assets and color tokens atomically; failure restores the previous theme.
 - Narrow windows keep the switcher within the viewport without horizontal overflow.
+- The motion control exposes `关闭 / 低 / 中 / 高`, keeps the panel open while changing levels, updates `data-dream-motion`, and persists across theme switches and reloads.
+- Off removes custom atmosphere layers; low, medium, and high are visibly distinct without moving full-canvas artwork. A localized pre-rendered `motionImage` may run only in the intended tier. System reduced-motion still forces static output.
+- If `motionImage` is present, verify that it is a local WebP no larger than 2 MB, loops without a visible jump, stays localized under a soft mask, and never covers text or controls.
 
 ## Resilience
 

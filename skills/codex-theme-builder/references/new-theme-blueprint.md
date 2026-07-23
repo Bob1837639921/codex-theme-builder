@@ -33,12 +33,13 @@ Review each surface instead of treating a theme as a background replacement:
 2. **Sidebar:** background or texture, logo/header contrast, navigation, pinned tasks, projects, project expand/collapse controls, account area, hover, focus, and current-task state. Define `--dream-sidebar-control-text` with sufficient contrast against the sidebar artwork.
 3. **Home:** full-canvas scene crop, title/subtitle safe area, all four action blocks, project selector, and initial composer. Paint the artwork on `.dream-home-shell` / `.dream-home`, use the shared `#codex-dream-home-overlay`, keep `.dream-home-hero` transparent with square corners, and leave the native project-selector/composer layout untouched. `.dream-project-picker` is an inspection hook, not permission to recreate its geometry or styling. Inset photo-frame artwork and reconstructed compound-input layouts are not accepted default structures.
 4. **Conversation:** prose, links, code, diffs, tool rows, image previews, timestamps, feedback buttons, and long-scroll readability.
-5. **Progress and file changes:** progress pill/indicator plus the file-change summary rail; neither may create opaque white strips.
+5. **Progress and file changes:** progress pill/indicator plus every file-change summary card; neither may create opaque white strips. Dark themes must restyle the complete `.dream-file-changes-summary` surface, header, rows, actions, paths, and added/deleted counts as one readable hierarchy.
 6. **Composer:** panel surface, placeholder, access mode, attachment, model selector, microphone, submit/stop button, focus state, multiline growth, and narrow width.
 7. **Selected task:** marker, title, pin/archive actions, focus ring, and mutation stability without flashing.
 8. **Output panel:** outer container, sticky headings, URL/environment row, browser row, source list, expanders, thumbnails, and one coherent surface color.
-9. **Portaled UI:** usage/credits card, dialogs, menus, popovers, tooltips, close buttons, progress bars, and disabled text contrast.
+9. **Portaled UI:** usage/credits card, dialogs, menus, popovers, tooltips, close buttons, progress bars, and disabled text contrast. Explicitly open the full-access confirmation dialog and verify its nested permission descriptions, risk copy, links, cancel action, and primary action; inherited `color` alone is not sufficient for dark themes.
 10. **Theme switcher:** trigger, all catalog cards, active state, keyboard flow, persistence, rollback, narrow viewport, and no redundant success toast.
+11. **Motion preference:** use the shared `off / low / medium / high` control and root `data-dream-motion` value. Define visibly distinct but compositor-safe levels, persist the choice across theme switches, and let system reduced-motion force a static result.
 
 ### Continuous-art direction
 
@@ -61,6 +62,9 @@ Treat composer art as a foreground accent with a transparent canvas, not as a se
 ## Motion and performance
 
 - Animate only small accents with `transform` and `opacity`.
+- Treat low, medium, and high as additive visual tiers rather than three opacity values: one primary accent at low, a distinct secondary layer at medium, and a richer but still localized treatment at high.
+- When the direction needs organic fluid, smoke, flame, or caustic deformation that CSS cannot represent faithfully, render a short seamless WebP loop offline and expose it through the optional `motionImage` / `--dream-motion-art` contract. Keep the loop at 12–15 fps, localized by a mask, no larger than 2 MB, and reserve it for the high tier.
+- A generated motion asset must come from an approved source frame or an original generated texture. Do not approximate a reference with concentric rings, repeated gradient ribbons, or other visibly synthetic CSS geometry.
 - Avoid continuous full-canvas filters, animated backgrounds, layout-changing transitions, and repeated whole-document scans.
 - Coalesce mutation work to animation frames and retain valid marker nodes.
 - Add `prefers-reduced-motion` behavior for every theme-specific animation.

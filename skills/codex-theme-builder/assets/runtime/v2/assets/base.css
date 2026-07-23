@@ -302,6 +302,69 @@ html.codex-dream-skin aside.app-shell-left-panel #codex-dream-theme-switcher * {
   border-radius: 50%;
 }
 
+#codex-dream-theme-switcher .dream-motion-control {
+  display: grid;
+  gap: 8px;
+  margin-top: 11px;
+  padding-top: 10px;
+  border-top: 1px solid rgb(96 104 99 / 14%);
+}
+
+#codex-dream-theme-switcher .dream-motion-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: #26302b;
+}
+
+#codex-dream-theme-switcher .dream-motion-heading strong {
+  color: #26302b !important;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+#codex-dream-theme-switcher .dream-motion-heading span {
+  color: #748078 !important;
+  font-size: 11px;
+  line-height: 18px;
+}
+
+#codex-dream-theme-switcher .dream-motion-options {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 4px;
+  padding: 3px;
+  border: 1px solid rgb(96 104 99 / 12%);
+  border-radius: 10px;
+  background: rgb(226 231 227 / 72%);
+}
+
+#codex-dream-theme-switcher .dream-motion-option {
+  min-width: 0;
+  height: 28px;
+  padding: 0 4px;
+  border: 0 !important;
+  border-radius: 7px !important;
+  color: #68736c !important;
+  font-size: 11px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  cursor: pointer;
+}
+
+#codex-dream-theme-switcher .dream-motion-option:hover {
+  color: #26302b !important;
+  background: rgb(255 255 255 / 58%) !important;
+}
+
+#codex-dream-theme-switcher .dream-motion-option.is-selected {
+  color: #173f49 !important;
+  font-weight: 650;
+  background: #ffffff !important;
+  box-shadow: 0 2px 7px rgb(40 55 47 / 13%) !important;
+}
+
 #codex-dream-theme-switcher button:focus-visible {
   outline: 2px solid var(--dream-accent, #5f7c72);
   outline-offset: 2px;

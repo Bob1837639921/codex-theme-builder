@@ -6,6 +6,7 @@
     "image":  "home.webp",
     "conversationImage":  "conversation.webp",
     "sidebarImage":  "sidebar.webp",
+    "motionImage":  "motion-caustics.webp",
     "selectedLeaf":  "selected-marker.webp",
     "icons":  {
                   "build":  "icon-build.svg",

@@ -1,9 +1,43 @@
 /* Neutral starter overrides. Keep all custom rules scoped to the theme root. */
 :root.codex-dream-skin {
   --theme-panel: color-mix(in srgb, var(--dream-surface, #f4f0e6) 88%, transparent);
+  --theme-solid-panel: color-mix(in srgb, var(--dream-surface, #f4f0e6) 96%, white 4%);
+  --theme-panel-text: var(--dream-ink, #26332f);
+  --theme-muted-text: color-mix(in srgb, var(--dream-ink, #26332f) 72%, transparent);
+  --theme-primary-text: #ffffff;
   --theme-border: color-mix(in srgb, var(--dream-ink, #26332f) 14%, transparent);
   --theme-shadow: 0 18px 48px rgb(25 35 32 / 10%);
+  --theme-atmosphere-duration: 16s;
+  --theme-atmosphere-opacity: 0.42;
+  --theme-atmosphere-distance: 16px;
   --dream-sidebar-control-text: #eef3ef;
+}
+
+:root.codex-dream-skin[data-dream-motion="low"] {
+  --theme-atmosphere-duration: 22s;
+  --theme-atmosphere-opacity: 0.24;
+  --theme-atmosphere-distance: 8px;
+}
+
+:root.codex-dream-skin[data-dream-motion="high"] {
+  --theme-atmosphere-duration: 11s;
+  --theme-atmosphere-opacity: 0.58;
+  --theme-atmosphere-distance: 26px;
+}
+
+/* Motion levels change content as well as speed: low keeps only the primary
+   accent, medium may add a secondary layer, and high may add a tertiary layer.
+   Give real atmosphere nodes .dream-theme-motion plus the tier class. Pseudo
+   elements must implement equivalent scoped selectors. */
+:root.codex-dream-skin[data-dream-motion="low"] .dream-theme-motion-secondary,
+:root.codex-dream-skin:not([data-dream-motion="high"]) .dream-theme-motion-tertiary {
+  display: none !important;
+}
+
+:root.codex-dream-skin[data-dream-motion="off"] .dream-theme-motion {
+  display: none !important;
+  animation: none !important;
+  will-change: auto !important;
 }
 
 /* Home artwork belongs to the real full-size home shell. The native hero is
@@ -44,19 +78,85 @@
   border-color: var(--theme-border);
 }
 
-/* Codex renders some dialogs outside the main task surface. */
-:root.codex-dream-skin [role="dialog"] {
-  color: var(--dream-ink, #26332f) !important;
-  background: color-mix(in srgb, var(--dream-surface, #f4f0e6) 96%, white) !important;
+/* Runtime marks the complete native diff card instead of relying on volatile
+   utility classes. Keep its header, rows, paths, and actions on one surface. */
+:root.codex-dream-skin main.dream-conversation-shell .dream-file-changes-summary {
+  color: var(--theme-panel-text) !important;
+  background: var(--theme-solid-panel) !important;
+  border: 1px solid var(--theme-border) !important;
+  box-shadow: var(--theme-shadow) !important;
+  overflow: hidden !important;
+}
+
+:root.codex-dream-skin main.dream-conversation-shell .dream-file-changes-summary .group\/turn-diff-header {
+  color: var(--theme-panel-text) !important;
+  background: color-mix(in srgb, var(--dream-surface, #f4f0e6) 88%, transparent) !important;
   border-color: var(--theme-border) !important;
 }
 
-:root.codex-dream-skin [role="dialog"] :is(h1, h2, h3, p, span, button, label) {
-  color: inherit !important;
+:root.codex-dream-skin main.dream-conversation-shell .dream-file-changes-summary :is(div, p, span, strong, small, a, button, svg) {
+  color: var(--theme-panel-text) !important;
+  -webkit-text-fill-color: var(--theme-panel-text) !important;
   text-shadow: none !important;
+}
+
+:root.codex-dream-skin main.dream-conversation-shell .dream-file-changes-summary [class*="text-green"] {
+  color: #54c98a !important;
+  -webkit-text-fill-color: #54c98a !important;
+}
+
+:root.codex-dream-skin main.dream-conversation-shell .dream-file-changes-summary [class*="text-red"] {
+  color: #ef7c86 !important;
+  -webkit-text-fill-color: #ef7c86 !important;
+}
+
+/* Codex renders some dialogs outside the main task surface. */
+:root.codex-dream-skin [role="dialog"] {
+  color: var(--theme-panel-text) !important;
+  background: var(--theme-solid-panel) !important;
+  border-color: var(--theme-border) !important;
+}
+
+:root.codex-dream-skin [role="dialog"] :is(div, h1, h2, h3, p, span, strong, small, a, button, label, svg) {
+  color: var(--theme-panel-text) !important;
+  -webkit-text-fill-color: var(--theme-panel-text) !important;
+  text-shadow: none !important;
+}
+
+:root.codex-dream-skin [role="dialog"] :is(
+  [class*="text-token-text-secondary"],
+  [class*="text-token-foreground-secondary"],
+  [class*="text-token-input-placeholder-foreground"],
+  [class*="text-token-text-tertiary"]
+) {
+  color: var(--theme-muted-text) !important;
+  -webkit-text-fill-color: var(--theme-muted-text) !important;
+}
+
+:root.codex-dream-skin [role="dialog"] a {
+  color: var(--dream-accent, #58766c) !important;
+  -webkit-text-fill-color: var(--dream-accent, #58766c) !important;
+}
+
+:root.codex-dream-skin [role="dialog"] button[class~="bg-token-foreground"],
+:root.codex-dream-skin [role="dialog"] button[class~="bg-token-foreground"] :is(span, svg) {
+  color: var(--theme-primary-text) !important;
+  -webkit-text-fill-color: var(--theme-primary-text) !important;
+}
+
+:root.codex-dream-skin [role="dialog"] :disabled {
+  opacity: 0.58 !important;
 }
 
 :root.codex-dream-skin [data-radix-popper-content-wrapper] :is(h1, h2, h3, p, span, button, label) {
   color: var(--dream-ink, #26332f) !important;
   text-shadow: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root.codex-dream-skin .dream-theme-motion {
+    display: none !important;
+    animation: none !important;
+    will-change: auto !important;
+  }
 }

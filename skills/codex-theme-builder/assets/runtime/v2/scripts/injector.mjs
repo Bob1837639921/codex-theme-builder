@@ -336,6 +336,20 @@ async function loadThemePackage(themeDir, baseCss) {
       sidebarExtension === ".jpg" || sidebarExtension === ".jpeg" ? "image/jpeg" : "image/png";
     sidebarImageDataUrl = `url("data:${sidebarMime};base64,${sidebarImageBytes.toString("base64")}")`;
   }
+  let motionImageDataUrl = null;
+  if (raw.motionImage !== undefined) {
+    if (typeof raw.motionImage !== "string" || path.basename(raw.motionImage) !== raw.motionImage ||
+        !/\.webp$/i.test(raw.motionImage)) {
+      throw new Error("Motion image must be a WebP file inside the theme directory");
+    }
+    const motionImagePath = path.join(themeDir, raw.motionImage);
+    const motionImageStat = await fs.stat(motionImagePath);
+    if (!motionImageStat.isFile() || motionImageStat.size < 1 || motionImageStat.size > 2 * 1024 * 1024) {
+      throw new Error("Motion image must be non-empty and no larger than 2 MB");
+    }
+    const motionImageBytes = await fs.readFile(motionImagePath);
+    motionImageDataUrl = `data:image/webp;base64,${motionImageBytes.toString("base64")}`;
+  }
   let selectedLeafDataUrl = "none";
   if (raw.selectedLeaf !== undefined) {
     if (typeof raw.selectedLeaf !== "string" || path.basename(raw.selectedLeaf) !== raw.selectedLeaf ||
@@ -426,6 +440,7 @@ async function loadThemePackage(themeDir, baseCss) {
     cssText: `${themeVariables}\n${baseCss}\n${themeCss}`,
     artDataUrl,
     conversationArtDataUrl,
+    motionArtDataUrl: motionImageDataUrl,
     swatches: [theme.accent, theme.accentAlt, theme.surface],
   };
 }
@@ -823,6 +838,7 @@ async function runOneShot(options) {
               return { pass: false, reason: 'missing state or incomplete theme catalog cards' };
             }
             const original = state.activeThemeId;
+            const originalMotion = state.activeMotionLevel;
             const alternate = cards.find((card) => card.dataset.dreamThemeId !== original);
             alternate?.click();
             await new Promise((resolve) => setTimeout(resolve, 120));
@@ -832,11 +848,28 @@ async function runOneShot(options) {
             originalCard?.click();
             await new Promise((resolve) => setTimeout(resolve, 120));
             const restored = state.activeThemeId;
+            const motionButtons = [...document.querySelectorAll('#codex-dream-theme-switcher [data-dream-motion-level]')];
+            const alternateMotionButton = motionButtons.find((button) =>
+              button.dataset.dreamMotionLevel !== originalMotion);
+            alternateMotionButton?.click();
+            await new Promise((resolve) => setTimeout(resolve, 60));
+            const changedMotion = state.activeMotionLevel;
+            const motionAttribute = document.documentElement.dataset.dreamMotion;
+            const persistedMotion = localStorage.getItem('codex-dream-motion-level');
+            motionButtons.find((button) => button.dataset.dreamMotionLevel === originalMotion)?.click();
+            await new Promise((resolve) => setTimeout(resolve, 60));
+            const restoredMotion = state.activeMotionLevel;
             return {
-              pass: changed !== original && changedStyle === changed && restored === original,
+              pass: changed !== original && changedStyle === changed && restored === original &&
+                motionButtons.length === 4 && changedMotion !== originalMotion &&
+                motionAttribute === changedMotion && persistedMotion === changedMotion &&
+                restoredMotion === originalMotion,
               original,
               changed,
-              restored
+              restored,
+              originalMotion,
+              changedMotion,
+              restoredMotion
             };
           })()`);
           if (!switcherTest.pass) throw new Error(`Theme switcher interaction test failed: ${switcherTest.reason || JSON.stringify(switcherTest)}`);

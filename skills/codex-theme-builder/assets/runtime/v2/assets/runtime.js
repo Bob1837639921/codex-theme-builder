@@ -7,6 +7,8 @@
   const HOME_OVERLAY_ID = "codex-dream-home-overlay";
   const SWITCHER_ID = "codex-dream-theme-switcher";
   const STORAGE_KEY = "codex-dream-theme-active";
+  const MOTION_STORAGE_KEY = "codex-dream-motion-level";
+  const MOTION_LEVELS = ["off", "low", "medium", "high"];
   const RUNTIME_VERSION = "2.1.1-performance";
   const MUTATION_COALESCE_MS = 96;
   const actions = [
@@ -28,6 +30,7 @@
   for (const urls of previous?.objectUrls?.values?.() || []) {
     URL.revokeObjectURL(urls.artUrl);
     URL.revokeObjectURL(urls.conversationUrl);
+    if (urls.motionUrl) URL.revokeObjectURL(urls.motionUrl);
   }
   const themeMap = new Map(themeCatalog.map((item) => [item.id, item]));
   if (!themeMap.size || !themeMap.has(initialThemeId)) throw new Error("Theme catalog is empty or missing the initial theme");
@@ -44,11 +47,14 @@
     if (!objectUrls.has(theme.id)) objectUrls.set(theme.id, {
       artUrl: dataUrlToObjectUrl(theme.artDataUrl),
       conversationUrl: dataUrlToObjectUrl(theme.conversationArtDataUrl),
+      motionUrl: theme.motionArtDataUrl ? dataUrlToObjectUrl(theme.motionArtDataUrl) : null,
     });
     return objectUrls.get(theme.id);
   };
   const storedThemeId = (() => { try { return localStorage.getItem(STORAGE_KEY); } catch { return null; } })();
+  const storedMotionLevel = (() => { try { return localStorage.getItem(MOTION_STORAGE_KEY); } catch { return null; } })();
   let activeTheme = themeMap.get(storedThemeId) || themeMap.get(initialThemeId);
+  let activeMotionLevel = MOTION_LEVELS.includes(storedMotionLevel) ? storedMotionLevel : "medium";
   const markerState = {
     home: document.querySelector(".dream-home"),
     homeStage: document.querySelector(".dream-home-stage"),
@@ -104,11 +110,19 @@
     document.querySelectorAll(".dream-progress-indicator").forEach((node) => node.classList.remove("dream-progress-indicator"));
     document.querySelectorAll(".dream-selected-thread").forEach((node) => node.classList.remove("dream-selected-thread"));
     document.querySelectorAll(".dream-selected-thread-label").forEach((node) => node.classList.remove("dream-selected-thread-label"));
+    document.querySelectorAll(".dream-file-changes-summary").forEach((node) => node.classList.remove("dream-file-changes-summary"));
     document.querySelectorAll(".dream-output-panel").forEach((node) => node.classList.remove("dream-output-panel"));
     restoreSidebarControls();
   };
 
   const markDetailSurfaces = () => {
+    const diffHeaders = [...document.getElementsByClassName("group/turn-diff-header")];
+    const diffCards = new Set(diffHeaders.map((header) => header.parentElement).filter(Boolean));
+    document.querySelectorAll(".dream-file-changes-summary").forEach((node) => {
+      if (!diffCards.has(node)) node.classList.remove("dream-file-changes-summary");
+    });
+    diffCards.forEach((node) => node.classList.add("dream-file-changes-summary"));
+
     const progressPattern = /\u7b2c\s*\d+\s*\/\s*\d+\s*\u6b65|\d+\s*\u4e2a?\u6587\u4ef6\u5df2\u66f4/;
     let progress = document.querySelector(".dream-progress-pill");
     if (!progress?.isConnected || !progressPattern.test(progress.textContent || "")) {
@@ -282,6 +296,23 @@
       const check = card.querySelector(".dream-theme-check");
       if (check) check.hidden = !selected;
     });
+    switcher?.querySelectorAll("[data-dream-motion-level]").forEach((button) => {
+      const selected = button.dataset.dreamMotionLevel === activeMotionLevel;
+      button.classList.toggle("is-selected", selected);
+      button.setAttribute("aria-pressed", String(selected));
+    });
+  };
+
+  const applyMotionLevel = (level, persist = true) => {
+    const normalized = MOTION_LEVELS.includes(level) ? level : "medium";
+    activeMotionLevel = normalized;
+    const root = document.documentElement;
+    if (root) root.dataset.dreamMotion = normalized;
+    if (persist) {
+      try { localStorage.setItem(MOTION_STORAGE_KEY, normalized); } catch {}
+    }
+    renderSwitcherSelection();
+    return normalized;
   };
 
   const applyTheme = (theme, persist = true) => {
@@ -300,6 +331,8 @@
     root.classList.add("codex-dream-skin");
     root.style.setProperty("--dream-art", `url("${urls.artUrl}")`);
     root.style.setProperty("--dream-conversation-art", `url("${urls.conversationUrl}")`);
+    if (urls.motionUrl) root.style.setProperty("--dream-motion-art", `url("${urls.motionUrl}")`);
+    else root.style.removeProperty("--dream-motion-art");
     activeTheme = theme;
     document.querySelectorAll(".dream-action-button[data-dream-action-key]").forEach((button) => {
       const icon = button.querySelector("img");
@@ -398,6 +431,35 @@
       grid.appendChild(card);
     }
     panel.appendChild(grid);
+    const motionControl = document.createElement("section");
+    motionControl.className = "dream-motion-control";
+    const motionHeading = document.createElement("div");
+    motionHeading.className = "dream-motion-heading";
+    const motionLabel = document.createElement("strong");
+    motionLabel.textContent = "\u52a8\u6001\u6548\u679c";
+    const motionHint = document.createElement("span");
+    motionHint.textContent = "\u6027\u80fd\u8c03\u8282";
+    motionHeading.append(motionLabel, motionHint);
+    const motionOptions = document.createElement("div");
+    motionOptions.className = "dream-motion-options";
+    motionOptions.setAttribute("role", "group");
+    motionOptions.setAttribute("aria-label", "\u52a8\u6001\u6548\u679c\u5f3a\u5ea6");
+    for (const [level, label] of [
+      ["off", "\u5173\u95ed"],
+      ["low", "\u4f4e"],
+      ["medium", "\u4e2d"],
+      ["high", "\u9ad8"],
+    ]) {
+      const option = document.createElement("button");
+      option.type = "button";
+      option.className = "dream-motion-option";
+      option.dataset.dreamMotionLevel = level;
+      option.textContent = label;
+      option.addEventListener("click", () => applyMotionLevel(level, true));
+      motionOptions.appendChild(option);
+    }
+    motionControl.append(motionHeading, motionOptions);
+    panel.appendChild(motionControl);
     switcher.append(trigger, panel);
     sidebar.appendChild(switcher);
     const panelIsOpen = () => panel.matches(":popover-open") || !panel.hidden;
@@ -623,8 +685,10 @@
   const cleanup = () => {
     window.__CODEX_DREAM_SKIN_DISABLED__ = true;
     document.documentElement?.classList.remove("codex-dream-skin");
+    document.documentElement?.removeAttribute("data-dream-motion");
     document.documentElement?.style.removeProperty("--dream-art");
     document.documentElement?.style.removeProperty("--dream-conversation-art");
+    document.documentElement?.style.removeProperty("--dream-motion-art");
     document.querySelectorAll(".dream-home").forEach((node) => node.classList.remove("dream-home"));
     document.querySelectorAll(".dream-home-stage").forEach((node) => node.classList.remove("dream-home-stage"));
     document.querySelectorAll(".dream-home-hero").forEach((node) => node.classList.remove("dream-home-hero"));
@@ -716,12 +780,15 @@
     detailState,
     objectUrls,
     activateTheme,
+    applyMotionLevel,
     removeSwitcherListeners,
     restoreSidebarControls,
     get activeThemeId() { return activeTheme.id; },
+    get activeMotionLevel() { return activeMotionLevel; },
     themeCount: themeCatalog.length,
     version: RUNTIME_VERSION,
   };
+  applyMotionLevel(activeMotionLevel, false);
   applyTheme(activeTheme, false);
   ensure();
   scheduler.lastRun = performance.now();
