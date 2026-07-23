@@ -16,6 +16,8 @@ Read this reference before creating, replacing, enlarging, or compressing home a
 - If enlargement is required, use offline content-preserving super-resolution. A proven workflow is Real-ESRGAN `realesrgan-x4plus`, followed by a high-quality Lanczos resize to the final 3840 px width.
 - Inspect the enlarged result before acceptance. Reject altered faces, hands, weapons, instruments, text, silhouettes, brush strokes, or repeated texture artifacts.
 - Delete lossless intermediate files after the final encoded asset is verified. Do not commit temporary PNGs, model binaries, or generated comparison sheets.
+- Replace the manifest-referenced asset in place or update the manifest atomically, then delete the superseded background. Do not keep `old`, `backup`, source-resolution, or alternate encoded copies inside the theme folder.
+- Before packaging, search the manifest, theme CSS, catalog, and documentation for every remaining raster filename. Remove any unreferenced full-canvas or preview raster unless it is an intentional documented asset.
 
 ## Encode efficiently
 
@@ -37,4 +39,5 @@ Read this reference before creating, replacing, enlarging, or compressing home a
 3. Hot-preview both home and a populated conversation.
 4. Inspect at normal, narrow, and the largest available target viewport at 100% display scaling. Prefer a viewport at least 3200 px wide when the target machine has an ultrawide or 4K display.
 5. Compare facial detail, fine line art, foliage, fabric, hair, weapons, instruments, and low-contrast texture against the approved source.
-6. Record the tested viewports, asset dimensions, sizes, findings, and accepted exceptions in `design-qa.md`.
+6. Confirm that the theme folder contains no superseded or unreferenced background copies.
+7. Record the tested viewports, asset dimensions, sizes, findings, and accepted exceptions in `design-qa.md`.

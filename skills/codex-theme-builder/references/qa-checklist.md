@@ -8,6 +8,7 @@
 - `scripts/inspect-theme-artwork.ps1` reports the home and conversation dimensions and file sizes.
 - Full-canvas artwork intended for large displays is preferably 3840 px wide and does not fall below the 3200 px warning threshold without a documented reason.
 - Full-canvas WebP files target 1 MB or less when visual comparison shows no meaningful loss.
+- No superseded, backup, source-resolution, or unreferenced full-canvas background remains in the theme folder.
 - All four safe SVG icons exist and remain below 64 KB.
 - Runtime payload builds without unresolved placeholders.
 - JavaScript and PowerShell syntax checks pass.
