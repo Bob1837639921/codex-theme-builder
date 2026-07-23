@@ -120,10 +120,16 @@ if ($runtimeJs -notmatch 'codex-dream-theme-switcher' -or
     $runtimeJs -notmatch 'panel\.setAttribute\("popover", "manual"\)' -or
     $runtimeJs -notmatch 'positionPanel' -or
     $runtimeJs -notmatch 'window\.addEventListener\("resize", onViewportChange\)' -or
+    $runtimeJs -notmatch 'THEME_SEARCH_THRESHOLD' -or
+    $runtimeJs -notmatch 'dream-theme-search' -or
+    $runtimeJs -notmatch 'dream-theme-current' -or
     $baseCss -notmatch '(?s)\.dream-theme-panel\s*\{[^}]*position:\s*fixed\s*!important' -or
     $baseCss -notmatch '(?s)\.dream-theme-card\s*\{[^}]*background:\s*rgb\(255 255 255 / 82%\)\s*!important' -or
     $baseCss -notmatch '(?s)\.dream-motion-options\s*\{[^}]*grid-template-columns:\s*repeat\(4' -or
     $baseCss -notmatch '(?s)\.dream-motion-option\.is-selected\s*\{[^}]*background:\s*#ffffff\s*!important' -or
+    $baseCss -notmatch '(?s)\.dream-theme-grid\s*\{[^}]*max-height:[^}]*overflow-y:\s*auto' -or
+    $baseCss -notmatch '(?s)\.dream-theme-current\s*\{[^}]*border-radius:\s*999px' -or
+    $runtimeJs -match 'dream-theme-check' -or
     $baseCss -notmatch 'dream-theme-panel-in' -or
     $runtimeJs -match 'dream-theme-feedback' -or
     $baseCss -match 'dream-theme-feedback' -or
@@ -156,6 +162,10 @@ if ($tidalManifest.motionImage -ne 'motion-caustics.webp' -or
 if ($themeCss -notmatch '(?s)main\.dream-conversation-shell\s+\.sticky\.bottom-0\s+\[class~="bg-gradient-to-t"\]\s*\{[^}]*background-image:\s*none\s*!important') {
   throw 'Conversation composer fades must stay transparent, including the in-progress file-summary state.'
 }
+if ($themeCss -notmatch '(?s)main\.main-surface\s*>\s*header\.app-header-tint\s*\{[^}]*color:\s*[^;]+\s*!important[^}]*background:\s*[^;]+\s*!important[^}]*border-bottom:' -or
+    $themeCss -notmatch '(?s)header\.app-header-tint\s+:is\(button,\s*span,\s*svg\)\s*\{[^}]*color:\s*[^;]+\s*!important') {
+  throw 'Every theme must adapt the Codex content toolbar surface, divider, text, and icons.'
+}
 if ($themeCss -match 'group\\/project-selector' -or
     $baseCss -notmatch '(?s)main\.dream-home-shell \.dream-project-picker\s*\{[^}]*overflow:\s*hidden\s*!important' -or
     $baseCss -match '(?s)\.dream-project-picker\s*\{[^}]*(?:background|border(?:-radius)?|box-shadow|clip-path|margin|padding|position|z-index|width|height)\s*:') {
@@ -167,8 +177,10 @@ if ($baseCss -notmatch '(?s)aside\.app-shell-left-panel\s+\[class~="bg-token-bg-
 if ($themeCss -notmatch '(?s)\[role="dialog"\]\s*\{[^}]*color:\s*var\(--dream-ink\)\s*!important[^}]*background-color:') {
   throw 'Portaled light dialogs must keep readable dark text after Codex updates.'
 }
-if ($baseCss -notmatch '(?s)aside\.app-shell-left-panel\s+\[role="status"\]\[class~="bg-token-main-surface-primary"\]\s*\{[^}]*color:\s*var\(--dream-ink') {
-  throw 'The sidebar usage card must keep readable dark text on its light surface.'
+if ($baseCss -notmatch '(?s)aside\.app-shell-left-panel\s+\[role="status"\]\[class~="bg-token-main-surface-primary"\]\s*\{[^}]*color:\s*var\(--dream-light-overlay-ink' -or
+    $baseCss -notmatch '(?s)\[role="status"\]\[class~="bg-token-main-surface-primary"\].*?-webkit-text-fill-color:\s*currentColor\s*!important' -or
+    $templateCss -notmatch '--dream-light-overlay-ink:\s*#[0-9a-fA-F]{6}') {
+  throw 'The light sidebar usage card must use an independent dark overlay foreground in every theme.'
 }
 if ($baseCss -notmatch '(?s)button\[class\*="text-token-input-placeholder-foreground"\]\[class\*="opacity-75"\]\s*\{[^}]*color:\s*var\(--dream-sidebar-control-text[^}]*opacity:\s*\.9\s*!important' -or
     $themeCss -notmatch '--dream-sidebar-control-text:') {

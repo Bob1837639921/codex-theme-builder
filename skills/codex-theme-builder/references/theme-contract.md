@@ -89,6 +89,8 @@ Start every override from `:root.codex-dream-skin` or one of the runtime classes
 
 The runtime exposes `--dream-art`, `--dream-conversation-art`, the optional `--dream-sidebar-art`, `--dream-motion-art`, `--dream-selected-leaf`, and `--dream-composer-edge` as data-backed CSS values, plus color tokens derived from the manifest. Keep pseudo-elements non-interactive with `pointer-events: none`.
 
+Define `--dream-light-overlay-ink` independently from `--dream-ink`. Codex's sidebar usage/credits warning remains a light native card in both light and dark themes, so it must use a dark readable foreground even when the main theme text is near-white. Do not include that status card in broad dark dialog, menu, or Radix descendant selectors.
+
 Use detail marker classes only when their native surfaces are present. Scope searches to the composer, sidebar, or output region, and retain connected markers instead of rescanning the entire conversation on every mutation.
 
 The neutral scaffold already treats `.dream-file-changes-summary` and portaled `[role="dialog"]` content as mandatory semantic surfaces. Preserve those blocks when creating a theme. Override their tokens or presentation for the visual direction; do not remove the complete-card styling, explicit descendant foregrounds, muted text, links, disabled states, or green/red diff semantics. In dark themes, setting only the outer `color` is insufficient because Codex utility classes may assign nested foreground and WebKit text-fill values.

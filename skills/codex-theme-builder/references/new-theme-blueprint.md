@@ -29,7 +29,7 @@ Use `scripts/new-theme.ps1` to copy the supplied home, conversation, sidebar, se
 
 Review each surface instead of treating a theme as a background replacement:
 
-1. **Global canvas:** main paper/surface color, full-height artwork coverage, scrollbar edge, and title-bar transition.
+1. **Global canvas and content toolbar:** main paper/surface color, full-height artwork coverage, scrollbar edge, and title-bar transition. Explicitly theme `main.main-surface > header.app-header-tint` with a matching surface, divider, readable task title, icons, and hover state while preserving its native height and controls. Treat the Windows/Electron menu and window buttons above the web content as system-owned chrome; do not claim full support for styling them through the injected theme.
 2. **Sidebar:** background or texture, logo/header contrast, navigation, pinned tasks, projects, project expand/collapse controls, account area, hover, focus, and current-task state. Define `--dream-sidebar-control-text` with sufficient contrast against the sidebar artwork.
 3. **Home:** full-canvas scene crop, title/subtitle safe area, all four action blocks, project selector, and initial composer. Paint the artwork on `.dream-home-shell` / `.dream-home`, use the shared `#codex-dream-home-overlay`, keep `.dream-home-hero` transparent with square corners, and leave the native project-selector/composer layout untouched. `.dream-project-picker` is an inspection hook, not permission to recreate its geometry or styling. Inset photo-frame artwork and reconstructed compound-input layouts are not accepted default structures.
 4. **Conversation:** prose, links, code, diffs, tool rows, image previews, timestamps, feedback buttons, and long-scroll readability.
@@ -37,7 +37,7 @@ Review each surface instead of treating a theme as a background replacement:
 6. **Composer:** panel surface, placeholder, access mode, attachment, model selector, microphone, submit/stop button, focus state, multiline growth, and narrow width.
 7. **Selected task:** marker, title, pin/archive actions, focus ring, and mutation stability without flashing.
 8. **Output panel:** outer container, sticky headings, URL/environment row, browser row, source list, expanders, thumbnails, and one coherent surface color.
-9. **Portaled UI:** usage/credits card, dialogs, menus, popovers, tooltips, close buttons, progress bars, and disabled text contrast. Explicitly open the full-access confirmation dialog and verify its nested permission descriptions, risk copy, links, cancel action, and primary action; inherited `color` alone is not sufficient for dark themes.
+9. **Portaled UI:** usage/credits card, dialogs, menus, popovers, tooltips, close buttons, progress bars, and disabled text contrast. Explicitly open the full-access confirmation dialog and verify its nested permission descriptions, risk copy, links, cancel action, and primary action; inherited `color` alone is not sufficient for dark themes. Treat the light sidebar usage/credits status card as a separate semantic surface: define a dark `--dream-light-overlay-ink`, preserve its light background, and exclude it from broad dark-theme portal descendant rules.
 10. **Theme switcher:** trigger, all catalog cards, active state, keyboard flow, persistence, rollback, narrow viewport, and no redundant success toast.
 11. **Motion preference:** use the shared `off / low / medium / high` control and root `data-dream-motion` value. Define visibly distinct but compositor-safe levels, persist the choice across theme switches, and let system reduced-motion force a static result.
 
@@ -46,6 +46,8 @@ Review each surface instead of treating a theme as a background replacement:
 When the selected design is one continuous scene across sidebar and conversation, mount the conversation artwork once on the global `body` canvas. Treat the sidebar, title bar, main shell, output panel, and composer as translucent overlays. Do not apply the same raster independently with `background-size: cover` to sidebar and main: each container would calculate a different crop and split characters, instruments, architecture, or horizon lines. Keep `sidebarImage` only as a packaged fallback when the manifest contract requires it.
 
 For dark directions, opening a panel is part of implementation, not optional QA. Explicitly verify the product-mode menu, profile/usage menu, message-actions menu, output panel, dialogs, popovers, listboxes, disabled rows, and nested sticky rows. Utility-token colors may bypass inherited `color`, so theme rules must also set `-webkit-text-fill-color` on relevant descendants.
+
+Open the low-quota usage card in every dark theme. Its remaining percentage, reset schedule, close control, progress bar, and both actions must remain readable on the native light card. Never derive this card's foreground from a near-white main-canvas `--dream-ink` value.
 
 ## Composer-edge safety contract
 

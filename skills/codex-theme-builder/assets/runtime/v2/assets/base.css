@@ -49,7 +49,7 @@ html.codex-dream-skin body {
 
 html.codex-dream-skin aside.app-shell-left-panel
   [role="status"][class~="bg-token-main-surface-primary"] {
-  color: var(--dream-ink, #252a27) !important;
+  color: var(--dream-light-overlay-ink, #263746) !important;
   background: rgb(251 249 243 / 98%) !important;
   border-color: rgb(66 78 71 / 16%) !important;
   box-shadow: 0 12px 28px rgb(20 28 24 / 16%) !important;
@@ -59,6 +59,7 @@ html.codex-dream-skin aside.app-shell-left-panel
   [role="status"][class~="bg-token-main-surface-primary"]
   :is(div, span, p, button, a, label, svg) {
   color: inherit !important;
+  -webkit-text-fill-color: currentColor !important;
   text-shadow: none !important;
 }
 
@@ -221,6 +222,55 @@ html.codex-dream-skin aside.app-shell-left-panel #codex-dream-theme-switcher * {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
+  max-height: min(410px, calc(100vh - 92px));
+  padding: 3px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgb(92 118 106 / 34%) transparent;
+}
+
+#codex-dream-theme-switcher .dream-theme-search {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  height: 34px;
+  margin-bottom: 10px;
+  padding: 0 10px;
+  border: 1px solid rgb(96 104 99 / 16%);
+  border-radius: 10px;
+  color: #647069 !important;
+  background: rgb(255 255 255 / 72%);
+}
+
+#codex-dream-theme-switcher .dream-theme-search svg {
+  width: 15px;
+  height: 15px;
+  flex: 0 0 auto;
+}
+
+#codex-dream-theme-switcher .dream-theme-search input {
+  min-width: 0;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  color: #26302b !important;
+  background: transparent;
+  font: inherit;
+  font-size: 12px;
+}
+
+#codex-dream-theme-switcher .dream-theme-search input::placeholder {
+  color: #89918c !important;
+}
+
+#codex-dream-theme-switcher .dream-theme-empty {
+  margin: 12px 4px 4px;
+  color: #7a837e !important;
+  font-size: 12px;
+  text-align: center;
 }
 
 #codex-dream-theme-switcher .dream-theme-card {
@@ -237,11 +287,11 @@ html.codex-dream-skin aside.app-shell-left-panel #codex-dream-theme-switcher * {
   background: rgb(255 255 255 / 82%) !important;
   box-shadow: none !important;
   cursor: pointer;
-  transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+  transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
 }
 
 #codex-dream-theme-switcher .dream-theme-card:hover {
-  transform: translateY(-1px) !important;
+  transform: none !important;
   border-color: color-mix(in srgb, var(--dream-accent, #5f7c72) 58%, transparent) !important;
   box-shadow: 0 8px 18px rgb(33 42 37 / 10%) !important;
 }
@@ -263,20 +313,23 @@ html.codex-dream-skin aside.app-shell-left-panel #codex-dream-theme-switcher * {
   overflow: hidden;
 }
 
-#codex-dream-theme-switcher .dream-theme-check {
+#codex-dream-theme-switcher .dream-theme-current {
   position: absolute;
-  top: 6px;
-  right: 6px;
+  top: 9px;
+  right: 9px;
   display: grid;
   place-items: center;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  color: white;
-  font-size: 12px;
+  width: 15px;
+  height: 15px;
+  padding: 0;
+  border: 1px solid rgb(255 255 255 / 82%);
+  border-radius: 999px;
+  color: white !important;
+  font-size: 9px;
+  line-height: 1;
   font-weight: 700;
   background: var(--dream-accent, #5f7c72);
-  box-shadow: 0 2px 7px rgb(0 0 0 / 20%);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--dream-accent, #5f7c72) 38%, transparent), 0 2px 5px rgb(0 0 0 / 14%);
 }
 
 #codex-dream-theme-switcher .dream-theme-card strong {

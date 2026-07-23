@@ -11,6 +11,8 @@
   --theme-atmosphere-opacity: 0.42;
   --theme-atmosphere-distance: 16px;
   --dream-sidebar-control-text: #eef3ef;
+  /* Usage/credits warnings remain light native cards even in dark themes. */
+  --dream-light-overlay-ink: #263746;
 }
 
 :root.codex-dream-skin[data-dream-motion="low"] {
@@ -65,6 +67,20 @@
   border-radius: 0 !important;
   background: transparent !important;
   box-shadow: none !important;
+}
+
+/* The Codex content toolbar is themeable; the Windows/Electron menu and
+   window chrome above it are system-owned and intentionally left native. */
+:root.codex-dream-skin main.main-surface > header.app-header-tint {
+  color: var(--dream-ink, #26332f) !important;
+  background: color-mix(in srgb, var(--dream-surface, #f4f0e6) 94%, white) !important;
+  border-bottom: 1px solid var(--theme-border) !important;
+  box-shadow: inset 0 -1px rgb(255 255 255 / 54%) !important;
+}
+
+:root.codex-dream-skin main.main-surface > header.app-header-tint :is(button, span, svg) {
+  color: var(--dream-ink, #26332f) !important;
+  -webkit-text-fill-color: var(--dream-ink, #26332f) !important;
 }
 
 :root.codex-dream-skin .composer-surface-chrome {
@@ -151,6 +167,22 @@
 :root.codex-dream-skin [data-radix-popper-content-wrapper] :is(h1, h2, h3, p, span, button, label) {
   color: var(--dream-ink, #26332f) !important;
   text-shadow: none !important;
+}
+
+/* Do not let a dark theme's general portal palette wash out the fixed light
+   usage/credits card in the sidebar. */
+:root.codex-dream-skin aside.app-shell-left-panel
+  [role="status"][class~="bg-token-main-surface-primary"] {
+  color: var(--dream-light-overlay-ink, #263746) !important;
+}
+
+:root.codex-dream-skin aside.app-shell-left-panel
+  [role="status"][class~="bg-token-main-surface-primary"]
+  :is(div, span, p, button, a, label, svg) {
+  color: inherit !important;
+  -webkit-text-fill-color: currentColor !important;
+  text-shadow: none !important;
+  opacity: 1 !important;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -9,7 +9,8 @@
   const STORAGE_KEY = "codex-dream-theme-active";
   const MOTION_STORAGE_KEY = "codex-dream-motion-level";
   const MOTION_LEVELS = ["off", "low", "medium", "high"];
-  const RUNTIME_VERSION = "2.1.1-performance";
+  const RUNTIME_VERSION = "2.2.0-theme-library";
+  const THEME_SEARCH_THRESHOLD = 6;
   const MUTATION_COALESCE_MS = 96;
   const actions = [
     ["build", "构建", "编码实现与应用", "帮我构建一个新的应用"],
@@ -293,8 +294,8 @@
       const selected = card.dataset.dreamThemeId === activeTheme.id;
       card.classList.toggle("is-selected", selected);
       card.setAttribute("aria-pressed", String(selected));
-      const check = card.querySelector(".dream-theme-check");
-      if (check) check.hidden = !selected;
+      const current = card.querySelector(".dream-theme-current");
+      if (current) current.hidden = !selected;
     });
     switcher?.querySelectorAll("[data-dream-motion-level]").forEach((button) => {
       const selected = button.dataset.dreamMotionLevel === activeMotionLevel;
@@ -400,19 +401,35 @@
     trigger.setAttribute("aria-controls", panel.id);
     const grid = document.createElement("div");
     grid.className = "dream-theme-grid";
+    const search = document.createElement("label");
+    search.className = "dream-theme-search";
+    search.hidden = themeCatalog.length <= THEME_SEARCH_THRESHOLD;
+    search.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+      <circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path>
+    </svg>`;
+    const searchInput = document.createElement("input");
+    searchInput.type = "search";
+    searchInput.placeholder = "搜索主题";
+    searchInput.autocomplete = "off";
+    searchInput.setAttribute("aria-label", "搜索主题");
+    search.appendChild(searchInput);
+    const empty = document.createElement("p");
+    empty.className = "dream-theme-empty";
+    empty.textContent = "没有匹配的主题";
+    empty.hidden = true;
     for (const item of themeCatalog) {
       const card = document.createElement("button");
       card.type = "button";
       card.className = "dream-theme-card";
       card.dataset.dreamThemeId = item.id;
+      card.dataset.dreamThemeSearch = `${item.name} ${item.subtitle || ""} ${item.id}`.toLocaleLowerCase();
       const preview = document.createElement("span");
       preview.className = "dream-theme-preview";
       preview.style.backgroundImage = `url("${item.artDataUrl}")`;
-      const check = document.createElement("span");
-      check.className = "dream-theme-check";
-      check.textContent = "✓";
-      check.setAttribute("aria-hidden", "true");
-      preview.appendChild(check);
+      const current = document.createElement("span");
+      current.className = "dream-theme-current";
+      current.textContent = "✓";
+      current.setAttribute("aria-hidden", "true");
       const label = document.createElement("strong");
       label.textContent = item.name;
       const swatches = document.createElement("span");
@@ -422,6 +439,7 @@
         swatch.style.backgroundColor = color;
         swatches.appendChild(swatch);
       }
+      swatches.appendChild(current);
       card.append(preview, label, swatches);
       card.addEventListener("click", () => {
         activateTheme(item.id);
@@ -430,7 +448,18 @@
       });
       grid.appendChild(card);
     }
-    panel.appendChild(grid);
+    const filterThemes = () => {
+      const query = searchInput.value.trim().toLocaleLowerCase();
+      let visibleCount = 0;
+      grid.querySelectorAll("[data-dream-theme-id]").forEach((card) => {
+        const visible = !query || card.dataset.dreamThemeSearch.includes(query);
+        card.hidden = !visible;
+        if (visible) visibleCount += 1;
+      });
+      empty.hidden = visibleCount !== 0;
+    };
+    searchInput.addEventListener("input", filterThemes);
+    panel.append(search, grid, empty);
     const motionControl = document.createElement("section");
     motionControl.className = "dream-motion-control";
     const motionHeading = document.createElement("div");
@@ -477,6 +506,10 @@
       if (panel.matches(":popover-open")) panel.hidePopover();
       panel.hidden = true;
       trigger.setAttribute("aria-expanded", "false");
+      if (searchInput.value) {
+        searchInput.value = "";
+        filterThemes();
+      }
     };
     const open = () => {
       positionPanel();

@@ -42,7 +42,7 @@
 
 ## Portaled overlays
 
-- Open the usage/credits card and verify light cards use dark readable text.
+- Open the usage/credits card and verify its remaining percentage, reset schedule, close control, progress bar, and both actions use dark readable text on the light card, including under every dark theme.
 - Open menus, dialogs, and popovers from both the sidebar and conversation toolbar.
 - Open the full-access confirmation dialog and independently verify the title, explanatory paragraph, three permission descriptions, risk warning, link, cancel action, primary action, and disabled states.
 - Check headings, secondary copy, close buttons, progress indicators, and links independently.

@@ -1,6 +1,7 @@
 :root.codex-dream-skin {
   color-scheme: dark !important;
   --dream-ink: #e9f4fa;
+  --dream-light-overlay-ink: #17344a;
   --dream-muted: #a9c0ce;
   --dream-accent: #52b8d1;
   --dream-accent-alt: #8d78c7;
@@ -49,6 +50,11 @@ html.codex-dream-skin main.main-surface > header.app-header-tint {
 
 html.codex-dream-skin main.main-surface > header.app-header-tint * {
   color: #eaf7fc !important;
+}
+
+html.codex-dream-skin main.main-surface > header.app-header-tint :is(button, span, svg) {
+  color: #eaf7fc !important;
+  -webkit-text-fill-color: #eaf7fc !important;
 }
 
 html.codex-dream-skin aside.app-shell-left-panel {
@@ -518,6 +524,26 @@ html.codex-dream-skin [role="dialog"] :disabled {
   color: #8ca7b5 !important;
   -webkit-text-fill-color: #8ca7b5 !important;
   opacity: .72 !important;
+}
+
+/* The sidebar quota warning is intentionally a light native card.  Keep it
+   outside the opera theme's dark portal palette so its copy and actions do
+   not inherit the near-white --dream-ink token. */
+html.codex-dream-skin aside.app-shell-left-panel
+  [role="status"][class~="bg-token-main-surface-primary"] {
+  color: #17344a !important;
+  background-color: rgba(249, 250, 248, .98) !important;
+  border-color: rgba(91, 151, 174, .28) !important;
+  box-shadow: 0 14px 32px rgba(0, 10, 23, .28) !important;
+}
+
+html.codex-dream-skin aside.app-shell-left-panel
+  [role="status"][class~="bg-token-main-surface-primary"]
+  :is(div, span, p, button, a, label, svg) {
+  color: inherit !important;
+  -webkit-text-fill-color: currentColor !important;
+  text-shadow: none !important;
+  opacity: 1 !important;
 }
 
 html.codex-dream-skin .dream-home .dream-home-stage {

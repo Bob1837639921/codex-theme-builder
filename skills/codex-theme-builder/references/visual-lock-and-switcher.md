@@ -62,3 +62,13 @@ The current schema activates one theme. A live switcher therefore requires a sha
 Use `#codex-dream-theme-switcher` as the injected root. Anchor it inside the verified `aside.app-shell-left-panel`. Prefer the bottom-left account area by default, but when the user explicitly selects a reference with a top-sidebar trigger, place it near the sidebar header and let the card panel extend right without moving native controls. Do not place it in the Windows title bar, conversation toolbar, composer, or output panel unless a current DOM inspection proves a more stable anchor.
 
 If those requirements are not implemented and validated, show launcher-based selection instead of claiming live in-app switching.
+
+Treat the switcher as a theme library rather than a fixed demo grid. Keep the
+card region viewport-bounded and internally scrollable. For catalogs with more
+than six themes, expose an accessible text search that filters by theme name,
+subtitle, and ID without rebuilding the cards. Represent the active theme with
+card emphasis plus a compact corner icon; never cover preview artwork with
+active-state text or oversized checkmarks. Keep enough internal
+grid padding for focus and selected borders, and do not move cards on hover.
+Filtering, opening, and selecting may update the small switcher subtree only
+and must not trigger document-wide rescans.
