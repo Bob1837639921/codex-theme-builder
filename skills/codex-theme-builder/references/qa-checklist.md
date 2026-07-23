@@ -5,6 +5,9 @@
 - Manifest parses and uses schema version 1.
 - Theme ID and filenames are portable.
 - Both raster images exist, decode, and remain below 8 MB.
+- `scripts/inspect-theme-artwork.ps1` reports the home and conversation dimensions and file sizes.
+- Full-canvas artwork intended for large displays is preferably 3840 px wide and does not fall below the 3200 px warning threshold without a documented reason.
+- Full-canvas WebP files target 1 MB or less when visual comparison shows no meaningful loss.
 - All four safe SVG icons exist and remain below 64 KB.
 - Runtime payload builds without unresolved placeholders.
 - JavaScript and PowerShell syntax checks pass.
@@ -12,6 +15,7 @@
 ## Home view
 
 - Hero fills the intended region at common window sizes.
+- Hero detail remains crisp at the largest available target viewport at 100% display scaling; inspect faces, hair, foliage, architecture, line art, and other high-information regions.
 - Heading and subtitle remain readable.
 - Four action blocks appear, align, and retain icons.
 - Clicking an action fills the native composer without submitting.
@@ -21,6 +25,7 @@
 ## Conversation view
 
 - Background covers the full task surface, including the right side and lower area.
+- Background detail remains crisp at the largest available target viewport without runtime sharpening or full-screen filters.
 - Text, code, diffs, tool output, links, and image previews remain legible.
 - Composer aligns with the content column.
 - No opaque white side rails appear beside or behind the composer.
@@ -56,3 +61,4 @@
 - Reload or open a second task and confirm reinjection.
 - Restore and confirm the native UI returns.
 - Re-run after a Codex update.
+- Record source and output dimensions, encoded size, normal viewport, largest tested viewport, and any accepted quality exception in `design-qa.md`.

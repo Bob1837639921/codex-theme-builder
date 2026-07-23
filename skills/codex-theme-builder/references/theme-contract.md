@@ -102,6 +102,8 @@ Codex's native `.app-shell-main-content-top-fade` is a white home-route gradient
 - Avoid high-frequency detail behind text and controls.
 - Use separate art for home and conversation if one crop cannot serve both.
 - Treat icon styling as part of the selected theme, not part of the runtime.
+- Follow `artwork-quality.md` for full-canvas resolution, offline super-resolution, WebP encoding, payload targets, and large-viewport QA.
+- Treat 3200 px as the warning threshold and 3840 px as the preferred width for full-canvas artwork intended for large desktop displays. This is a quality recommendation, not a manifest compatibility requirement.
 
 ## In-app theme switching
 

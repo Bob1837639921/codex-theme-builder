@@ -21,6 +21,7 @@ When a real Codex screenshot exists, treat the work as a constrained edit rather
 
 - Create a theme from artwork: run `scripts/new-theme.ps1`.
 - Adapt an existing theme: copy its directory, change its ID and assets, then edit `theme.json` and `theme.css`.
+- Inspect full-canvas dimensions and encoded sizes: run `scripts/inspect-theme-artwork.ps1`.
 - Validate a theme: run `scripts/test-theme.ps1`.
 - Preview it in Codex on Windows: run `scripts/start-theme.ps1` only after the user explicitly closes Codex.
 - Hot-preview an edit in an already themed Codex session: run `scripts/preview-theme.ps1`.
@@ -28,13 +29,13 @@ When a real Codex screenshot exists, treat the work as a constrained edit rather
 - Produce a distributable archive: run `scripts/package-theme.ps1`.
 - Install a verified theme launcher on the Windows desktop: run `scripts/install-desktop-shortcut.ps1` from the installed skill.
 
-Read [theme-contract.md](references/theme-contract.md) before authoring or modifying a theme. When creating or porting a visual direction, also read [new-theme-blueprint.md](references/new-theme-blueprint.md); it is the reusable map of assets, Codex surfaces, control-safe zones, and acceptance states that every new theme must cover. Read [runtime-architecture.md](references/runtime-architecture.md) before modifying shared runtime, launcher, process-control, progress, or switching infrastructure. Read [windows-runtime.md](references/windows-runtime.md) before live application. Use [qa-checklist.md](references/qa-checklist.md) for final verification.
+Read [theme-contract.md](references/theme-contract.md) before authoring or modifying a theme. When creating or porting a visual direction, also read [new-theme-blueprint.md](references/new-theme-blueprint.md); it is the reusable map of assets, Codex surfaces, control-safe zones, and acceptance states that every new theme must cover. Read [artwork-quality.md](references/artwork-quality.md) before creating, replacing, enlarging, or compressing full-canvas artwork. Read [runtime-architecture.md](references/runtime-architecture.md) before modifying shared runtime, launcher, process-control, progress, or switching infrastructure. Read [windows-runtime.md](references/windows-runtime.md) before live application. Use [qa-checklist.md](references/qa-checklist.md) for final verification.
 
 ## Build a theme
 
 1. Inspect the user's reference, target Codex version, viewport, and desired routes.
 2. Decide whether the home and conversation views share artwork. Prefer separate images when composition or contrast differs.
-3. Create or acquire real artwork. Do not approximate supplied artwork with CSS gradients when visual fidelity matters.
+3. Create or acquire real artwork. Follow `artwork-quality.md`: preserve the selected composition, prepare full-canvas assets for large displays, encode them as quality-controlled WebP, and keep super-resolution work offline rather than in the Codex runtime. Do not approximate supplied artwork with CSS gradients when visual fidelity matters.
 4. Run the scaffold script with a unique lowercase ID:
 
 ```powershell
@@ -64,7 +65,7 @@ powershell -ExecutionPolicy Bypass -File scripts/start-theme.ps1 `
   -ThemePath "C:\path\themes\my-theme" -ConfirmCodexClosed
 ```
 
-Verify the home route, a populated conversation, the composer at the bottom edge, and the file-changes summary state. Check both normal and narrow viewports. Capture screenshots when visual fidelity is part of the request.
+Verify the home route, a populated conversation, the composer at the bottom edge, and the file-changes summary state. Check normal, narrow, and the largest available target viewport. Capture screenshots when visual fidelity is part of the request.
 
 During iterative development, hot-apply and capture without restarting Codex:
 
@@ -112,7 +113,7 @@ Commit the skill, source theme directories, documentation, and intentionally siz
 - Do not edit `app.asar`, WindowsApps, the registered Codex package, or official application resources.
 - Bind debugging only to loopback through the bundled runtime.
 - Never force-close Codex during theme startup.
-- Keep each raster image at or below 8 MB and each SVG icon at or below 64 KB.
+- Keep each raster image at or below 8 MB and each SVG icon at or below 64 KB. For full-canvas WebP artwork, target 1 MB or less when visual comparison shows no meaningful loss.
 - Preserve native menus, project selection, composer actions, keyboard navigation, and pointer behavior.
 - Keep all selectors scoped to the theme root whenever possible.
 - Animate only small surfaces with `transform` and `opacity` when possible; never use continuous full-screen motion.
@@ -123,4 +124,5 @@ Commit the skill, source theme directories, documentation, and intentionally siz
 - `assets/runtime/`: reusable Windows live-preview runtime.
 - `assets/themes/ink-landscape/`: complete sample preset.
 - `assets/theme-template/`: neutral starter CSS used by the scaffold script.
+- `scripts/inspect-theme-artwork.ps1`: portable PNG, JPEG, and WebP dimension and payload report for home and conversation artwork.
 - `scripts/install-desktop-shortcut.ps1`: deterministic Windows shortcut and icon installer for any bundled theme.

@@ -64,7 +64,10 @@ Treat composer art as a foreground accent with a transparent canvas, not as a se
 - Avoid continuous full-canvas filters, animated backgrounds, layout-changing transitions, and repeated whole-document scans.
 - Coalesce mutation work to animation frames and retain valid marker nodes.
 - Add `prefers-reduced-motion` behavior for every theme-specific animation.
-- Convert full-canvas artwork to quality-controlled WebP and resize tiny transparent markers or corner ornaments close to their maximum rendered dimensions. Do not ship multi-megapixel 20px icons. Re-run payload validation after compression and visually compare the live result.
+- Follow `artwork-quality.md` for full-canvas assets: prefer 3840 px-wide WebP, preserve the approved composition during offline super-resolution, and target 1 MB or less when quality permits.
+- Never run super-resolution, sharpening, blur recovery, or continuous full-screen filters inside Codex. Perform image enhancement once during theme production.
+- Resize tiny transparent markers or corner ornaments close to their maximum rendered dimensions. Do not ship multi-megapixel 20px icons.
+- Re-run payload validation after compression and visually compare the live result at normal and largest available target viewports.
 
 ## Completion gate
 

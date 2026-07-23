@@ -19,5 +19,7 @@ if ($LASTEXITCODE -ne 0) { throw 'Injector JavaScript syntax check failed.' }
 if ($LASTEXITCODE -ne 0) { throw 'CDP safety self-test failed.' }
 & $node.Path (Join-Path $runtime 'scripts\injector.mjs') --check-payload --theme-dir $theme
 if ($LASTEXITCODE -ne 0) { throw 'Theme payload validation failed.' }
+& (Join-Path $PSScriptRoot 'inspect-theme-artwork.ps1') -ThemePath $theme
+if ($LASTEXITCODE -ne 0) { throw 'Theme artwork inspection failed.' }
 
 Write-Host "Theme validation passed: $theme"
