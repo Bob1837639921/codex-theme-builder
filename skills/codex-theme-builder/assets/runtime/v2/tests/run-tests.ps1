@@ -69,6 +69,12 @@ if ($launchText -match '\[string\]\$Theme\s*=\s*\(Join-Path\s+\$PSScriptRoot') {
 if ($launchText -notmatch '\[scriptblock\]\$ProgressCallback' -or
     $launchText -notmatch 'Report-DreamSkinLaunchProgress' -or
     $launchText -notmatch 'Report-DreamSkinLaunchStage' -or
+    $launchText -notmatch 'function\s+Test-DreamSkinVerifiedInjection' -or
+    $launchText -notmatch '\$VerificationAttempts\s*=\s*3' -or
+    $launchText -notmatch '\$AttemptTimeoutMs\s*=\s*12000' -or
+    $launchText -notmatch '--timeout-ms\s+\$AttemptTimeoutMs' -or
+    $launchText -notmatch 'verification\.log' -or
+    $launchText -notmatch '\$verifyAttempt/\$VerificationAttempts' -or
     $launchText -notmatch "Verified = \[pscustomobject\]@\{ Percent = 96" -or
     $launchText -notmatch "-Stage WaitForCdp" -or
     $desktopLaunchText -notmatch '-ProgressCallback \$progressCallback' -or
@@ -98,6 +104,9 @@ $runtimeJs = Get-Content -LiteralPath (Join-Path $Root 'assets\runtime.js') -Raw
 $injectorText = Get-Content -LiteralPath $injector -Raw
 $sunkenCss = Get-Content -LiteralPath (Join-Path $Root '..\..\themes\sunken-opera\theme.css') -Raw
 $tidalCss = Get-Content -LiteralPath (Join-Path $Root '..\..\themes\tidal-hymn\theme.css') -Raw
+$luminousCss = Get-Content -LiteralPath (Join-Path $Root '..\..\themes\luminous-spirit-garden\theme.css') -Raw
+$luminousTheme = Join-Path $Root '..\..\themes\luminous-spirit-garden'
+$luminousManifest = Get-Content -LiteralPath (Join-Path $luminousTheme 'theme.json') -Raw | ConvertFrom-Json
 $tidalTheme = Join-Path $Root '..\..\themes\tidal-hymn'
 $tidalManifest = Get-Content -LiteralPath (Join-Path $tidalTheme 'theme.json') -Raw | ConvertFrom-Json
 $catalogPath = Join-Path (Split-Path -Parent $theme) 'theme-catalog.json'
@@ -113,6 +122,8 @@ if ($runtimeJs -notmatch 'codex-dream-theme-switcher' -or
     $runtimeJs -notmatch 'codex-dream-motion-level' -or
     $runtimeJs -notmatch 'data-dream-motion-level' -or
     $runtimeJs -notmatch 'applyMotionLevel' -or
+    $runtimeJs -notmatch 'MOTION_LEVELS\s*=\s*\["off",\s*"low",\s*"high"\]' -or
+    $runtimeJs -notmatch 'if\s*\(level\s*===\s*"medium"\)\s*return\s*"low"' -or
     $runtimeJs -notmatch 'root\.dataset\.dreamMotion' -or
     $runtimeJs -notmatch 'activateTheme' -or
     $runtimeJs -notmatch 'rolled back' -or
@@ -125,11 +136,15 @@ if ($runtimeJs -notmatch 'codex-dream-theme-switcher' -or
     $runtimeJs -notmatch 'dream-theme-current' -or
     $baseCss -notmatch '(?s)\.dream-theme-panel\s*\{[^}]*position:\s*fixed\s*!important' -or
     $baseCss -notmatch '(?s)\.dream-theme-card\s*\{[^}]*background:\s*rgb\(255 255 255 / 82%\)\s*!important' -or
-    $baseCss -notmatch '(?s)\.dream-motion-options\s*\{[^}]*grid-template-columns:\s*repeat\(4' -or
+    $baseCss -notmatch '(?s)\.dream-motion-options\s*\{[^}]*grid-template-columns:\s*repeat\(3' -or
     $baseCss -notmatch '(?s)\.dream-motion-option\.is-selected\s*\{[^}]*background:\s*#ffffff\s*!important' -or
-    $baseCss -notmatch '(?s)\.dream-theme-grid\s*\{[^}]*max-height:[^}]*overflow-y:\s*auto' -or
+    $baseCss -notmatch '(?s)\.dream-theme-grid\s*\{[^}]*max-height:\s*min\(200px,\s*42vh\)[^}]*overflow-y:\s*auto' -or
     $baseCss -notmatch '(?s)\.dream-theme-current\s*\{[^}]*border-radius:\s*999px' -or
+    $baseCss -notmatch '(?s)#codex-dream-theme-switcher \.dream-theme-panel\s*\{[^}]*-webkit-text-fill-color:\s*#26302b\s*!important' -or
+    $baseCss -notmatch '(?s)#codex-dream-theme-switcher \.dream-theme-panel\s+:is\(strong,\s*span,\s*p,\s*button,\s*label,\s*input\)\s*\{[^}]*-webkit-text-fill-color:\s*currentColor\s*!important' -or
     $runtimeJs -match 'dream-theme-check' -or
+    $runtimeJs -notmatch 'focus\(\{\s*preventScroll:\s*true\s*\}\)' -or
+    $runtimeJs -notmatch 'scrollIntoView\(\{\s*block:\s*"nearest",\s*inline:\s*"nearest"\s*\}\)' -or
     $baseCss -notmatch 'dream-theme-panel-in' -or
     $runtimeJs -match 'dream-theme-feedback' -or
     $baseCss -match 'dream-theme-feedback' -or
@@ -149,7 +164,7 @@ if ($templateCss -notmatch 'data-dream-motion="low"' -or
     $tidalCss -notmatch 'background:\s*var\(--dream-motion-art,\s*none\)' -or
     $tidalCss -notmatch '(?s)data-dream-motion="low".*?--tidal-spark-display:\s*none' -or
     $tidalCss -notmatch '(?s)data-dream-motion="high".*?main\.main-surface\.dream-conversation-shell::after') {
-  throw 'Motion-enabled themes must use distinct off/low/medium/high effect tiers and a reduced-motion fallback.'
+  throw 'Motion-enabled themes must use distinct off/low/high effect tiers and a reduced-motion fallback.'
 }
 if ($tidalManifest.motionImage -ne 'motion-caustics.webp' -or
     -not (Test-Path (Join-Path $tidalTheme $tidalManifest.motionImage)) -or
@@ -158,6 +173,36 @@ if ($tidalManifest.motionImage -ne 'motion-caustics.webp' -or
     $injectorText -notmatch 'motionArtDataUrl' -or
     $runtimeJs -notmatch '--dream-motion-art') {
   throw 'The optional pre-rendered motion asset contract must remain validated and bundled.'
+}
+if ($runtimeJs -notmatch 'MOTION_LAYER_ID\s*=\s*"codex-dream-motion-layer"' -or
+    $runtimeJs -notmatch 'randomizeMotionWanderer' -or
+    $runtimeJs -notmatch 'animationiteration' -or
+    $runtimeJs -notmatch 'dream-motion-wanderer' -or
+    $runtimeJs -notmatch 'const\s+verticalTravel\s*=\s*start\.y\s*-\s*end\.y' -or
+    $runtimeJs -notmatch 'duration\s*=\s*randomBetween\(60,\s*90\)' -or
+    $baseCss -notmatch '(?s)#codex-dream-motion-layer\s*\{[^}]*display:\s*none' -or
+    $luminousCss -notmatch '(?s)data-dream-motion="low".*?#codex-dream-motion-layer\s*\{[^}]*display:\s*block\s*!important' -or
+    $luminousCss -notmatch '(?s)data-dream-motion="low".*?dream-motion-wanderer:nth-child\(n \+ 2\)\s*\{[^}]*display:\s*none\s*!important' -or
+    $luminousCss -notmatch '(?s)data-dream-motion="high".*?#codex-dream-motion-layer\s*\{[^}]*position:\s*fixed\s*!important[^}]*pointer-events:\s*none\s*!important' -or
+    $luminousCss -notmatch '@keyframes\s+luminous-random-wander' -or
+    $luminousCss -notmatch '(?s)90%,\s*100%\s*\{[^}]*opacity:\s*0' -or
+    $runtimeJs -notmatch '(?s)if\s*\(initial\)\s*\{.*?values\["--dream-wander-duration"\].*?values\["--dream-wander-delay"\]') {
+  throw 'Runtime motion art must support pointer-free full-window wanderers that fade before randomized reseeding.'
+}
+if ($luminousManifest.backgroundVideo -ne 'background-motion.mp4' -or
+    -not (Test-Path (Join-Path $luminousTheme $luminousManifest.backgroundVideo)) -or
+    (Get-Item -LiteralPath (Join-Path $luminousTheme $luminousManifest.backgroundVideo)).Length -gt 4MB -or
+    $injectorText -notmatch 'Background video must be an MP4' -or
+    $injectorText -notmatch 'backgroundVideoDataUrl' -or
+    $runtimeJs -notmatch 'BACKGROUND_VIDEO_ID\s*=\s*"codex-dream-background-video"' -or
+    $runtimeJs -notmatch 'activeMotionLevel\s*===\s*"high"' -or
+    $runtimeJs -notmatch 'document\.hidden' -or
+    $runtimeJs -notmatch 'reducedMotionQuery\?\.matches' -or
+    $runtimeJs -notmatch 'video\.pause\(\)' -or
+    $runtimeJs -notmatch 'video\.play\(\)\.catch' -or
+    $luminousCss -notmatch '(?s)data-dream-motion="high".*?#codex-dream-background-video\s*\{[^}]*pointer-events:\s*none\s*!important' -or
+    $luminousCss -notmatch '(?s)prefers-reduced-motion:\s*reduce.*?#codex-dream-background-video\s*\{[^}]*display:\s*none\s*!important') {
+  throw 'Optional background video must stay local, bounded, high-tier-only, visibility-aware, reduced-motion safe, and non-interactive.'
 }
 if ($themeCss -notmatch '(?s)main\.dream-conversation-shell\s+\.sticky\.bottom-0\s+\[class~="bg-gradient-to-t"\]\s*\{[^}]*background-image:\s*none\s*!important') {
   throw 'Conversation composer fades must stay transparent, including the in-progress file-summary state.'
@@ -192,6 +237,14 @@ if ($themeCss -notmatch '(?s)\[data-radix-popper-content-wrapper\].*?color:\s*va
 if ($runtimeJs -notmatch 'markDetailSurfaces' -or
   $runtimeJs -notmatch 'main\.dream-conversation-shell \.sticky\.bottom-0' -or
   $runtimeJs -notmatch 'detailState\.selectedThread' -or
+  $runtimeJs -notmatch 'clearSelectedThreadMarkers' -or
+  $runtimeJs -notmatch 'main\.main-surface\.dream-home-shell' -or
+  $runtimeJs -notmatch 'detailState\.selectedThread = null' -or
+  $runtimeJs -notmatch 'detailState\.selectedLabel = null' -or
+  $runtimeJs -notmatch 'cachedSelectionIsCurrent' -or
+  $runtimeJs -notmatch 'taskHeaderText\.includes\(cachedTitle\)' -or
+  $runtimeJs -notmatch 'matchingTitleRow' -or
+  $runtimeJs -notmatch 'attributeFilter:\s*\["aria-current",\s*"aria-selected"\]' -or
   $runtimeJs -notmatch 'MUTATION_COALESCE_MS = 96' -or
   $runtimeJs -notmatch 'setTextIfChanged' -or
   $runtimeJs -notmatch 'mutationIsRuntimeOwned' -or
@@ -205,7 +258,20 @@ if ($runtimeJs -notmatch 'markDetailSurfaces' -or
   $runtimeJs -notmatch 'classList\?\.contains\("bg-token-dropdown-background"\)' -or
   $runtimeJs -notmatch 'outputCandidates\.find\(intersectsViewport\)' -or
   $runtimeJs -notmatch 'document\.querySelectorAll\("\.dream-output-panel"\)\.forEach') {
-  throw 'Detail-surface markers must remain scoped, stable, frame-coalesced, and available for theme polish.'
+  throw 'Detail-surface markers must remain scoped, stable, cleared on home, frame-coalesced, and available for theme polish.'
+}
+if ($themeCss -notmatch '(?s):is\(\.dream-selected-thread,\s*\[aria-current="page"\]\.sidebar-item\)\s*\{[^}]*border:.*?transition:\s*none\s*!important' -or
+    $templateCss -notmatch '(?s):is\(\.dream-selected-thread,\s*\[aria-current="page"\]\.sidebar-item\)\s*\{[^}]*border:.*?transition:\s*none\s*!important') {
+  throw 'Selected task styling must use the stable native current-row fallback without a flashing transition.'
+}
+if ($runtimeJs -notmatch 'dream-native-home-suggestions' -or
+    $runtimeJs -notmatch 'dream-plugin-search-shell' -or
+    $runtimeJs -notmatch 'dream-home-promo' -or
+    $baseCss -notmatch '(?s)\.dream-native-home-suggestions.*?visibility:\s*hidden\s*!important' -or
+    $baseCss -notmatch '(?s)\.dream-home-promo\s*\{[^}]*position:\s*absolute\s*!important' -or
+    $baseCss -notmatch '(?s)\.dream-plugin-search-shell\s*\{[^}]*background:\s*transparent\s*!important' -or
+    $baseCss -notmatch '(?s)\.dream-plugin-search\s*\{[^}]*background:\s*var\(--dream-plugin-surface\)\s*!important') {
+  throw 'Home suggestions, promotional banners, and plugin discovery must keep reusable non-invasive theme hooks.'
 }
 if ($sunkenCss -notmatch '(?s)\.dream-file-changes-summary\s*\{[^}]*background:.*?border:' -or
     $sunkenCss -notmatch '(?s)\.dream-file-changes-summary.*?group\\\/turn-diff-header\s*\{[^}]*background:' -or
@@ -218,6 +284,14 @@ if ($templateCss -notmatch '(?s)\.dream-file-changes-summary\s*\{[^}]*background
     $templateCss -notmatch '(?s)\[role="dialog"\]\s+button\[class~="bg-token-foreground"\].*?color:\s*var\(--theme-primary-text\)\s*!important' -or
     $templateCss -notmatch '(?s)\[role="dialog"\]\s+:disabled\s*\{[^}]*opacity:') {
   throw 'Every newly scaffolded theme must inherit complete file-summary and portaled-dialog contrast coverage.'
+}
+if ($runtimeJs -notmatch 'dream-usage-panel' -or
+    $runtimeJs -notmatch '--dream-usage-art' -or
+    $runtimeJs -notmatch 'usageArtDataUrl' -or
+    $baseCss -notmatch '(?s)\[role="dialog"\]\.dream-usage-panel\s*\{[^}]*--dream-usage-art' -or
+    $templateCss -notmatch '--dream-usage-ink:' -or
+    $templateCss -notmatch '--dream-usage-overlay:') {
+  throw 'The full usage panel must keep a reusable marker, dedicated artwork, and independent contrast tokens.'
 }
 if ($runtimeJs -notmatch 'codex-dream-home-overlay' -or
     $runtimeJs -notmatch 'dream-home-stage' -or

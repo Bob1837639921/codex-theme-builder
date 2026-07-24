@@ -52,6 +52,8 @@ Rules:
 - only the launch core may declare launch-stage percentages;
 - the UI may clamp values monotonically but may not invent backend completion;
 - waiting for CDP may report bounded intermediate progress inside its allocated range;
+- injection verification may reconnect and retry the verified renderer after a transient
+  Codex navigation or reload, while keeping progress at the `VerifyInjection` milestone;
 - `Verified` ends at 96%; only the desktop orchestration completion state sets 100%;
 - the window may close only after injection verification succeeds;
 - failure never advances progress and always preserves the diagnostic log location.
@@ -86,5 +88,10 @@ Every shared-runtime change must pass:
 3. Static dependency-boundary assertions.
 4. Both bundled theme validations.
 5. Installation-copy verification before changing the desktop shortcut behavior.
+
+The verification retry remains bounded: three 12-second attempts by default. Each
+attempt starts a fresh verifier process so a renderer reload cannot strand validation
+on a closed page WebSocket. Results are appended to
+`%LOCALAPPDATA%\CodexDreamSkinV2\verification.log`; continuous failure remains fatal.
 
 The runtime tests must reject legacy `WScript.Shell.Popup`, UI functions inside the orchestration script, process-control calls inside the UI module, indeterminate progress, or a completion state that does not visibly reach 100%.

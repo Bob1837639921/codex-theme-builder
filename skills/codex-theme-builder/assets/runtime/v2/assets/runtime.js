@@ -6,9 +6,11 @@
   const TITLE_ID = "codex-dream-skin-title";
   const HOME_OVERLAY_ID = "codex-dream-home-overlay";
   const SWITCHER_ID = "codex-dream-theme-switcher";
+  const MOTION_LAYER_ID = "codex-dream-motion-layer";
+  const BACKGROUND_VIDEO_ID = "codex-dream-background-video";
   const STORAGE_KEY = "codex-dream-theme-active";
   const MOTION_STORAGE_KEY = "codex-dream-motion-level";
-  const MOTION_LEVELS = ["off", "low", "medium", "high"];
+  const MOTION_LEVELS = ["off", "low", "high"];
   const RUNTIME_VERSION = "2.2.0-theme-library";
   const THEME_SEARCH_THRESHOLD = 6;
   const MUTATION_COALESCE_MS = 96;
@@ -26,12 +28,17 @@
   if (previous?.scheduler?.timeout) clearTimeout(previous.scheduler.timeout);
   if (previous?.scheduler?.frame) cancelAnimationFrame(previous.scheduler.frame);
   previous?.removeSwitcherListeners?.();
+  previous?.removeBackgroundVideoListeners?.();
   previous?.restoreSidebarControls?.();
   document.getElementById(SWITCHER_ID)?.remove();
+  document.getElementById(MOTION_LAYER_ID)?.remove();
+  document.getElementById(BACKGROUND_VIDEO_ID)?.remove();
   for (const urls of previous?.objectUrls?.values?.() || []) {
     URL.revokeObjectURL(urls.artUrl);
     URL.revokeObjectURL(urls.conversationUrl);
     if (urls.motionUrl) URL.revokeObjectURL(urls.motionUrl);
+    if (urls.usageUrl) URL.revokeObjectURL(urls.usageUrl);
+    if (urls.backgroundVideoUrl) URL.revokeObjectURL(urls.backgroundVideoUrl);
   }
   const themeMap = new Map(themeCatalog.map((item) => [item.id, item]));
   if (!themeMap.size || !themeMap.has(initialThemeId)) throw new Error("Theme catalog is empty or missing the initial theme");
@@ -49,20 +56,33 @@
       artUrl: dataUrlToObjectUrl(theme.artDataUrl),
       conversationUrl: dataUrlToObjectUrl(theme.conversationArtDataUrl),
       motionUrl: theme.motionArtDataUrl ? dataUrlToObjectUrl(theme.motionArtDataUrl) : null,
+      usageUrl: theme.usageArtDataUrl ? dataUrlToObjectUrl(theme.usageArtDataUrl) : null,
+      backgroundVideoUrl: null,
     });
     return objectUrls.get(theme.id);
   };
   const storedThemeId = (() => { try { return localStorage.getItem(STORAGE_KEY); } catch { return null; } })();
   const storedMotionLevel = (() => { try { return localStorage.getItem(MOTION_STORAGE_KEY); } catch { return null; } })();
+  const normalizeMotionLevel = (level) => {
+    if (level === "medium") return "low";
+    return MOTION_LEVELS.includes(level) ? level : "low";
+  };
+  if (storedMotionLevel === "medium") {
+    try { localStorage.setItem(MOTION_STORAGE_KEY, "low"); } catch {}
+  }
   let activeTheme = themeMap.get(storedThemeId) || themeMap.get(initialThemeId);
-  let activeMotionLevel = MOTION_LEVELS.includes(storedMotionLevel) ? storedMotionLevel : "medium";
+  let activeMotionLevel = normalizeMotionLevel(storedMotionLevel);
+  const reducedMotionQuery = window.matchMedia?.("(prefers-reduced-motion: reduce)") ?? null;
   const markerState = {
     home: document.querySelector(".dream-home"),
     homeStage: document.querySelector(".dream-home-stage"),
     homeHero: document.querySelector(".dream-home-hero"),
+    nativeHomeSuggestions: document.querySelector(".dream-native-home-suggestions"),
     conversation: document.querySelector(".dream-conversation"),
     promo: document.querySelector(".dream-home-promo"),
     projectPicker: document.querySelector(".dream-project-picker"),
+    pluginSearch: document.querySelector(".dream-plugin-search"),
+    pluginSearchShell: document.querySelector(".dream-plugin-search-shell"),
   };
   const detailState = {
     selectedThread: document.querySelector(".dream-selected-thread"),
@@ -71,6 +91,7 @@
     lastOutputScan: 0,
     progressScanRequested: true,
     outputScanRequested: true,
+    usagePanel: document.querySelector(".dream-usage-panel"),
   };
   const syncMarker = (key, node, className) => {
     const previousNode = markerState[key];
@@ -106,13 +127,22 @@
     document.querySelectorAll("[data-dream-sidebar-control]").forEach(restoreSidebarControl);
   };
 
+  const clearSelectedThreadMarkers = () => {
+    document.querySelectorAll(".dream-selected-thread").forEach((node) =>
+      node.classList.remove("dream-selected-thread"));
+    document.querySelectorAll(".dream-selected-thread-label").forEach((node) =>
+      node.classList.remove("dream-selected-thread-label"));
+    detailState.selectedThread = null;
+    detailState.selectedLabel = null;
+  };
+
   const clearDetailMarkers = () => {
     document.querySelectorAll(".dream-progress-pill").forEach((node) => node.classList.remove("dream-progress-pill"));
     document.querySelectorAll(".dream-progress-indicator").forEach((node) => node.classList.remove("dream-progress-indicator"));
-    document.querySelectorAll(".dream-selected-thread").forEach((node) => node.classList.remove("dream-selected-thread"));
-    document.querySelectorAll(".dream-selected-thread-label").forEach((node) => node.classList.remove("dream-selected-thread-label"));
+    clearSelectedThreadMarkers();
     document.querySelectorAll(".dream-file-changes-summary").forEach((node) => node.classList.remove("dream-file-changes-summary"));
     document.querySelectorAll(".dream-output-panel").forEach((node) => node.classList.remove("dream-output-panel"));
+    document.querySelectorAll(".dream-usage-panel").forEach((node) => node.classList.remove("dream-usage-panel"));
     restoreSidebarControls();
   };
 
@@ -179,11 +209,32 @@
         control.style.setProperty("color", "var(--dream-sidebar-control-text, #eef3ef)", "important");
         control.style.setProperty("opacity", ".9", "important");
       }
-      let selected = detailState.selectedThread;
-      const cachedSelectionIsCurrent = selected?.isConnected && sidebar.contains(selected) &&
-        selected.matches('[aria-current="page"], [aria-selected="true"], [data-state="active"], [class~="bg-token-list-hover-background"]');
-      if (!cachedSelectionIsCurrent) {
-        selected = [...sidebar.querySelectorAll(
+      const isHomeRoute = Boolean(document.querySelector("main.main-surface.dream-home-shell"));
+      if (isHomeRoute) {
+        clearSelectedThreadMarkers();
+      } else {
+        let selected = detailState.selectedThread;
+        const cachedTitle = (detailState.selectedLabel?.textContent || "").trim();
+        const taskHeaderText = (document.querySelector("main.main-surface > header.app-header-tint")?.textContent || "").trim();
+        const cachedSelectionIsCurrent = selected?.isConnected && sidebar.contains(selected) &&
+          (!cachedTitle || !taskHeaderText || taskHeaderText.includes(cachedTitle));
+        if (!cachedSelectionIsCurrent) {
+        const matchingTitleLabel = taskHeaderText ? [...sidebar.querySelectorAll("span, p, div")].filter((node) => {
+          if (node.querySelector("button") || node.children.length > 0) return false;
+          const text = (node.textContent || "").trim();
+          const rect = node.getBoundingClientRect();
+          return text.length >= 2 && text.length <= 80 && taskHeaderText.includes(text) &&
+            rect.width >= 12 && rect.height >= 14 && rect.height <= 32;
+        }).sort((left, right) => (right.textContent || "").trim().length - (left.textContent || "").trim().length)[0] : null;
+        let matchingTitleRow = matchingTitleLabel;
+        while (matchingTitleRow && matchingTitleRow !== sidebar) {
+          const rect = matchingTitleRow.getBoundingClientRect();
+          if (rect.width >= 160 && rect.width <= 320 && rect.height >= 28 && rect.height <= 64) break;
+          matchingTitleRow = matchingTitleRow.parentElement;
+        }
+        if (matchingTitleRow === sidebar) matchingTitleRow = null;
+
+        selected = matchingTitleRow || [...sidebar.querySelectorAll(
           '[aria-current="page"], [aria-selected="true"], [data-state="active"], [class~="bg-token-list-hover-background"]'
         )].filter((node) => {
           const rect = node.getBoundingClientRect();
@@ -211,11 +262,11 @@
         });
         selected?.classList.add("dream-selected-thread");
         detailState.selectedThread = selected || null;
-      }
+        }
 
-      let selectedLabel = detailState.selectedLabel;
-      if (!selectedLabel?.isConnected || !selected?.contains(selectedLabel)) {
-        selectedLabel = selected ? [...selected.querySelectorAll("span, p, div")].filter((node) => {
+        let selectedLabel = detailState.selectedLabel;
+        if (!selectedLabel?.isConnected || !selected?.contains(selectedLabel)) {
+          selectedLabel = selected ? [...selected.querySelectorAll("span, p, div")].filter((node) => {
           if (node.closest("button") || node.querySelector("button")) return false;
           const directText = [...node.childNodes]
             .filter((child) => child.nodeType === Node.TEXT_NODE)
@@ -232,14 +283,15 @@
           const b = right.getBoundingClientRect();
           return a.left - b.left || a.width - b.width;
         })[0] : null;
-        if (detailState.selectedLabel && detailState.selectedLabel !== selectedLabel) {
-          detailState.selectedLabel.classList.remove("dream-selected-thread-label");
+          if (detailState.selectedLabel && detailState.selectedLabel !== selectedLabel) {
+            detailState.selectedLabel.classList.remove("dream-selected-thread-label");
+          }
+          sidebar.querySelectorAll(".dream-selected-thread-label").forEach((node) => {
+            if (node !== selectedLabel) node.classList.remove("dream-selected-thread-label");
+          });
+          selectedLabel?.classList.add("dream-selected-thread-label");
+          detailState.selectedLabel = selectedLabel || null;
         }
-        sidebar.querySelectorAll(".dream-selected-thread-label").forEach((node) => {
-          if (node !== selectedLabel) node.classList.remove("dream-selected-thread-label");
-        });
-        selectedLabel?.classList.add("dream-selected-thread-label");
-        detailState.selectedLabel = selectedLabel || null;
       }
     }
 
@@ -286,6 +338,22 @@
       });
       output?.classList.add("dream-output-panel");
     }
+
+    let usagePanel = detailState.usagePanel;
+    const usagePattern = /\u4f7f\u7528\u91cf|\u6bcf\u5468\u4f7f\u7528\u9650\u989d|\u4f7f\u7528\u9650\u989d\u91cd\u7f6e|full\s+reset|usage/i;
+    if (!usagePanel?.isConnected || !usagePanel.classList.contains("dream-usage-panel") ||
+        usagePanel.getAttribute("role") !== "dialog" ||
+        !usagePattern.test(usagePanel.textContent || "")) {
+      usagePanel?.classList.remove("dream-usage-panel");
+      usagePanel = [...document.querySelectorAll('[role="dialog"]')].find((node) => {
+        const rect = node.getBoundingClientRect();
+        const style = getComputedStyle(node);
+        return usagePattern.test(node.textContent || "") && rect.width >= 320 && rect.height >= 360 &&
+          style.display !== "none" && style.visibility !== "hidden";
+      }) || null;
+      usagePanel?.classList.add("dream-usage-panel");
+      detailState.usagePanel = usagePanel;
+    }
   };
 
   const renderSwitcherSelection = () => {
@@ -304,16 +372,169 @@
     });
   };
 
+  const releaseBackgroundVideoUrls = () => {
+    for (const urls of objectUrls.values()) {
+      if (!urls.backgroundVideoUrl) continue;
+      URL.revokeObjectURL(urls.backgroundVideoUrl);
+      urls.backgroundVideoUrl = null;
+    }
+  };
+
+  const disposeBackgroundVideo = (releaseUrl = true) => {
+    const video = document.getElementById(BACKGROUND_VIDEO_ID);
+    if (video) {
+      video.pause();
+      video.removeAttribute("src");
+      video.load();
+      video.remove();
+    }
+    if (releaseUrl) releaseBackgroundVideoUrls();
+  };
+
+  const syncBackgroundVideo = (shell = document.querySelector("main.main-surface") || document.querySelector("main")) => {
+    const shouldExist = activeMotionLevel === "high" &&
+      !reducedMotionQuery?.matches &&
+      Boolean(activeTheme?.backgroundVideoDataUrl) &&
+      Boolean(shell);
+    if (!shouldExist) {
+      disposeBackgroundVideo(true);
+      return null;
+    }
+
+    const urls = urlsFor(activeTheme);
+    if (!urls.backgroundVideoUrl) {
+      urls.backgroundVideoUrl = dataUrlToObjectUrl(activeTheme.backgroundVideoDataUrl);
+    }
+    let video = document.getElementById(BACKGROUND_VIDEO_ID);
+    if (!video || video.dataset.dreamThemeId !== activeTheme.id) {
+      disposeBackgroundVideo(false);
+      video = document.createElement("video");
+      video.id = BACKGROUND_VIDEO_ID;
+      video.dataset.dreamThemeId = activeTheme.id;
+      video.muted = true;
+      video.defaultMuted = true;
+      video.loop = true;
+      video.playsInline = true;
+      video.autoplay = false;
+      video.controls = false;
+      video.disablePictureInPicture = true;
+      video.preload = "metadata";
+      video.setAttribute("aria-hidden", "true");
+      video.addEventListener("canplay", () => video.classList.add("is-ready"), { once: true });
+      video.src = urls.backgroundVideoUrl;
+    }
+    if (video.parentElement !== shell) shell.prepend(video);
+    if (document.hidden) {
+      video.pause();
+      } else if (video.paused) {
+        video.play().catch(() => {});
+      }
+    return video;
+  };
+
   const applyMotionLevel = (level, persist = true) => {
-    const normalized = MOTION_LEVELS.includes(level) ? level : "medium";
+    const normalized = normalizeMotionLevel(level);
     activeMotionLevel = normalized;
     const root = document.documentElement;
     if (root) root.dataset.dreamMotion = normalized;
     if (persist) {
       try { localStorage.setItem(MOTION_STORAGE_KEY, normalized); } catch {}
     }
+    syncBackgroundVideo();
     renderSwitcherSelection();
     return normalized;
+  };
+
+  const randomBetween = (minimum, maximum) => minimum + Math.random() * (maximum - minimum);
+  const clamp = (value, minimum, maximum) => Math.min(maximum, Math.max(minimum, value));
+
+  const randomizeMotionWanderer = (node, index, initial = false) => {
+    const width = Math.max(window.innerWidth || 1280, 640);
+    const height = Math.max(window.innerHeight || 720, 480);
+    const sizeRanges = [[86, 122], [66, 96], [50, 76]];
+    const [minimumSize, maximumSize] = sizeRanges[index] || sizeRanges[2];
+    const size = Math.round(randomBetween(minimumSize, maximumSize));
+    const spriteHeight = Math.round(size * 1.5);
+    const margin = Math.max(12, Math.round(size * .18));
+    const minX = -Math.round(size * .18);
+    const maxX = Math.max(minX + 1, width - size + Math.round(size * .18));
+    const start = {
+      x: Math.round(randomBetween(minX, maxX)),
+      y: Math.round(height - spriteHeight * randomBetween(.06, .28)),
+    };
+    const maximumSideDrift = Math.min(width * .09, 150);
+    const end = {
+      x: clamp(
+        Math.round(start.x + randomBetween(-maximumSideDrift, maximumSideDrift)),
+        minX,
+        maxX,
+      ),
+      y: -Math.round(spriteHeight * randomBetween(.48, .82)),
+    };
+    const verticalTravel = start.y - end.y;
+    const firstSway = randomBetween(-Math.min(width * .045, 72), Math.min(width * .045, 72));
+    const secondSway = randomBetween(-Math.min(width * .055, 88), Math.min(width * .055, 88));
+    const one = {
+      x: clamp(
+        Math.round(start.x + (end.x - start.x) * .3 + firstSway),
+        minX - margin,
+        maxX + margin,
+      ),
+      y: Math.round(start.y - verticalTravel * randomBetween(.28, .34)),
+    };
+    const two = {
+      x: clamp(
+        Math.round(start.x + (end.x - start.x) * .68 + secondSway),
+        minX - margin,
+        maxX + margin,
+      ),
+      y: Math.round(start.y - verticalTravel * randomBetween(.64, .72)),
+    };
+    const duration = randomBetween(60, 90);
+    const opacity = randomBetween(index === 0 ? .48 : .34, index === 0 ? .66 : .54);
+    const rotation = () => `${Math.round(randomBetween(-8, 8))}deg`;
+    const values = {
+      "--dream-wander-size": `${size}px`,
+      "--dream-wander-height": `${spriteHeight}px`,
+      "--dream-wander-x0": `${start.x}px`,
+      "--dream-wander-y0": `${start.y}px`,
+      "--dream-wander-x1": `${one.x}px`,
+      "--dream-wander-y1": `${one.y}px`,
+      "--dream-wander-x2": `${two.x}px`,
+      "--dream-wander-y2": `${two.y}px`,
+      "--dream-wander-x3": `${end.x}px`,
+      "--dream-wander-y3": `${end.y}px`,
+      "--dream-wander-r0": rotation(),
+      "--dream-wander-r1": rotation(),
+      "--dream-wander-r2": rotation(),
+      "--dream-wander-r3": rotation(),
+      "--dream-wander-opacity": opacity.toFixed(2),
+    };
+    if (initial) {
+      values["--dream-wander-duration"] = `${duration.toFixed(2)}s`;
+      values["--dream-wander-delay"] = `${(-duration * randomBetween(.05, .76)).toFixed(2)}s`;
+    }
+    for (const [property, value] of Object.entries(values)) node.style.setProperty(property, value);
+    node.dataset.dreamMotionSeed = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  };
+
+  const syncMotionLayer = (urls) => {
+    document.getElementById(MOTION_LAYER_ID)?.remove();
+    if (!urls.motionUrl) return;
+    const layer = document.createElement("div");
+    layer.id = MOTION_LAYER_ID;
+    layer.setAttribute("aria-hidden", "true");
+    for (let index = 0; index < 3; index += 1) {
+      const wanderer = document.createElement("span");
+      wanderer.className = "dream-motion-wanderer";
+      wanderer.dataset.dreamMotionIndex = String(index);
+      randomizeMotionWanderer(wanderer, index, true);
+      wanderer.addEventListener("animationiteration", () => {
+        randomizeMotionWanderer(wanderer, index, false);
+      });
+      layer.appendChild(wanderer);
+    }
+    document.body.appendChild(layer);
   };
 
   const applyTheme = (theme, persist = true) => {
@@ -334,7 +555,10 @@
     root.style.setProperty("--dream-conversation-art", `url("${urls.conversationUrl}")`);
     if (urls.motionUrl) root.style.setProperty("--dream-motion-art", `url("${urls.motionUrl}")`);
     else root.style.removeProperty("--dream-motion-art");
+    root.style.setProperty("--dream-usage-art", urls.usageUrl ? `url("${urls.usageUrl}")` : "none");
     activeTheme = theme;
+    syncMotionLayer(urls);
+    syncBackgroundVideo();
     document.querySelectorAll(".dream-action-button[data-dream-action-key]").forEach((button) => {
       const icon = button.querySelector("img");
       if (icon) icon.src = theme.icons?.[button.dataset.dreamActionKey] || "";
@@ -366,6 +590,14 @@
   };
 
   let removeSwitcherListeners = null;
+  const onBackgroundVideoVisibility = () => syncBackgroundVideo();
+  const onBackgroundVideoReducedMotion = () => syncBackgroundVideo();
+  document.addEventListener("visibilitychange", onBackgroundVideoVisibility);
+  reducedMotionQuery?.addEventListener?.("change", onBackgroundVideoReducedMotion);
+  const removeBackgroundVideoListeners = () => {
+    document.removeEventListener("visibilitychange", onBackgroundVideoVisibility);
+    reducedMotionQuery?.removeEventListener?.("change", onBackgroundVideoReducedMotion);
+  };
   const ensureThemeSwitcher = (sidebar) => {
     if (!sidebar || themeCatalog.length < 2) return;
     let switcher = document.getElementById(SWITCHER_ID);
@@ -467,7 +699,7 @@
     const motionLabel = document.createElement("strong");
     motionLabel.textContent = "\u52a8\u6001\u6548\u679c";
     const motionHint = document.createElement("span");
-    motionHint.textContent = "\u6027\u80fd\u8c03\u8282";
+    motionHint.textContent = "\u6c1b\u56f4\u5f3a\u5ea6";
     motionHeading.append(motionLabel, motionHint);
     const motionOptions = document.createElement("div");
     motionOptions.className = "dream-motion-options";
@@ -475,9 +707,8 @@
     motionOptions.setAttribute("aria-label", "\u52a8\u6001\u6548\u679c\u5f3a\u5ea6");
     for (const [level, label] of [
       ["off", "\u5173\u95ed"],
-      ["low", "\u4f4e"],
-      ["medium", "\u4e2d"],
-      ["high", "\u9ad8"],
+      ["low", "\u67d4\u548c"],
+      ["high", "\u5b8c\u6574"],
     ]) {
       const option = document.createElement("button");
       option.type = "button";
@@ -518,7 +749,9 @@
         panel.showPopover();
       }
       trigger.setAttribute("aria-expanded", "true");
-      panel.querySelector(".is-selected")?.focus();
+      const selectedCard = panel.querySelector(".is-selected");
+      selectedCard?.focus({ preventScroll: true });
+      selectedCard?.scrollIntoView({ block: "nearest", inline: "nearest" });
     };
     const onDocumentPointer = (event) => { if (!switcher.contains(event.target)) close(); };
     const onDocumentKey = (event) => {
@@ -569,8 +802,40 @@
     const homeHero = homeStage?.querySelector(":scope > div:first-child") ?? null;
     syncMarker("homeStage", homeStage, "dream-home-stage");
     syncMarker("homeHero", homeHero, "dream-home-hero");
+    const nativeHomeSuggestions = home ? [...home.querySelectorAll("section")].find((node) => {
+      if (node.closest(`#${HOME_OVERLAY_ID}`) || node.querySelectorAll("button").length < 4) return false;
+      const rect = node.getBoundingClientRect();
+      return rect.width >= 480 && rect.height >= 72 && rect.height <= 240;
+    }) ?? null : null;
+    syncMarker("nativeHomeSuggestions", nativeHomeSuggestions, "dream-native-home-suggestions");
     const conversation = !home ? document.querySelector('[role="main"]') : null;
     syncMarker("conversation", conversation, "dream-conversation");
+
+    const pluginSearchInput = [...document.querySelectorAll('input[type="text"], input[type="search"]')]
+      .find((input) => /(?:\u641c\u7d22\u63d2\u4ef6|search\s+plugins?)/i.test(input.placeholder || ""));
+    const pluginSearch = pluginSearchInput?.parentElement ?? null;
+    const pluginSearchShell = pluginSearch?.closest('[class~="sticky"]') ?? null;
+    syncMarker("pluginSearch", pluginSearch, "dream-plugin-search");
+    syncMarker("pluginSearchShell", pluginSearchShell, "dream-plugin-search-shell");
+
+    if (home && (!markerState.promo?.isConnected || !home.contains(markerState.promo))) {
+      const promoSeed = [...home.querySelectorAll("div, span, p")].filter((node) => {
+        const value = (node.textContent || "").trim();
+        return /(?:\u542f\u7528\u5feb\u901f\u6a21\u5f0f|Fast could have saved|Increases plan usage)/i.test(value) &&
+          value.length < 360;
+      }).sort((left, right) => {
+        const a = left.getBoundingClientRect();
+        const b = right.getBoundingClientRect();
+        return (a.width * a.height) - (b.width * b.height);
+      })[0];
+      let promo = promoSeed;
+      while (promo && promo !== home) {
+        const rect = promo.getBoundingClientRect();
+        if (rect.width > 500 && rect.height > 40 && rect.height < 130 && promo.querySelectorAll("button").length >= 1) break;
+        promo = promo.parentElement;
+      }
+      syncMarker("promo", promo && promo !== home ? promo : null, "dream-home-promo");
+    }
 
     if (!home) {
       syncMarker("promo", null, "dream-home-promo");
@@ -688,6 +953,7 @@
     if (!shellMain || !document.body) return;
     shellMain.classList.toggle("dream-home-shell", Boolean(home));
     shellMain.classList.toggle("dream-conversation-shell", !home);
+    syncBackgroundVideo(shellMain);
     markDetailSurfaces();
     ensureThemeSwitcher(document.querySelector("aside.app-shell-left-panel"));
     let chrome = document.getElementById(CHROME_ID);
@@ -725,6 +991,7 @@
     document.querySelectorAll(".dream-home").forEach((node) => node.classList.remove("dream-home"));
     document.querySelectorAll(".dream-home-stage").forEach((node) => node.classList.remove("dream-home-stage"));
     document.querySelectorAll(".dream-home-hero").forEach((node) => node.classList.remove("dream-home-hero"));
+    document.querySelectorAll(".dream-native-home-suggestions").forEach((node) => node.classList.remove("dream-native-home-suggestions"));
     document.querySelectorAll(".dream-conversation").forEach((node) => node.classList.remove("dream-conversation"));
     document.querySelectorAll(".dream-home-shell").forEach((node) => node.classList.remove("dream-home-shell"));
     document.querySelectorAll(".dream-conversation-shell").forEach((node) => node.classList.remove("dream-conversation-shell"));
@@ -734,8 +1001,13 @@
     document.getElementById(TITLE_ID)?.remove();
     document.getElementById(HOME_OVERLAY_ID)?.remove();
     document.getElementById(SWITCHER_ID)?.remove();
+    document.getElementById(MOTION_LAYER_ID)?.remove();
+    disposeBackgroundVideo(true);
     removeSwitcherListeners?.();
+    removeBackgroundVideoListeners();
     document.querySelectorAll(".dream-home-promo").forEach((node) => node.classList.remove("dream-home-promo"));
+    document.querySelectorAll(".dream-plugin-search").forEach((node) => node.classList.remove("dream-plugin-search"));
+    document.querySelectorAll(".dream-plugin-search-shell").forEach((node) => node.classList.remove("dream-plugin-search-shell"));
     clearDetailMarkers();
     const state = window[STATE_KEY];
     state?.observer?.disconnect();
@@ -745,13 +1017,16 @@
     for (const urls of state?.objectUrls?.values?.() || []) {
       URL.revokeObjectURL(urls.artUrl);
       URL.revokeObjectURL(urls.conversationUrl);
+      if (urls.motionUrl) URL.revokeObjectURL(urls.motionUrl);
+      if (urls.usageUrl) URL.revokeObjectURL(urls.usageUrl);
+      if (urls.backgroundVideoUrl) URL.revokeObjectURL(urls.backgroundVideoUrl);
     }
     delete window[STATE_KEY];
     return true;
   };
 
   const scheduler = { frame: null, timeout: null, lastRun: 0, pending: false, runCount: 0 };
-  const runtimeOwnerSelector = `#${STYLE_ID}, #${CHROME_ID}, #${HOME_OVERLAY_ID}, #${SWITCHER_ID}`;
+  const runtimeOwnerSelector = `#${STYLE_ID}, #${CHROME_ID}, #${HOME_OVERLAY_ID}, #${SWITCHER_ID}, #${MOTION_LAYER_ID}, #${BACKGROUND_VIDEO_ID}`;
   const isRuntimeOwnedNode = (node) => {
     const element = node?.nodeType === Node.ELEMENT_NODE ? node : node?.parentElement;
     return Boolean(element?.matches?.(runtimeOwnerSelector) || element?.closest?.(runtimeOwnerSelector));
@@ -798,7 +1073,12 @@
     const relevantMutations = mutations.filter((mutation) => !mutationIsRuntimeOwned(mutation));
     if (relevantMutations.length) scheduleEnsure(relevantMutations);
   });
-  observer.observe(document.documentElement, { childList: true, subtree: true });
+  observer.observe(document.documentElement, {
+    childList: true,
+    subtree: true,
+    attributes: true,
+    attributeFilter: ["aria-current", "aria-selected"],
+  });
   const timer = setInterval(() => {
     detailState.progressScanRequested = true;
     detailState.outputScanRequested = true;
@@ -815,6 +1095,7 @@
     activateTheme,
     applyMotionLevel,
     removeSwitcherListeners,
+    removeBackgroundVideoListeners,
     restoreSidebarControls,
     get activeThemeId() { return activeTheme.id; },
     get activeMotionLevel() { return activeMotionLevel; },

@@ -10,6 +10,37 @@ $theme = [System.IO.Path]::GetFullPath($ThemePath)
 if (-not (Test-Path -LiteralPath (Join-Path $theme 'theme.json') -PathType Leaf)) {
   throw "Theme manifest not found: $theme"
 }
+
+$themeManifest = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $theme 'theme.json') |
+  ConvertFrom-Json -ErrorAction Stop
+if ([string]::IsNullOrWhiteSpace($themeManifest.usageImage)) {
+  throw 'Theme manifest must declare a dedicated usageImage.'
+}
+$usageImage = Join-Path $theme $themeManifest.usageImage
+if (-not (Test-Path -LiteralPath $usageImage -PathType Leaf)) {
+  throw "Dedicated usage-panel artwork is missing: $usageImage"
+}
+if ((Get-Item -LiteralPath $usageImage).Length -gt 300KB) {
+  throw "Dedicated usage-panel artwork must remain at or below 300 KB: $usageImage"
+}
+
+$themeCssPath = Join-Path $theme 'theme.css'
+if (-not (Test-Path -LiteralPath $themeCssPath -PathType Leaf)) {
+  throw "Theme CSS is missing: $themeCssPath"
+}
+$themeCss = Get-Content -Raw -Encoding UTF8 -LiteralPath $themeCssPath
+foreach ($token in @(
+  '--dream-usage-ink',
+  '--dream-usage-muted',
+  '--dream-usage-accent',
+  '--dream-usage-overlay',
+  '--dream-usage-border'
+)) {
+  if ($themeCss -notmatch [regex]::Escape($token)) {
+    throw "Theme CSS must define the usage-panel token: $token"
+  }
+}
+
 . (Join-Path $runtimeRoot 'windows\scripts\common-windows.ps1')
 $node = Get-DreamSkinNodeRuntime
 

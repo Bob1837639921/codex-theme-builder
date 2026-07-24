@@ -16,6 +16,7 @@ Read this reference whenever creating, porting, or substantially redesigning a t
 | `theme.json` | Identity, asset names, colors | Set a unique ID, name, subtitle, four colors, and local filenames. |
 | Home image | Landing artwork | Compose a wide crop with a calm title and four-action safe zone. |
 | Conversation image | Task background | Compose a tall crop with low contrast behind text, diffs, code, and composer. |
+| Usage image | Required usage-details background | Create a lightweight portrait crop at or below 300 KB, with edge decoration and a calm central reading zone. Never reuse the home or conversation artwork. |
 | Sidebar image | Optional sidebar texture | Keep navigation and task labels readable in normal, hover, and selected states. |
 | Four action icons | Home actions | Match the new direction while retaining the four native action meanings. |
 | Selected marker | Optional current-task accent | Attach it before the label, not before the row; keep it stable when pin/archive actions appear. |
@@ -23,7 +24,7 @@ Read this reference whenever creating, porting, or substantially redesigning a t
 | `theme.css` | Theme-specific presentation | Scope every rule under the theme root and style only mapped surfaces. |
 | `theme-catalog.json` | In-app availability | Add the new theme ID when it should appear in live switching. Keep every sibling theme self-contained. |
 
-Use `scripts/new-theme.ps1` to copy the supplied home, conversation, sidebar, selected-marker, and composer-edge assets into the package. Omit optional inputs when the visual direction does not need them.
+Use `scripts/new-theme.ps1` to copy the supplied home, conversation, usage, sidebar, selected-marker, and composer-edge assets into the package. Home and usage artwork are mandatory; omit only the genuinely optional inputs.
 
 ## Surface map
 
@@ -37,9 +38,17 @@ Review each surface instead of treating a theme as a background replacement:
 6. **Composer:** panel surface, placeholder, access mode, attachment, model selector, microphone, submit/stop button, focus state, multiline growth, and narrow width.
 7. **Selected task:** marker, title, pin/archive actions, focus ring, and mutation stability without flashing.
 8. **Output panel:** outer container, sticky headings, URL/environment row, browser row, source list, expanders, thumbnails, and one coherent surface color.
-9. **Portaled UI:** usage/credits card, dialogs, menus, popovers, tooltips, close buttons, progress bars, and disabled text contrast. Explicitly open the full-access confirmation dialog and verify its nested permission descriptions, risk copy, links, cancel action, and primary action; inherited `color` alone is not sufficient for dark themes. Treat the light sidebar usage/credits status card as a separate semantic surface: define a dark `--dream-light-overlay-ink`, preserve its light background, and exclude it from broad dark-theme portal descendant rules.
+9. **Portaled UI:** compact usage/credits warning, full usage-details panel, dialogs, menus, popovers, tooltips, close buttons, progress bars, disabled text contrast, and the full-access confirmation dialog. Verify nested permission descriptions, risk copy, links, cancel action, and primary action; inherited `color` alone is insufficient for dark themes. Treat the light sidebar status card as a separate semantic surface with a dark `--dream-light-overlay-ink`. Mark the full details dialog with `.dream-usage-panel`, give it mandatory independent portrait artwork and five theme-owned palette tokens, and exclude both usage surfaces from broad dialog descendant rules.
 10. **Theme switcher:** trigger, all catalog cards, active state, keyboard flow, persistence, rollback, narrow viewport, and no redundant success toast.
-11. **Motion preference:** use the shared `off / low / medium / high` control and root `data-dream-motion` value. Define visibly distinct but compositor-safe levels, persist the choice across theme switches, and let system reduced-motion force a static result.
+11. **Motion preference:** use the shared `off / low / high` control (`关闭 / 柔和 / 完整`) and root `data-dream-motion` value. Make soft clearly perceptible, make full richer but compositor-safe, persist the choice across theme switches, and let system reduced-motion force a static result.
+12. **Optional video background:** declare a local `backgroundVideo` MP4 only when the visual direction genuinely needs full-canvas motion. Keep it at or below 4 MB. The shared runtime owns lazy creation, pause/resume, theme cleanup, and reduced-motion fallback; theme CSS may reveal it only under the full motion tier.
+12. **Plugin discovery:** style the runtime-marked `.dream-plugin-search-shell` and `.dream-plugin-search` with explicit surface, border, ink, icon, and placeholder contrast. The sticky search rail must blend into the theme instead of painting an opaque native white band.
+
+The shared runtime suppresses Codex's native four-card home suggestion row after
+the themed four-action grid is available, and marks the optional Fast-mode
+promotion as `.dream-home-promo`. Keep that promotion interactive but out of the
+normal home layout so it never pushes the project picker or composer below the
+viewport.
 
 ### Continuous-art direction
 
@@ -48,6 +57,21 @@ When the selected design is one continuous scene across sidebar and conversation
 For dark directions, opening a panel is part of implementation, not optional QA. Explicitly verify the product-mode menu, profile/usage menu, message-actions menu, output panel, dialogs, popovers, listboxes, disabled rows, and nested sticky rows. Utility-token colors may bypass inherited `color`, so theme rules must also set `-webkit-text-fill-color` on relevant descendants.
 
 Open the low-quota usage card in every dark theme. Its remaining percentage, reset schedule, close control, progress bar, and both actions must remain readable on the native light card. Never derive this card's foreground from a near-white main-canvas `--dream-ink` value.
+
+Open the full usage-details panel in every theme. Verify the dedicated artwork is not the home hero, the center remains low-detail, and theme-specific title/body/muted/action colors stay readable over the overlay. Theme switching must replace its artwork and tokens atomically without leaving the previous theme behind.
+
+### Required usage-panel contract
+
+Every new theme must ship and verify all of the following:
+
+- a unique `usageImage` optimized to 300 KB or less;
+- explicit ink, muted, accent, overlay, and border tokens in that theme's CSS;
+- readable title, body, reset date, availability chip, progress track, close control, action, and disabled state;
+- a compact quota card that remains readable independently of the full panel;
+- atomic artwork and palette replacement while the panel stays open during theme switching;
+- normal-height and scrollable/long-content states without clipping.
+
+This contract is enforced by `scripts/test-theme.ps1`; a theme that omits the asset or tokens is incomplete.
 
 ## Composer-edge safety contract
 
@@ -64,8 +88,9 @@ Treat composer art as a foreground accent with a transparent canvas, not as a se
 ## Motion and performance
 
 - Animate only small accents with `transform` and `opacity`.
-- Treat low, medium, and high as additive visual tiers rather than three opacity values: one primary accent at low, a distinct secondary layer at medium, and a richer but still localized treatment at high.
+- Treat soft and full as additive visual tiers rather than opacity values: one clearly visible primary accent at soft, then richer but still localized secondary or tertiary layers at full.
 - When the direction needs organic fluid, smoke, flame, or caustic deformation that CSS cannot represent faithfully, render a short seamless WebP loop offline and expose it through the optional `motionImage` / `--dream-motion-art` contract. Keep the loop at 12–15 fps, localized by a mask, no larger than 2 MB, and reserve it for the high tier.
+- For a buoyant motif that must roam beyond one component, opt the theme into the shared `#codex-dream-motion-layer`. The runtime supplies three `.dream-motion-wanderer` nodes across the full viewport, assigns independent size and 60-90 second timing, starts each near the lower edge, adds restrained lateral sway through two monotonically rising waypoints, fades it above the top edge, then reseeds it at a new lower-edge position on `animationiteration`. Theme CSS owns only artwork, visibility tier, filtering, and the `luminous-random-wander`-style keyframes; keep the layer and every child `pointer-events: none`.
 - A generated motion asset must come from an approved source frame or an original generated texture. Do not approximate a reference with concentric rings, repeated gradient ribbons, or other visibly synthetic CSS geometry.
 - Avoid continuous full-canvas filters, animated backgrounds, layout-changing transitions, and repeated whole-document scans.
 - Coalesce mutation work to animation frames and retain valid marker nodes.
@@ -78,3 +103,15 @@ Treat composer art as a foreground accent with a transparent canvas, not as a se
 ## Completion gate
 
 Do not package or publish a new theme until all applicable surface-map rows have been inspected at a normal and narrow viewport. Capture home, populated conversation, selected task with actions, file-change summary, multiline composer, running/stop state, output panel, and usage/dialog overlay. Record fixes in `design-qa.md` and finish with exactly `final result: passed`.
+
+For the selected task row, always style both `.dream-selected-thread` and
+`[aria-current="page"].sidebar-item`, and keep its border/background transition
+disabled. Codex may replace the row while mounting hover actions; the native
+ARIA state is present on the replacement before the runtime marker is restored.
+Using both selectors prevents a one-frame missing border without weakening the
+runtime-selected label artwork.
+
+The shared runtime removes `.dream-selected-thread` and
+`.dream-selected-thread-label` whenever the New Task home route is active.
+Theme-specific selected-task artwork must therefore target real conversations
+only and must never be attached to a stale sidebar row on the home page.

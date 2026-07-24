@@ -13,6 +13,14 @@
   --dream-sidebar-control-text: #eef3ef;
   /* Usage/credits warnings remain light native cards even in dark themes. */
   --dream-light-overlay-ink: #263746;
+  --dream-usage-ink: #263746;
+  --dream-usage-muted: #60717c;
+  --dream-usage-accent: var(--dream-accent, #58766c);
+  --dream-usage-overlay: rgb(251 249 243 / 86%);
+  --dream-usage-border: rgb(72 93 82 / 20%);
+  --dream-plugin-ink: var(--dream-ink, #26332f);
+  --dream-plugin-surface: color-mix(in srgb, var(--dream-surface, #f4f0e6) 82%, transparent);
+  --dream-plugin-border: color-mix(in srgb, var(--dream-accent, #58766c) 28%, transparent);
 }
 
 :root.codex-dream-skin[data-dream-motion="low"] {
@@ -27,8 +35,8 @@
   --theme-atmosphere-distance: 26px;
 }
 
-/* Motion levels change content as well as speed: low keeps only the primary
-   accent, medium may add a secondary layer, and high may add a tertiary layer.
+/* Motion levels change content as well as speed: soft keeps one clearly
+   visible primary accent, while full may add secondary and tertiary layers.
    Give real atmosphere nodes .dream-theme-motion plus the tier class. Pseudo
    elements must implement equivalent scoped selectors. */
 :root.codex-dream-skin[data-dream-motion="low"] .dream-theme-motion-secondary,
@@ -92,6 +100,17 @@
 
 :root.codex-dream-skin #codex-dream-skin-actions button {
   border-color: var(--theme-border);
+}
+
+/* Style the stable native current-task state as well as the runtime marker.
+   React may replace the row while hover actions mount; relying only on the
+   marker creates a visible one-frame border flash. */
+:root.codex-dream-skin aside.app-shell-left-panel
+  :is(.dream-selected-thread, [aria-current="page"].sidebar-item) {
+  background: color-mix(in srgb, var(--dream-accent, #58766c) 22%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--dream-accent, #58766c) 46%, transparent) !important;
+  box-shadow: inset 2px 0 0 var(--dream-accent, #58766c) !important;
+  transition: none !important;
 }
 
 /* Runtime marks the complete native diff card instead of relying on volatile

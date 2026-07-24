@@ -5,6 +5,7 @@
   "subtitle": "INK LANDSCAPE · CODEX",
   "image": "background.webp",
   "conversationImage": "conversation-background.webp",
+  "usageImage": "usage-background.webp",
   "sidebarImage": "sidebar-background.webp",
   "selectedLeaf": "selected-leaf.png",
   "composerEdge": {

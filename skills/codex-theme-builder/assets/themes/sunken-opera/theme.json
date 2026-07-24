@@ -5,6 +5,7 @@
     "subtitle":  "SUNKEN OPERA · CODEX",
     "image":  "home.webp",
     "conversationImage":  "conversation.webp",
+    "usageImage":  "usage-background.webp",
     "sidebarImage":  "sidebar.webp",
     "selectedLeaf":  "selected-marker.webp",
     "composerEdge":  {

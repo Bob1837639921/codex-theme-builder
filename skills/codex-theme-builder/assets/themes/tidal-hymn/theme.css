@@ -1,4 +1,9 @@
 :root.codex-dream-skin {
+  --dream-usage-ink: #17394b;
+  --dream-usage-muted: #587687;
+  --dream-usage-accent: #31859b;
+  --dream-usage-overlay: rgb(248 253 255 / 77%);
+  --dream-usage-border: rgb(75 145 167 / 25%);
   --dream-ink: #193246;
   --dream-muted: #5c7180;
   --dream-accent: #347f98;
@@ -139,14 +144,15 @@ html.codex-dream-skin aside.app-shell-left-panel button:hover {
   background: rgba(118, 196, 217, .10) !important;
 }
 
-html.codex-dream-skin aside.app-shell-left-panel .dream-selected-thread {
+html.codex-dream-skin aside.app-shell-left-panel
+  :is(.dream-selected-thread, [aria-current="page"].sidebar-item) {
   overflow: hidden !important;
   padding-left: 3px !important;
   padding-right: 6px !important;
   background: rgba(57, 137, 166, .25) !important;
   border: 1px solid rgba(140, 212, 230, .38) !important;
   box-shadow: inset 2px 0 0 rgba(92, 202, 220, .94), 0 5px 16px rgba(0, 8, 18, .18) !important;
-  transition: background-color var(--dream-motion-fast) var(--dream-ease), border-color var(--dream-motion-fast) var(--dream-ease) !important;
+  transition: none !important;
 }
 
 html.codex-dream-skin aside.app-shell-left-panel .dream-selected-thread-label {

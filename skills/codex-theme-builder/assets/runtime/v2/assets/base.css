@@ -4,6 +4,22 @@
   --dream-ink: #252a27;
   --dream-accent: #5f7c72;
   --dream-paper: #f5f2e9;
+  --dream-usage-ink: #263746;
+  --dream-usage-muted: #60717c;
+  --dream-usage-accent: var(--dream-accent, #5f7c72);
+  --dream-usage-overlay: rgb(251 249 243 / 86%);
+  --dream-usage-border: rgb(72 93 82 / 20%);
+  --dream-plugin-ink: var(--dream-ink, #252a27);
+  --dream-plugin-surface: color-mix(in srgb, var(--dream-surface, #f5f2e9) 82%, transparent);
+  --dream-plugin-border: color-mix(in srgb, var(--dream-accent, #5f7c72) 28%, transparent);
+}
+
+#codex-dream-motion-layer {
+  display: none;
+}
+
+#codex-dream-background-video {
+  display: none;
 }
 
 html.codex-dream-skin .composer-surface-chrome {
@@ -63,6 +79,48 @@ html.codex-dream-skin aside.app-shell-left-panel
   text-shadow: none !important;
 }
 
+/* Full usage details are a distinct portaled surface. The runtime marker
+   keeps broad dark dialog rules from producing dark-on-dark text, while the
+   dedicated image remains replaceable per theme and atomic during switching. */
+html.codex-dream-skin [role="dialog"].dream-usage-panel {
+  color: var(--dream-usage-ink) !important;
+  background-color: var(--dream-surface, #f5f2e9) !important;
+  background-image:
+    linear-gradient(var(--dream-usage-overlay), var(--dream-usage-overlay)),
+    var(--dream-usage-art) !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-size: cover !important;
+  border-color: var(--dream-usage-border) !important;
+  box-shadow: 0 22px 64px rgb(4 14 24 / 24%) !important;
+}
+
+html.codex-dream-skin [role="dialog"].dream-usage-panel
+  :is(h1, h2, h3, p, span, div, button, a, label, small, svg) {
+  color: inherit !important;
+  -webkit-text-fill-color: currentColor !important;
+  text-shadow: none !important;
+}
+
+html.codex-dream-skin [role="dialog"].dream-usage-panel
+  :is([class*="text-token-text-secondary"], [class*="text-token-foreground-secondary"],
+      [class*="text-token-text-tertiary"], [class*="text-token-foreground-tertiary"],
+      [class*="text-token-input-placeholder"]) {
+  color: var(--dream-usage-muted) !important;
+  -webkit-text-fill-color: var(--dream-usage-muted) !important;
+}
+
+html.codex-dream-skin [role="dialog"].dream-usage-panel :is(a, button):not(:disabled) {
+  color: var(--dream-usage-accent) !important;
+  -webkit-text-fill-color: var(--dream-usage-accent) !important;
+}
+
+html.codex-dream-skin [role="dialog"].dream-usage-panel button[class~="bg-token-foreground"] {
+  color: var(--dream-surface, #ffffff) !important;
+  -webkit-text-fill-color: var(--dream-surface, #ffffff) !important;
+  background-color: var(--dream-usage-accent) !important;
+}
+
 html.codex-dream-skin body::before,
 #codex-dream-skin-chrome {
   display: none !important;
@@ -80,6 +138,62 @@ html.codex-dream-skin .dream-home-hero {
   max-width: none !important;
   min-width: 0 !important;
   align-self: stretch !important;
+}
+
+/* Codex also renders a native four-card suggestion row on the home route.
+   Themes supply their own equivalent action grid, so never let the native
+   cards paint behind it during the first render or a renderer reload. */
+html.codex-dream-skin .dream-home .dream-native-home-suggestions,
+html.codex-dream-skin .dream-home section[class~="group/home-suggestions"] {
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/* Keep the optional Fast-mode promotion usable without letting it consume
+   home-layout height and push the project picker/composer off screen. */
+html.codex-dream-skin .dream-home .dream-home-promo {
+  position: absolute !important;
+  z-index: 24 !important;
+  top: 20px !important;
+  left: clamp(16px, 4.5vw, 64px) !important;
+  right: clamp(16px, 4.5vw, 64px) !important;
+  width: auto !important;
+  max-width: none !important;
+  margin: 0 !important;
+}
+
+/* Plugin discovery uses a native sticky white search rail. Runtime markers
+   make that structure themeable without coupling theme packages to utility
+   classes from one Codex release. */
+html.codex-dream-skin .dream-plugin-search-shell {
+  color: var(--dream-plugin-ink) !important;
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+html.codex-dream-skin .dream-plugin-search-shell::after {
+  display: none !important;
+  content: none !important;
+}
+
+html.codex-dream-skin .dream-plugin-search {
+  color: var(--dream-plugin-ink) !important;
+  background: var(--dream-plugin-surface) !important;
+  border-color: var(--dream-plugin-border) !important;
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--dream-accent, #5f7c72) 13%, transparent) !important;
+  backdrop-filter: blur(14px) saturate(.96) !important;
+}
+
+html.codex-dream-skin .dream-plugin-search :is(input, svg) {
+  color: var(--dream-plugin-ink) !important;
+  -webkit-text-fill-color: currentColor !important;
+}
+
+html.codex-dream-skin .dream-plugin-search input::placeholder {
+  color: color-mix(in srgb, var(--dream-plugin-ink) 58%, transparent) !important;
+  -webkit-text-fill-color: currentColor !important;
+  opacity: 1 !important;
 }
 
 #codex-dream-home-overlay {
@@ -200,6 +314,23 @@ html.codex-dream-skin aside.app-shell-left-panel #codex-dream-theme-switcher * {
   overflow: visible !important;
 }
 
+/* Keep the light theme-library surface independent from sidebar text rules.
+   Theme sidebars may set both color and -webkit-text-fill-color on every
+   descendant, so the switcher must restore both properties locally. */
+html.codex-dream-skin aside.app-shell-left-panel
+  #codex-dream-theme-switcher .dream-theme-panel {
+  color: #26302b !important;
+  -webkit-text-fill-color: #26302b !important;
+  text-shadow: none !important;
+}
+
+html.codex-dream-skin aside.app-shell-left-panel
+  #codex-dream-theme-switcher .dream-theme-panel
+  :is(strong, span, p, button, label, input) {
+  -webkit-text-fill-color: currentColor !important;
+  text-shadow: none !important;
+}
+
 @keyframes dream-theme-panel-in {
   from { opacity: 0; transform: translateY(-5px) scale(.985); }
   to { opacity: 1; transform: translateY(0) scale(1); }
@@ -222,8 +353,8 @@ html.codex-dream-skin aside.app-shell-left-panel #codex-dream-theme-switcher * {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
-  max-height: min(410px, calc(100vh - 92px));
-  padding: 3px;
+  max-height: min(200px, 42vh);
+  padding: 3px 5px 3px 3px;
   overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -385,7 +516,7 @@ html.codex-dream-skin aside.app-shell-left-panel #codex-dream-theme-switcher * {
 
 #codex-dream-theme-switcher .dream-motion-options {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 4px;
   padding: 3px;
   border: 1px solid rgb(96 104 99 / 12%);

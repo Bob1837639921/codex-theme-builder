@@ -43,11 +43,12 @@ powershell -ExecutionPolicy Bypass -File scripts/new-theme.ps1 `
   -Id "my-theme" -Name "My Theme" `
   -HomeImage "C:\path\home.png" `
   -ConversationImage "C:\path\conversation.png" `
+  -UsageImage "C:\path\usage-background.webp" `
   -OutputDirectory "C:\path\themes"
 ```
 
-5. Tune `theme.css` using theme-scoped selectors under `:root.codex-dream-skin`. Keep native Codex controls functional.
-6. Work through every applicable row in `new-theme-blueprint.md`. Keep generic DOM discovery and safety behavior in the shared runtime; keep palette, imagery, spacing, and theme identity in the theme folder.
+5. Tune `theme.css` using theme-scoped selectors under `:root.codex-dream-skin`. Every theme must define its own usage-panel ink, muted, accent, overlay, and border tokens; do not inherit another theme's palette or reuse its home artwork.
+6. Work through every row in `new-theme-blueprint.md`, including both compact and full usage surfaces. Keep generic DOM discovery and safety behavior in the shared runtime; keep palette, imagery, spacing, and theme identity in the theme folder.
 7. Validate before attempting a live preview.
 
 ## Validate and preview

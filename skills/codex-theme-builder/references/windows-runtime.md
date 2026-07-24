@@ -34,5 +34,6 @@ A Codex update ends the hidden watcher, so the theme disappears. Start the selec
 - “Access is denied”: do not kill arbitrary processes; run the normal shortcut without elevation and check Windows package permissions.
 - Theme missing after update: restart through the theme launcher; the standard Codex shortcut does not inject a theme.
 - Cold start appears to do nothing: inspect `desktop-launch.log`. The launcher must show startup feedback before package activation and foreground the verified Codex window after injection.
+- A renderer reload during startup is retried automatically with a fresh CDP page connection. If all bounded attempts fail, inspect `verification.log` beside `desktop-launch.log`.
 - Output panel stays native white while diagnostics report themed styles: Codex can retain an off-screen output-panel node while rendering a second visible node. Detail-surface discovery must scan all candidates, prefer one intersecting the current viewport, and remove stale `.dream-output-panel` markers from off-screen nodes.
 - Logs live at `%LOCALAPPDATA%\CodexDreamSkinV2\injector.log` and `injector-error.log` while a session is active.

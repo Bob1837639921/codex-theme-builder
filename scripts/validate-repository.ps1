@@ -84,6 +84,14 @@ foreach ($themeId in $themeIds) {
   if ($themeManifest.id -ne $themeId) {
     throw "Bundled theme manifest ID does not match its directory: $themeId"
   }
+  if ([string]::IsNullOrWhiteSpace($themeManifest.usageImage)) {
+    throw "Bundled theme must include dedicated usage-panel artwork: $themeId"
+  }
+  $usageImage = Join-Path $theme $themeManifest.usageImage
+  if (-not (Test-Path -LiteralPath $usageImage -PathType Leaf) -or
+      (Get-Item -LiteralPath $usageImage).Length -gt 300KB) {
+    throw "Bundled usage-panel artwork must exist and remain at or below 300 KB: $themeId"
+  }
   & (Join-Path $skill 'scripts\test-theme.ps1') -ThemePath $theme
   if ($LASTEXITCODE -ne 0) { throw "Bundled theme validation failed: $themeId" }
 }

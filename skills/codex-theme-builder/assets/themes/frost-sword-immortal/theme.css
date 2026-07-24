@@ -1,4 +1,9 @@
 :root.codex-dream-skin {
+  --dream-usage-ink: #1d334d;
+  --dream-usage-muted: #61788f;
+  --dream-usage-accent: #5579a8;
+  --dream-usage-overlay: rgb(246 249 253 / 78%);
+  --dream-usage-border: rgb(106 135 164 / 28%);
   --dream-ink: #1d334d;
   --dream-muted: #6c7e91;
   --dream-accent: #5579a8;
@@ -141,7 +146,8 @@ html.codex-dream-skin aside.app-shell-left-panel [class~="bg-token-list-hover-ba
   border: 1px solid rgba(153, 185, 217, .18) !important;
 }
 
-html.codex-dream-skin aside.app-shell-left-panel .dream-selected-thread {
+html.codex-dream-skin aside.app-shell-left-panel
+  :is(.dream-selected-thread, [aria-current="page"].sidebar-item) {
   position: relative !important;
   isolation: isolate;
   overflow: hidden !important;
@@ -622,8 +628,8 @@ html.codex-dream-skin [data-radix-popper-content-wrapper] button[class~="bg-toke
   }
 }
 
-/* Motion tiers: low = sparse snow, medium = snow plus an ice halo,
-   high = denser crystal field, sword-light sweep, and energized halo. */
+/* Motion tiers: low = sparse snow, medium = brighter crystal drift,
+   high = denser crystal field plus a sword-light sweep. */
 :root.codex-dream-skin {
   --frost-motion-duration: 15s;
   --frost-motion-opacity: .48;
@@ -690,33 +696,6 @@ html.codex-dream-skin main.main-surface.dream-conversation-shell::after {
   animation-delay: 0s, -4.1s !important;
 }
 
-:root.codex-dream-skin[data-dream-motion="medium"] body::after,
-:root.codex-dream-skin[data-dream-motion="high"] body::after {
-  content: "" !important;
-  display: block !important;
-  position: fixed !important;
-  z-index: 0 !important;
-  right: clamp(28px, 7vw, 126px) !important;
-  bottom: clamp(72px, 11vh, 132px) !important;
-  width: clamp(170px, 16vw, 280px) !important;
-  height: clamp(170px, 16vw, 280px) !important;
-  border-radius: 50% !important;
-  background:
-    conic-gradient(from 28deg, transparent 0 17%, rgba(213, 242, 255, .62) 22%, transparent 29% 56%, rgba(119, 190, 250, .40) 63%, transparent 70%),
-    radial-gradient(circle, transparent 0 48%, rgba(229, 248, 255, .68) 49% 50%, transparent 52% 65%, rgba(122, 191, 247, .34) 66% 67%, transparent 69%) !important;
-  mask-image: radial-gradient(circle, transparent 0 34%, #000 42% 72%, transparent 90%) !important;
-  opacity: .36;
-  pointer-events: none !important;
-  will-change: transform, opacity;
-  animation: frost-halo-turn 18.6s linear infinite, frost-halo-breathe 9.7s ease-in-out infinite !important;
-}
-
-:root.codex-dream-skin[data-dream-motion="high"] body::after {
-  opacity: .72;
-  filter: drop-shadow(0 0 7px rgba(171, 229, 255, .78)) drop-shadow(0 0 22px rgba(87, 153, 237, .42)) !important;
-  animation-duration: 10.8s, 6.1s !important;
-}
-
 :root.codex-dream-skin[data-dream-motion="off"] main.main-surface.dream-home-shell::after,
 :root.codex-dream-skin[data-dream-motion="off"] main.main-surface.dream-conversation-shell::after {
   display: none !important;
@@ -736,20 +715,9 @@ html.codex-dream-skin main.main-surface.dream-conversation-shell::after {
   79%, 100% { opacity: .58; }
 }
 
-@keyframes frost-halo-turn {
-  from { transform: rotate(0deg) scale(.96); }
-  to { transform: rotate(360deg) scale(1.04); }
-}
-
-@keyframes frost-halo-breathe {
-  0%, 100% { opacity: .22; }
-  48% { opacity: .64; }
-}
-
 @media (prefers-reduced-motion: reduce) {
   html.codex-dream-skin main.main-surface.dream-home-shell::after,
-  html.codex-dream-skin main.main-surface.dream-conversation-shell::after,
-  :root.codex-dream-skin body::after {
+  html.codex-dream-skin main.main-surface.dream-conversation-shell::after {
     display: none !important;
     animation: none !important;
     will-change: auto;

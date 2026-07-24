@@ -319,6 +319,18 @@ async function loadThemePackage(themeDir, baseCss) {
   if (!conversationStat.isFile() || conversationStat.size < 1 || conversationStat.size > MAX_ART_BYTES) {
     throw new Error("Conversation image must be non-empty and no larger than 8 MB");
   }
+  let usageImagePath = null;
+  if (raw.usageImage !== undefined) {
+    if (typeof raw.usageImage !== "string" || path.basename(raw.usageImage) !== raw.usageImage ||
+        !/\.(?:png|jpe?g|webp)$/i.test(raw.usageImage)) {
+      throw new Error("Usage panel image must be a PNG, JPEG, or WebP file inside the theme directory");
+    }
+    usageImagePath = path.join(themeDir, raw.usageImage);
+    const usageImageStat = await fs.stat(usageImagePath);
+    if (!usageImageStat.isFile() || usageImageStat.size < 1 || usageImageStat.size > 2 * 1024 * 1024) {
+      throw new Error("Usage panel image must be non-empty and no larger than 2 MB");
+    }
+  }
   let sidebarImageDataUrl = "none";
   if (raw.sidebarImage !== undefined) {
     if (typeof raw.sidebarImage !== "string" || path.basename(raw.sidebarImage) !== raw.sidebarImage ||
@@ -349,6 +361,21 @@ async function loadThemePackage(themeDir, baseCss) {
     }
     const motionImageBytes = await fs.readFile(motionImagePath);
     motionImageDataUrl = `data:image/webp;base64,${motionImageBytes.toString("base64")}`;
+  }
+  let backgroundVideoDataUrl = null;
+  if (raw.backgroundVideo !== undefined) {
+    if (typeof raw.backgroundVideo !== "string" || path.basename(raw.backgroundVideo) !== raw.backgroundVideo ||
+        !/\.mp4$/i.test(raw.backgroundVideo)) {
+      throw new Error("Background video must be an MP4 file inside the theme directory");
+    }
+    const backgroundVideoPath = path.join(themeDir, raw.backgroundVideo);
+    const backgroundVideoStat = await fs.stat(backgroundVideoPath);
+    if (!backgroundVideoStat.isFile() || backgroundVideoStat.size < 1 ||
+        backgroundVideoStat.size > 4 * 1024 * 1024) {
+      throw new Error("Background video must be non-empty and no larger than 4 MB");
+    }
+    const backgroundVideoBytes = await fs.readFile(backgroundVideoPath);
+    backgroundVideoDataUrl = `data:video/mp4;base64,${backgroundVideoBytes.toString("base64")}`;
   }
   let selectedLeafDataUrl = "none";
   if (raw.selectedLeaf !== undefined) {
@@ -435,12 +462,22 @@ async function loadThemePackage(themeDir, baseCss) {
   const conversationMime = conversationExtension === ".webp" ? "image/webp" :
     conversationExtension === ".jpg" || conversationExtension === ".jpeg" ? "image/jpeg" : "image/png";
   const conversationArtDataUrl = `data:${conversationMime};base64,${conversationArt.toString("base64")}`;
+  let usageArtDataUrl = null;
+  if (usageImagePath) {
+    const usageArt = await fs.readFile(usageImagePath);
+    const usageExtension = path.extname(raw.usageImage).toLowerCase();
+    const usageMime = usageExtension === ".webp" ? "image/webp" :
+      usageExtension === ".jpg" || usageExtension === ".jpeg" ? "image/jpeg" : "image/png";
+    usageArtDataUrl = `data:${usageMime};base64,${usageArt.toString("base64")}`;
+  }
   return {
     ...theme,
     cssText: `${themeVariables}\n${baseCss}\n${themeCss}`,
     artDataUrl,
     conversationArtDataUrl,
     motionArtDataUrl: motionImageDataUrl,
+    backgroundVideoDataUrl,
+    usageArtDataUrl,
     swatches: [theme.accent, theme.accentAlt, theme.surface],
   };
 }
@@ -861,7 +898,7 @@ async function runOneShot(options) {
             const restoredMotion = state.activeMotionLevel;
             return {
               pass: changed !== original && changedStyle === changed && restored === original &&
-                motionButtons.length === 4 && changedMotion !== originalMotion &&
+                motionButtons.length === 3 && changedMotion !== originalMotion &&
                 motionAttribute === changedMotion && persistedMotion === changedMotion &&
                 restoredMotion === originalMotion,
               original,

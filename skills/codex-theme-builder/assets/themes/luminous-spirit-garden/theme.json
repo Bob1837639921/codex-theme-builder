@@ -1,0 +1,25 @@
+{
+    "schemaVersion":  1,
+    "id":  "luminous-spirit-garden",
+    "name":  "萤梦花庭",
+    "subtitle":  "LUMINOUS SPIRIT · CODEX",
+    "image":  "home.webp",
+    "conversationImage":  "conversation.webp",
+    "sidebarImage":  "sidebar.webp",
+    "motionImage":  "jellyfish-motion.webp",
+    "backgroundVideo":  "background-motion.mp4",
+    "usageImage":  "usage-background.webp",
+    "selectedLeaf":  "selected-jellyfish.webp",
+    "icons":  {
+                  "build":  "icon-build.svg",
+                  "analyze":  "icon-analyze.svg",
+                  "automate":  "icon-automate.svg",
+                  "debug":  "icon-debug.svg"
+              },
+    "colors":  {
+                   "accent":  "#786FA8",
+                   "accentAlt":  "#769C8D",
+                   "surface":  "#E7EAF3",
+                   "text":  "#30384A"
+               }
+}

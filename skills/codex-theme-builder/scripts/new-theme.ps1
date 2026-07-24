@@ -4,6 +4,7 @@ param(
   [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$Name,
   [Parameter(Mandatory)][ValidateScript({ Test-Path -LiteralPath $_ -PathType Leaf })][string]$HomeImage,
   [ValidateScript({ -not $_ -or (Test-Path -LiteralPath $_ -PathType Leaf) })][string]$ConversationImage = '',
+  [Parameter(Mandatory)][ValidateScript({ Test-Path -LiteralPath $_ -PathType Leaf })][string]$UsageImage,
   [ValidateScript({ -not $_ -or (Test-Path -LiteralPath $_ -PathType Leaf) })][string]$SidebarImage = '',
   [ValidateScript({ -not $_ -or (Test-Path -LiteralPath $_ -PathType Leaf) })][string]$MotionImage = '',
   [ValidateScript({ -not $_ -or (Test-Path -LiteralPath $_ -PathType Leaf) })][string]$SelectedMarkerImage = '',
@@ -65,6 +66,7 @@ $sidebarName = if ([string]::IsNullOrWhiteSpace($SidebarImage)) { '' } else {
 $motionName = if ([string]::IsNullOrWhiteSpace($MotionImage)) { '' } else {
   Copy-ThemeAsset -Source $MotionImage -Stem 'motion' -AllowedExtensions @('.webp')
 }
+$usageName = Copy-ThemeAsset -Source $UsageImage -Stem 'usage-background' -AllowedExtensions @('.png', '.jpg', '.jpeg', '.webp')
 $selectedMarkerName = if ([string]::IsNullOrWhiteSpace($SelectedMarkerImage)) { '' } else {
   Copy-ThemeAsset -Source $SelectedMarkerImage -Stem 'selected-marker' -AllowedExtensions @('.png', '.webp')
 }
@@ -90,6 +92,7 @@ $manifest = [ordered]@{
 }
 if ($sidebarName) { $manifest.sidebarImage = $sidebarName }
 if ($motionName) { $manifest.motionImage = $motionName }
+$manifest.usageImage = $usageName
 if ($selectedMarkerName) { $manifest.selectedLeaf = $selectedMarkerName }
 if ($composerEdgeName) {
   $manifest.composerEdge = [ordered]@{

@@ -10,8 +10,10 @@ theme-id/
   theme.css
   home.png
   conversation.png
+  usage-background.webp  # required dedicated usage-details artwork
   sidebar.png       # optional sidebar texture
   motion.webp       # optional pre-rendered localized motion loop
+  background-motion.mp4 # optional full-canvas video, high motion tier only
   selected-leaf.png  # optional selected-state raster marker
   composer-edge.png  # optional transparent composer-edge artwork
   icon-build.svg
@@ -32,8 +34,10 @@ The image names are configurable. `theme.css` is optional to the runtime but gen
   "subtitle": "CODEX THEME",
   "image": "home.png",
   "conversationImage": "conversation.png",
+  "usageImage": "usage-background.webp",
   "sidebarImage": "sidebar.png",
   "motionImage": "motion.webp",
+  "backgroundVideo": "background-motion.mp4",
   "selectedLeaf": "selected-leaf.png",
   "composerEdge": {
     "image": "composer-edge.png",
@@ -64,9 +68,12 @@ Rules:
 - Use PNG, JPEG, or WebP raster images no larger than 8 MB each.
 - `sidebarImage` is optional. When present it must be a local PNG, JPEG, or WebP image no larger than 8 MB; the runtime exposes it as `--dream-sidebar-art`.
 - `motionImage` is optional. It must be a local animated or static WebP no larger than 2 MB; the runtime exposes it as `--dream-motion-art`. Keep it localized and masked instead of stretching it over the full workspace.
+- `backgroundVideo` is optional. It must be a local MP4 no larger than 4 MB and may run only under `data-dream-motion="high"`. The shared runtime creates the video lazily, pauses it while the document is hidden, removes it when leaving the high tier or switching themes, and always falls back to the static home/conversation artwork under reduced motion.
+- Themes may display the runtime-owned `#codex-dream-motion-layer` when a `motionImage` should wander across the viewport. It contains three `.dream-motion-wanderer` elements whose route variables are randomized again only after the current animation has faded to zero. The shared base keeps this layer hidden, so each theme must opt in explicitly at its intended motion tier and preserve `pointer-events: none`.
 - Provide all four SVG icons. Keep each below 64 KB and omit scripts, external references, event handlers, embedded images, and CSS `url()` values.
 - Use six-digit hexadecimal colors.
 - `conversationImage` may equal `image`.
+- `usageImage` is required. It must be a local PNG, JPEG, or WebP no larger than 300 KB. The runtime exposes it as `--dream-usage-art`; never reuse the home or conversation image.
 - `selectedLeaf` is optional. When present it must be a local PNG or WebP no larger than 512 KB. The runtime exposes it as `--dream-selected-leaf`; use `none` as the CSS fallback.
 - `composerEdge` is optional. It may be a filename for compatibility or an object containing `image`, `horizontal`, `vertical`, `maxHeight`, and `opacity`. The image must be a local transparent PNG or WebP no larger than 2 MB. Horizontal anchors are `left`, `center`, or `right`; vertical anchors are `top`, `center`, or `bottom`; `maxHeight` is 48–384 CSS pixels; opacity is 0.2–1. The runtime exposes image, position, height cap, and opacity as CSS variables. Keep the center and native control zones transparent.
 
@@ -86,16 +93,19 @@ Start every override from `:root.codex-dream-skin` or one of the runtime classes
 - `.dream-file-changes-summary` for the complete native file-change card, including its `.group\/turn-diff-header`
 - `.dream-selected-thread` and `.dream-selected-thread-label`
 - `.dream-output-panel`
+- `.dream-usage-panel`
 
-The runtime exposes `--dream-art`, `--dream-conversation-art`, the optional `--dream-sidebar-art`, `--dream-motion-art`, `--dream-selected-leaf`, and `--dream-composer-edge` as data-backed CSS values, plus color tokens derived from the manifest. Keep pseudo-elements non-interactive with `pointer-events: none`.
+The runtime exposes `--dream-art`, `--dream-conversation-art`, the optional `--dream-usage-art`, `--dream-sidebar-art`, `--dream-motion-art`, `--dream-selected-leaf`, and `--dream-composer-edge` as data-backed CSS values, plus color tokens derived from the manifest. Keep pseudo-elements non-interactive with `pointer-events: none`.
 
 Define `--dream-light-overlay-ink` independently from `--dream-ink`. Codex's sidebar usage/credits warning remains a light native card in both light and dark themes, so it must use a dark readable foreground even when the main theme text is near-white. Do not include that status card in broad dark dialog, menu, or Radix descendant selectors.
+
+The full usage-details dialog is a required, separate surface from the compact quota warning. Every theme must explicitly define `--dream-usage-ink`, `--dream-usage-muted`, `--dream-usage-accent`, `--dream-usage-overlay`, and `--dream-usage-border`. Theme it through `.dream-usage-panel`; the reading overlay must preserve contrast for the title, reset dates, availability chips, progress indicator, close control, disabled states, and actions.
 
 Use detail marker classes only when their native surfaces are present. Scope searches to the composer, sidebar, or output region, and retain connected markers instead of rescanning the entire conversation on every mutation.
 
 The neutral scaffold already treats `.dream-file-changes-summary` and portaled `[role="dialog"]` content as mandatory semantic surfaces. Preserve those blocks when creating a theme. Override their tokens or presentation for the visual direction; do not remove the complete-card styling, explicit descendant foregrounds, muted text, links, disabled states, or green/red diff semantics. In dark themes, setting only the outer `color` is insufficient because Codex utility classes may assign nested foreground and WebKit text-fill values.
 
-The shared switcher persists a global motion preference on the root as `data-dream-motion="off|low|medium|high"`. New theme motion must use these four levels rather than inventing a separate toggle. The levels are effect tiers, not opacity presets: low keeps one quiet primary accent; medium adds a second kind of atmosphere; high adds a deliberately richer third treatment such as denser motes, glints, or a second trajectory. Speed, travel, and opacity may reinforce those differences but must not be the only differences. Use the neutral `--theme-atmosphere-*` variables or define theme-local variables per level. Add `.dream-theme-motion` and the appropriate secondary/tertiary tier class to real decoration nodes; for pseudo-elements, add equivalent theme-scoped selectors. `prefers-reduced-motion: reduce` always wins and must stop every custom animation regardless of the selected level.
+The shared switcher persists a global motion preference on the root as `data-dream-motion="off|low|high"`, displayed as `关闭 / 柔和 / 完整`. New theme motion must use these three levels rather than inventing a separate toggle. Legacy stored `medium` values migrate to `low`. The levels are effect tiers, not opacity presets: `low` must retain one clearly perceptible primary accent, while `high` may add secondary and tertiary treatments such as denser motes, glints, or more trajectories. Speed, travel, and opacity may reinforce those differences but must not be the only differences. Use the neutral `--theme-atmosphere-*` variables or define theme-local variables per level. Add `.dream-theme-motion` and the appropriate secondary/tertiary tier class to real decoration nodes; for pseudo-elements, add equivalent theme-scoped selectors. `prefers-reduced-motion: reduce` always wins and must stop every custom animation regardless of the selected level.
 
 Codex uses sticky gradient layers around the composer. The bundled base runtime neutralizes the native `bg-gradient-to-t` rails around both the ordinary composer and the file-changes summary. Do not reintroduce opaque backgrounds on those ancestors.
 

@@ -44,6 +44,37 @@ function Report-DreamSkinLaunchStage {
   Report-DreamSkinLaunchProgress -Percent $definition.Percent -Status $definition.Status -Stage $Stage
 }
 
+function Test-DreamSkinVerifiedInjection {
+  [CmdletBinding()]
+  param(
+    [Parameter(Mandatory)][string]$NodePath,
+    [Parameter(Mandatory)][string]$InjectorPath,
+    [Parameter(Mandatory)][ValidateRange(1024, 65535)][int]$Port,
+    [Parameter(Mandatory)][string]$BrowserId,
+    [Parameter(Mandatory)][string]$ThemePath,
+    [Parameter(Mandatory)][string]$VerificationLogPath,
+    [ValidateRange(1, 6)][int]$VerificationAttempts = 3,
+    [ValidateRange(1000, 30000)][int]$AttemptTimeoutMs = 12000
+  )
+
+  Remove-Item -LiteralPath $VerificationLogPath -Force -ErrorAction SilentlyContinue
+  for ($verifyAttempt = 1; $verifyAttempt -le $VerificationAttempts; $verifyAttempt++) {
+    if ($verifyAttempt -gt 1) {
+      Report-DreamSkinLaunchProgress -Percent 90 `
+        -Status "Codex 页面刚完成重载，正在重新验证主题（$verifyAttempt/$VerificationAttempts）…" `
+        -Stage VerifyInjection
+      Start-Sleep -Milliseconds 700
+    }
+
+    "[$((Get-Date).ToString('o'))] verification attempt $verifyAttempt/$VerificationAttempts" |
+      Add-Content -LiteralPath $VerificationLogPath -Encoding UTF8
+    & $NodePath $InjectorPath --verify --port $Port --browser-id $BrowserId `
+      --theme-dir $ThemePath --timeout-ms $AttemptTimeoutMs *>> $VerificationLogPath
+    if ($LASTEXITCODE -eq 0) { return $true }
+  }
+  return $false
+}
+
 $lock = Enter-DreamSkinOperationLock
 try {
   Report-DreamSkinLaunchStage -Stage ValidateTheme
@@ -141,8 +172,13 @@ try {
   Write-DreamSkinState -Path $statePath -State $state
 
   Report-DreamSkinLaunchStage -Stage VerifyInjection
-  & $node.Path $injector --verify --port $port --browser-id $identity.BrowserId --theme-dir $Theme
-  if ($LASTEXITCODE -ne 0) { throw '主题注入验证失败。' }
+  $verificationLog = Join-Path $stateRoot 'verification.log'
+  $verified = Test-DreamSkinVerifiedInjection -NodePath $node.Path -InjectorPath $injector `
+    -Port $port -BrowserId $identity.BrowserId -ThemePath $Theme `
+    -VerificationLogPath $verificationLog
+  if (-not $verified) {
+    throw "主题注入验证失败。验证日志：$verificationLog"
+  }
   Report-DreamSkinLaunchStage -Stage Verified
   Write-Host "主题已在随机本机端口（$port）上启用。"
 } finally {

@@ -1,4 +1,9 @@
 :root.codex-dream-skin {
+  --dream-usage-ink: #2d3430;
+  --dream-usage-muted: #66746e;
+  --dream-usage-accent: #58766c;
+  --dream-usage-overlay: rgb(248 245 235 / 84%);
+  --dream-usage-border: rgb(72 93 82 / 22%);
   --dream-ink: #252a27;
   --dream-muted: #6d7771;
   --dream-accent: #5f7c72;
@@ -115,7 +120,8 @@ html.codex-dream-skin aside.app-shell-left-panel [class~="bg-token-list-hover-ba
   border: 1px solid rgba(150, 177, 167, .18) !important;
 }
 
-html.codex-dream-skin aside.app-shell-left-panel .dream-selected-thread {
+html.codex-dream-skin aside.app-shell-left-panel
+  :is(.dream-selected-thread, [aria-current="page"].sidebar-item) {
   position: relative !important;
   isolation: isolate;
   overflow: hidden !important;
