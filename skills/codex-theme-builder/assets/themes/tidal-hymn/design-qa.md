@@ -1,14 +1,14 @@
 # 潮汐圣歌设计 QA
 
 - Tested viewport: 1682 × 820 conversation view.
-- Off: all custom atmosphere layers hidden.
-- Low: localized bubble drift only.
-- Medium: bubble drift plus independent pearl-mote field.
-- High: bubbles plus a pre-rendered transparent water-caustic loop, softly masked to the lower-right scene.
-- The 432 × 432, 6 fps, 4-second WebP loop is 1,521,606 bytes and stays below the 2 MB motion-asset budget.
-- The loop is generated offline from an original water-caustic texture; Codex performs no live fluid simulation, blur recovery, or full-screen filter animation.
+- Off: all custom atmosphere layers and scene videos are hidden.
+- Soft: `conversation-motion-soft.mp4` provides the approved restrained environmental treatment on the conversation route; the character remains nearly static.
+- Full: `conversation-motion.mp4` provides the approved character-motion treatment with restrained breathing, one blink, drifting hair/fabric, caustic light, and bubbles.
+- Both conversation videos are 1280 × 720, 24 fps, 10 seconds, H.264 MP4, audio-free, and below the 8 MB per-video budget.
+- The home route keeps its existing artwork and `home-motion.mp4`; the new Gemini clips are conversation-only.
+- The runtime replaces soft and full sources atomically and never stacks both videos.
 - Text, composer controls, selected task actions, and the output panel remain unobstructed.
-- `prefers-reduced-motion` stops custom transforms and freezes the decorative layers.
+- `prefers-reduced-motion` stops custom transforms and prevents scene-video playback.
 - Validation: runtime payload, manifest, asset size, large-canvas artwork, CSS scope, and live CDP preview passed.
 
 final result: passed

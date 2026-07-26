@@ -107,6 +107,10 @@ $tidalCss = Get-Content -LiteralPath (Join-Path $Root '..\..\themes\tidal-hymn\t
 $luminousCss = Get-Content -LiteralPath (Join-Path $Root '..\..\themes\luminous-spirit-garden\theme.css') -Raw
 $luminousTheme = Join-Path $Root '..\..\themes\luminous-spirit-garden'
 $luminousManifest = Get-Content -LiteralPath (Join-Path $luminousTheme 'theme.json') -Raw | ConvertFrom-Json
+$frostTheme = Join-Path $Root '..\..\themes\frost-sword-immortal'
+$frostManifest = Get-Content -LiteralPath (Join-Path $frostTheme 'theme.json') -Raw | ConvertFrom-Json
+$sunkenTheme = Join-Path $Root '..\..\themes\sunken-opera'
+$sunkenManifest = Get-Content -LiteralPath (Join-Path $sunkenTheme 'theme.json') -Raw | ConvertFrom-Json
 $tidalTheme = Join-Path $Root '..\..\themes\tidal-hymn'
 $tidalManifest = Get-Content -LiteralPath (Join-Path $tidalTheme 'theme.json') -Raw | ConvertFrom-Json
 $catalogPath = Join-Path (Split-Path -Parent $theme) 'theme-catalog.json'
@@ -183,26 +187,58 @@ if ($runtimeJs -notmatch 'MOTION_LAYER_ID\s*=\s*"codex-dream-motion-layer"' -or
     $baseCss -notmatch '(?s)#codex-dream-motion-layer\s*\{[^}]*display:\s*none' -or
     $luminousCss -notmatch '(?s)data-dream-motion="low".*?#codex-dream-motion-layer\s*\{[^}]*display:\s*block\s*!important' -or
     $luminousCss -notmatch '(?s)data-dream-motion="low".*?dream-motion-wanderer:nth-child\(n \+ 2\)\s*\{[^}]*display:\s*none\s*!important' -or
-    $luminousCss -notmatch '(?s)data-dream-motion="high".*?#codex-dream-motion-layer\s*\{[^}]*position:\s*fixed\s*!important[^}]*pointer-events:\s*none\s*!important' -or
+    $luminousCss -notmatch '(?s)data-dream-motion="high".*?#codex-dream-motion-layer\s*\{[^}]*display:\s*none\s*!important' -or
     $luminousCss -notmatch '@keyframes\s+luminous-random-wander' -or
     $luminousCss -notmatch '(?s)90%,\s*100%\s*\{[^}]*opacity:\s*0' -or
     $runtimeJs -notmatch '(?s)if\s*\(initial\)\s*\{.*?values\["--dream-wander-duration"\].*?values\["--dream-wander-delay"\]') {
   throw 'Runtime motion art must support pointer-free full-window wanderers that fade before randomized reseeding.'
 }
-if ($luminousManifest.backgroundVideo -ne 'background-motion.mp4' -or
-    -not (Test-Path (Join-Path $luminousTheme $luminousManifest.backgroundVideo)) -or
-    (Get-Item -LiteralPath (Join-Path $luminousTheme $luminousManifest.backgroundVideo)).Length -gt 4MB -or
-    $injectorText -notmatch 'Background video must be an MP4' -or
-    $injectorText -notmatch 'backgroundVideoDataUrl' -or
+$videoContracts = @(
+  @{ Name = 'frost-sword-immortal'; Root = $frostTheme; Manifest = $frostManifest; Fields = @('homeVideo', 'conversationVideo') }
+  @{ Name = 'sunken-opera'; Root = $sunkenTheme; Manifest = $sunkenManifest; Fields = @('homeSoftVideo', 'conversationSoftVideo', 'homeVideo', 'conversationVideo') }
+  @{ Name = 'luminous-spirit-garden'; Root = $luminousTheme; Manifest = $luminousManifest; Fields = @('conversationVideo') }
+)
+foreach ($contract in $videoContracts) {
+  foreach ($field in $contract.Fields) {
+    $fileName = $contract.Manifest.$field
+    $videoPath = Join-Path $contract.Root $fileName
+    if ([string]::IsNullOrWhiteSpace($fileName) -or
+        -not (Test-Path -LiteralPath $videoPath -PathType Leaf) -or
+        (Get-Item -LiteralPath $videoPath).Length -gt 8MB) {
+      throw "Theme $($contract.Name) has an invalid $field asset."
+    }
+  }
+}
+if ($injectorText -notmatch 'MAX_VIDEO_BYTES\s*=\s*8\s*\*\s*1024\s*\*\s*1024' -or
+    $injectorText -notmatch 'Home video' -or
+    $injectorText -notmatch 'Conversation video' -or
+    $injectorText -notmatch 'homeSoftVideoDataUrl' -or
+    $injectorText -notmatch 'conversationSoftVideoDataUrl' -or
+    $injectorText -notmatch 'homeVideoDataUrl' -or
+    $injectorText -notmatch 'conversationVideoDataUrl' -or
+    $injectorText -notmatch 'backgroundVideo:\s*backgroundVideo\s*\?' -or
+    $injectorText -notmatch 'currentTime:\s*Number\(backgroundVideo\.currentTime\.toFixed' -or
     $runtimeJs -notmatch 'BACKGROUND_VIDEO_ID\s*=\s*"codex-dream-background-video"' -or
-    $runtimeJs -notmatch 'activeMotionLevel\s*===\s*"high"' -or
+    $runtimeJs -notmatch 'dataset\.dreamScene' -or
+    $runtimeJs -notmatch 'dataset\.dreamMotionTier' -or
+    $runtimeJs -notmatch 'activeTheme\?\.homeSoftVideoDataUrl' -or
+    $runtimeJs -notmatch 'activeTheme\?\.conversationSoftVideoDataUrl' -or
+    $runtimeJs -notmatch 'activeTheme\?\.homeVideoDataUrl' -or
+    $runtimeJs -notmatch 'activeTheme\?\.conversationVideoDataUrl' -or
+    $runtimeJs -notmatch 'activeMotionLevel\s*===\s*"high"\s*\?\s*"high"' -or
+    $runtimeJs -notmatch 'activeMotionLevel\s*===\s*"low"\s*\?\s*"soft"' -or
     $runtimeJs -notmatch 'document\.hidden' -or
     $runtimeJs -notmatch 'reducedMotionQuery\?\.matches' -or
     $runtimeJs -notmatch 'video\.pause\(\)' -or
     $runtimeJs -notmatch 'video\.play\(\)\.catch' -or
-    $luminousCss -notmatch '(?s)data-dream-motion="high".*?#codex-dream-background-video\s*\{[^}]*pointer-events:\s*none\s*!important' -or
-    $luminousCss -notmatch '(?s)prefers-reduced-motion:\s*reduce.*?#codex-dream-background-video\s*\{[^}]*display:\s*none\s*!important') {
-  throw 'Optional background video must stay local, bounded, high-tier-only, visibility-aware, reduced-motion safe, and non-interactive.'
+    $baseCss -notmatch '(?s)data-dream-motion="low".*?data-dream-motion="high".*?#codex-dream-background-video' -or
+    $baseCss -notmatch '(?s)#codex-dream-background-video\s*\{[^}]*pointer-events:\s*none\s*!important' -or
+    $baseCss -notmatch '(?s)#codex-dream-background-video\.is-ready\s*\{[^}]*opacity:\s*1') {
+  throw 'Scene-specific background videos must stay local, bounded, tier-aware, visibility-aware, reduced-motion safe, and non-interactive.'
+}
+if ($injectorText -notmatch 'const\s+homeVisualAnchor\s*=\s*home\?\.querySelector\(''\.dream-home-hero''\)' -or
+    $injectorText -match 'hero:\s*box\(home\?\.firstElementChild') {
+  throw 'Injection verification must use stable runtime home markers instead of Codex DOM depth.'
 }
 if ($themeCss -notmatch '(?s)main\.dream-conversation-shell\s+\.sticky\.bottom-0\s+\[class~="bg-gradient-to-t"\]\s*\{[^}]*background-image:\s*none\s*!important') {
   throw 'Conversation composer fades must stay transparent, including the in-progress file-summary state.'
@@ -219,8 +255,8 @@ if ($themeCss -match 'group\\/project-selector' -or
 if ($baseCss -notmatch '(?s)aside\.app-shell-left-panel\s+\[class~="bg-token-bg-secondary/40"\]\s*\{[^}]*background-color:\s*transparent\s*!important[^}]*background-image:\s*none\s*!important') {
   throw 'The native light-mode sidebar carrier must stay transparent so it cannot veil theme artwork.'
 }
-if ($themeCss -notmatch '(?s)\[role="dialog"\]\s*\{[^}]*color:\s*var\(--dream-ink\)\s*!important[^}]*background-color:') {
-  throw 'Portaled light dialogs must keep readable dark text after Codex updates.'
+if ($baseCss -notmatch '(?s)\[role="dialog"\]\s*\{[^}]*color:\s*var\(--dream-ink\)\s*!important[^}]*background-color:\s*var\(--dream-surface\)\s*!important') {
+  throw 'Portaled dialogs must keep a readable theme-aware foreground and surface after Codex updates.'
 }
 if ($baseCss -notmatch '(?s)aside\.app-shell-left-panel\s+\[role="status"\]\[class~="bg-token-main-surface-primary"\]\s*\{[^}]*color:\s*var\(--dream-light-overlay-ink' -or
     $baseCss -notmatch '(?s)\[role="status"\]\[class~="bg-token-main-surface-primary"\].*?-webkit-text-fill-color:\s*currentColor\s*!important' -or

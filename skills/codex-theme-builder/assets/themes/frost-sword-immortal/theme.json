@@ -5,6 +5,8 @@
   "subtitle": "FROST SWORD IMMORTAL · CODEX",
   "image": "background.webp",
   "conversationImage": "background.webp",
+  "homeVideo": "home-motion.mp4",
+  "conversationVideo": "conversation-motion.mp4",
   "usageImage": "usage-background.webp",
   "sidebarImage": "conversation-background.webp",
   "selectedLeaf": "selected-sword.png",

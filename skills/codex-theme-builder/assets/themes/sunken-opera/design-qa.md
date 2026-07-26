@@ -1,13 +1,17 @@
-# 沉没歌剧设计 QA
+# 沉歌剧院设计 QA
 
-- Tested viewport: 1682 × 820 conversation view.
-- Off: all custom atmosphere layers hidden.
-- Low: sparse bioluminescent plankton drift.
-- Medium: plankton plus a distinct sonar pulse.
-- High: denser cyan/violet particles plus a localized abyssal energy gate.
-- Motion stays localized and uses compositor-safe opacity and transform animation.
-- Dark dialogs and file-change summaries retain explicit descendant colors and WebKit text fill.
-- `prefers-reduced-motion` disables every custom animation.
-- Validation: runtime payload, large-canvas artwork, dark-surface contrast, CSS scope, and live CDP preview passed.
+- 关闭：不加载视频，所有自定义动态层隐藏。
+- 柔和：首页与对话分别加载 1280 × 720、24 fps、8 秒的可控气泡视频；人物、服装、竖琴与构图保持静止，仅保留稀疏上浮气泡和轻微光感。
+- 完整：首页加载 1280 × 720、24 fps、5.875 秒场景视频；对话加载同规格 6.5 秒场景视频。两段均保留 Gemini 原片中的人物、发丝、衣摆、水下光束和气泡运动。
+- 首页使用原片 1.875–8.000 秒、对话使用 1.875–8.625 秒作为最相近的循环区间；首尾各 6 帧通过 0.25 秒正向交叉融合连接。
+- 循环按“主体段 → 末尾/开头融合段”排列，融合结束帧直接衔接主体段起始帧；不含正放＋倒放或任何反向片段。
+- 逐帧加权差异测试中，首页循环峰值从 0.006207 降至 0.000256，对话从 0.007636 降至 0.001216。
+- 柔和与完整使用四个独立资源；切换档位时视频节点会被原子替换，资源 URL 仅缓存到关闭动效或切换主题时统一释放，两个档位不会叠加。
+- 两个档位的视频都已移除音轨、静音、循环、禁用交互，并在页面隐藏时暂停。
+- `prefers-reduced-motion` 优先级最高，会回退到静态背景。
+- 视频就绪后会完全替换静态海报，并关闭旧的 CSS 粒子/能量门叠层，避免重复气泡和双重人物。
+- 已验证：运行时 payload、四段视频档位切换、首页/对话路由切换、单视频节点、全程正向气泡、循环点逐帧序列和实时 CDP 解码均通过。
+- 实测视口：1682 × 820；优化后的对话视频在 CDP 中解析为 6.5 秒、`readyState = 4` 并完全覆盖静态海报。最终检查时渲染页处于后台隐藏状态，视频按运行时节能策略暂停；前台播放路径已在同一运行时版本中验证。
+- 柔和档文件约 242–268 KB；完整档文件约 1.71–2.00 MB，柔和档的载荷和视觉运动量均明显更低。
 
 final result: passed

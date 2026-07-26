@@ -183,11 +183,28 @@ html.codex-dream-skin aside.app-shell-left-panel .dream-selected-thread-label {
 }
 
 :root.codex-dream-skin[data-dream-motion="high"]
-  main.main-surface:is(.dream-home-shell, .dream-conversation-shell) {
+  body:has(main.main-surface.dream-conversation-shell > #codex-dream-background-video.is-ready) {
+  background-color: #dfe4ef !important;
+  background-image:
+    linear-gradient(180deg, rgb(242 245 251 / 97%) 0 36px, transparent 36px) !important;
+}
+
+:root.codex-dream-skin[data-dream-motion="high"]
+  body:has(main.main-surface.dream-conversation-shell > #codex-dream-background-video.is-ready)
+  main.main-surface.dream-conversation-shell,
+:root.codex-dream-skin[data-dream-motion="high"]
+  body:has(main.main-surface.dream-conversation-shell > #codex-dream-background-video.is-ready)
+  [role="main"].dream-conversation {
+  background-color: transparent !important;
   background-image: none !important;
 }
 
 :root.codex-dream-skin[data-dream-motion="high"] #codex-dream-background-video {
+  display: none !important;
+}
+
+:root.codex-dream-skin[data-dream-motion="high"]
+  main.main-surface.dream-conversation-shell > #codex-dream-background-video {
   display: block !important;
   position: absolute !important;
   z-index: -1 !important;
@@ -201,14 +218,13 @@ html.codex-dream-skin aside.app-shell-left-panel .dream-selected-thread-label {
   transition: opacity 600ms ease !important;
 }
 
-:root.codex-dream-skin[data-dream-motion="high"] #codex-dream-background-video.is-ready {
+:root.codex-dream-skin[data-dream-motion="high"]
+  main.main-surface.dream-conversation-shell > #codex-dream-background-video.is-ready {
   /*
-   * Keep the 3840px still artwork visible underneath. The motion source is
-   * intentionally only 1280px wide, so using it as a translucent motion plate
-   * preserves the sharp face, hair and lantern details instead of upscaling a
-   * 720p frame across the entire desktop.
+   * The video replaces only the conversation poster at the high tier.
+   * The home route always retains its approved static home artwork.
    */
-  opacity: .62;
+  opacity: 1;
 }
 
 html.codex-dream-skin aside.app-shell-left-panel .dream-selected-thread-label::before {
@@ -270,8 +286,8 @@ html.codex-dream-skin main.main-surface.dream-conversation-shell::before {
 }
 
 /* Localized atmosphere. Soft keeps quiet motes plus one clearly visible
-   jellyfish; full keeps the complete three-jellyfish composition and veil.
-   Only small layers move; the full-canvas background remains still. */
+   jellyfish. Full relies on the enhanced background video and iridescent veil,
+   without adding runtime jellyfish over the scene. */
 html.codex-dream-skin main.main-surface.dream-home-shell::after,
 html.codex-dream-skin main.main-surface.dream-conversation-shell::after {
   content: "" !important;
@@ -309,8 +325,7 @@ html.codex-dream-skin main.main-surface.dream-conversation-shell::after {
   display: none !important;
 }
 
-/* Full retains the localized iridescent veil while a runtime-owned
-   full-window layer handles independently wandering jellyfish. */
+/* Full retains only the localized iridescent veil above the background video. */
 :root.codex-dream-skin[data-dream-motion="high"]
   main.main-surface:is(.dream-home-shell, .dream-conversation-shell)::before {
   content: "" !important;
@@ -391,8 +406,7 @@ html.codex-dream-skin main.main-surface.dream-conversation-shell::after {
   }
 }
 
-:root.codex-dream-skin[data-dream-motion="low"] #codex-dream-motion-layer,
-:root.codex-dream-skin[data-dream-motion="high"] #codex-dream-motion-layer {
+:root.codex-dream-skin[data-dream-motion="low"] #codex-dream-motion-layer {
   display: block !important;
   position: fixed !important;
   inset: 0 !important;
@@ -402,9 +416,12 @@ html.codex-dream-skin main.main-surface.dream-conversation-shell::after {
   contain: strict;
 }
 
-:root.codex-dream-skin[data-dream-motion="low"]
-  #codex-dream-motion-layer .dream-motion-wanderer,
 :root.codex-dream-skin[data-dream-motion="high"]
+  #codex-dream-motion-layer {
+  display: none !important;
+}
+
+:root.codex-dream-skin[data-dream-motion="low"]
   #codex-dream-motion-layer .dream-motion-wanderer {
   position: absolute !important;
   inset: 0 auto auto 0 !important;

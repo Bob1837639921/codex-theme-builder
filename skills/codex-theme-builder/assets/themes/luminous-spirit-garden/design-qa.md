@@ -26,12 +26,25 @@
 ## Random jellyfish motion QA
 
 - `jellyfish-motion.webp` is a transparent 24-frame, 256 x 384 animated WebP (630,776 bytes) with an 8.64-second body-motion cycle.
-- The runtime creates exactly three pointer-free wanderers on a full-window fixed layer.
+- The soft motion tier reveals only the first pointer-free wanderer on a full-window fixed layer.
+- The full motion tier hides the runtime jellyfish layer. On conversations it uses the enhanced background video plus its localized iridescent veil; on the home route it preserves the approved static artwork.
 - Each wanderer has an independent size, duration, start point, two bends, endpoint, rotation, and opacity.
-- CDP sampling confirmed all three animations use `luminous-random-wander` and move independently.
+- The visible soft-tier wanderer uses `luminous-random-wander`; the remaining runtime wanderers stay hidden.
 - Dispatching `animationiteration` changed the motion seed and route coordinates; the keyframes reach zero opacity before reseeding.
 - Each wanderer keeps its initial 60-90 second timeline while routes reseed, preventing delay/duration changes from restarting the animation and producing a visible flash.
 - Routes begin near the lower viewport edge and finish above the top edge; two monotonic vertical waypoints add only restrained lateral sway, so the jellyfish always reads as rising rather than sliding sideways.
 - System reduced-motion hides the entire runtime motion layer.
 
 final result: passed
+
+## Background video super-resolution QA
+
+- Source: `background-motion.mp4`, 1280 x 720, 24 fps, 9 seconds, 2,499,372 bytes.
+- Processing: existing local ComfyUI 0.21.1 on RTX 4070 Ti SUPER, using the official `RealESRGAN_x2plus.pth` model.
+- The 2x model output is delivered at its native enhanced size of 2560 x 1440.
+- Delivery encoding: H.264 High profile, yuv420p, 24 fps, two-pass 6.8 Mbps, fast-start MP4.
+- Final asset: 2560 x 1440, 9 seconds, 7,556,679 bytes, below the 8 MiB theme contract limit.
+- Adjacent-frame inspection found no face, hair, lantern, or water-detail instability.
+- Delivery-to-master comparison: average PSNR 46.98 dB and SSIM approximately 0.9904.
+- Route scoping keeps `home.webp` on the home route and reveals the video only on populated conversations at the full motion tier.
+- The superseded 720p file was replaced in place; no alternate background video remains in the theme directory.

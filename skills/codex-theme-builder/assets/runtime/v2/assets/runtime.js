@@ -38,7 +38,10 @@
     URL.revokeObjectURL(urls.conversationUrl);
     if (urls.motionUrl) URL.revokeObjectURL(urls.motionUrl);
     if (urls.usageUrl) URL.revokeObjectURL(urls.usageUrl);
-    if (urls.backgroundVideoUrl) URL.revokeObjectURL(urls.backgroundVideoUrl);
+    if (urls.homeSoftVideoUrl) URL.revokeObjectURL(urls.homeSoftVideoUrl);
+    if (urls.conversationSoftVideoUrl) URL.revokeObjectURL(urls.conversationSoftVideoUrl);
+    if (urls.homeVideoUrl) URL.revokeObjectURL(urls.homeVideoUrl);
+    if (urls.conversationVideoUrl) URL.revokeObjectURL(urls.conversationVideoUrl);
   }
   const themeMap = new Map(themeCatalog.map((item) => [item.id, item]));
   if (!themeMap.size || !themeMap.has(initialThemeId)) throw new Error("Theme catalog is empty or missing the initial theme");
@@ -57,7 +60,10 @@
       conversationUrl: dataUrlToObjectUrl(theme.conversationArtDataUrl),
       motionUrl: theme.motionArtDataUrl ? dataUrlToObjectUrl(theme.motionArtDataUrl) : null,
       usageUrl: theme.usageArtDataUrl ? dataUrlToObjectUrl(theme.usageArtDataUrl) : null,
-      backgroundVideoUrl: null,
+      homeSoftVideoUrl: null,
+      conversationSoftVideoUrl: null,
+      homeVideoUrl: null,
+      conversationVideoUrl: null,
     });
     return objectUrls.get(theme.id);
   };
@@ -374,9 +380,14 @@
 
   const releaseBackgroundVideoUrls = () => {
     for (const urls of objectUrls.values()) {
-      if (!urls.backgroundVideoUrl) continue;
-      URL.revokeObjectURL(urls.backgroundVideoUrl);
-      urls.backgroundVideoUrl = null;
+      if (urls.homeSoftVideoUrl) URL.revokeObjectURL(urls.homeSoftVideoUrl);
+      if (urls.conversationSoftVideoUrl) URL.revokeObjectURL(urls.conversationSoftVideoUrl);
+      if (urls.homeVideoUrl) URL.revokeObjectURL(urls.homeVideoUrl);
+      if (urls.conversationVideoUrl) URL.revokeObjectURL(urls.conversationVideoUrl);
+      urls.homeSoftVideoUrl = null;
+      urls.conversationSoftVideoUrl = null;
+      urls.homeVideoUrl = null;
+      urls.conversationVideoUrl = null;
     }
   };
 
@@ -392,9 +403,17 @@
   };
 
   const syncBackgroundVideo = (shell = document.querySelector("main.main-surface") || document.querySelector("main")) => {
-    const shouldExist = activeMotionLevel === "high" &&
+    const scene = shell?.classList.contains("dream-home-shell") ? "home" : "conversation";
+    const videoTier = activeMotionLevel === "high" ? "high" :
+      activeMotionLevel === "low" ? "soft" : null;
+    const videoDataUrl = videoTier === "high"
+      ? (scene === "home" ? activeTheme?.homeVideoDataUrl : activeTheme?.conversationVideoDataUrl)
+      : videoTier === "soft"
+        ? (scene === "home" ? activeTheme?.homeSoftVideoDataUrl : activeTheme?.conversationSoftVideoDataUrl)
+        : null;
+    const shouldExist = Boolean(videoTier) &&
       !reducedMotionQuery?.matches &&
-      Boolean(activeTheme?.backgroundVideoDataUrl) &&
+      Boolean(videoDataUrl) &&
       Boolean(shell);
     if (!shouldExist) {
       disposeBackgroundVideo(true);
@@ -402,15 +421,22 @@
     }
 
     const urls = urlsFor(activeTheme);
-    if (!urls.backgroundVideoUrl) {
-      urls.backgroundVideoUrl = dataUrlToObjectUrl(activeTheme.backgroundVideoDataUrl);
+    const urlKey = videoTier === "soft"
+      ? (scene === "home" ? "homeSoftVideoUrl" : "conversationSoftVideoUrl")
+      : (scene === "home" ? "homeVideoUrl" : "conversationVideoUrl");
+    if (!urls[urlKey]) {
+      urls[urlKey] = dataUrlToObjectUrl(videoDataUrl);
     }
     let video = document.getElementById(BACKGROUND_VIDEO_ID);
-    if (!video || video.dataset.dreamThemeId !== activeTheme.id) {
+    if (!video || video.dataset.dreamThemeId !== activeTheme.id ||
+        video.dataset.dreamScene !== scene || video.dataset.dreamMotionTier !== videoTier) {
       disposeBackgroundVideo(false);
       video = document.createElement("video");
       video.id = BACKGROUND_VIDEO_ID;
       video.dataset.dreamThemeId = activeTheme.id;
+      video.dataset.dreamScene = scene;
+      video.dataset.dreamMotionTier = videoTier;
+      video.classList.add(scene === "home" ? "dream-home-video" : "dream-conversation-video");
       video.muted = true;
       video.defaultMuted = true;
       video.loop = true;
@@ -421,7 +447,7 @@
       video.preload = "metadata";
       video.setAttribute("aria-hidden", "true");
       video.addEventListener("canplay", () => video.classList.add("is-ready"), { once: true });
-      video.src = urls.backgroundVideoUrl;
+      video.src = urls[urlKey];
     }
     if (video.parentElement !== shell) shell.prepend(video);
     if (document.hidden) {
@@ -1019,7 +1045,10 @@
       URL.revokeObjectURL(urls.conversationUrl);
       if (urls.motionUrl) URL.revokeObjectURL(urls.motionUrl);
       if (urls.usageUrl) URL.revokeObjectURL(urls.usageUrl);
-      if (urls.backgroundVideoUrl) URL.revokeObjectURL(urls.backgroundVideoUrl);
+      if (urls.homeSoftVideoUrl) URL.revokeObjectURL(urls.homeSoftVideoUrl);
+      if (urls.conversationSoftVideoUrl) URL.revokeObjectURL(urls.conversationSoftVideoUrl);
+      if (urls.homeVideoUrl) URL.revokeObjectURL(urls.homeVideoUrl);
+      if (urls.conversationVideoUrl) URL.revokeObjectURL(urls.conversationVideoUrl);
     }
     delete window[STATE_KEY];
     return true;

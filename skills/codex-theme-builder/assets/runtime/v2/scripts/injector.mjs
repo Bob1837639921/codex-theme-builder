@@ -6,6 +6,7 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, "..");
 const SKIN_VERSION = "2.2.0-theme-library";
 const MAX_ART_BYTES = 8 * 1024 * 1024;
+const MAX_VIDEO_BYTES = 8 * 1024 * 1024;
 const LOOPBACK_HOSTS = new Set(["127.0.0.1", "localhost", "[::1]", "::1"]);
 const BROWSER_ID_PATTERN = /^[A-Za-z0-9._-]{1,200}$/;
 
@@ -362,21 +363,30 @@ async function loadThemePackage(themeDir, baseCss) {
     const motionImageBytes = await fs.readFile(motionImagePath);
     motionImageDataUrl = `data:image/webp;base64,${motionImageBytes.toString("base64")}`;
   }
-  let backgroundVideoDataUrl = null;
-  if (raw.backgroundVideo !== undefined) {
-    if (typeof raw.backgroundVideo !== "string" || path.basename(raw.backgroundVideo) !== raw.backgroundVideo ||
-        !/\.mp4$/i.test(raw.backgroundVideo)) {
-      throw new Error("Background video must be an MP4 file inside the theme directory");
+  const loadBackgroundVideo = async (fieldName, fileName) => {
+    if (fileName === undefined) return null;
+    if (typeof fileName !== "string" || path.basename(fileName) !== fileName || !/\.mp4$/i.test(fileName)) {
+      throw new Error(`${fieldName} must be an MP4 file inside the theme directory`);
     }
-    const backgroundVideoPath = path.join(themeDir, raw.backgroundVideo);
-    const backgroundVideoStat = await fs.stat(backgroundVideoPath);
-    if (!backgroundVideoStat.isFile() || backgroundVideoStat.size < 1 ||
-        backgroundVideoStat.size > 4 * 1024 * 1024) {
-      throw new Error("Background video must be non-empty and no larger than 4 MB");
+    const videoPath = path.join(themeDir, fileName);
+    const videoStat = await fs.stat(videoPath);
+    if (!videoStat.isFile() || videoStat.size < 1 || videoStat.size > MAX_VIDEO_BYTES) {
+      throw new Error(`${fieldName} must be non-empty and no larger than 8 MB`);
     }
-    const backgroundVideoBytes = await fs.readFile(backgroundVideoPath);
-    backgroundVideoDataUrl = `data:video/mp4;base64,${backgroundVideoBytes.toString("base64")}`;
-  }
+    const videoBytes = await fs.readFile(videoPath);
+    return `data:video/mp4;base64,${videoBytes.toString("base64")}`;
+  };
+  const homeSoftVideoDataUrl = await loadBackgroundVideo("Home soft video", raw.homeSoftVideo);
+  const conversationSoftVideoDataUrl = await loadBackgroundVideo(
+    "Conversation soft video",
+    raw.conversationSoftVideo,
+  );
+  const homeVideoDataUrl = await loadBackgroundVideo("Home video", raw.homeVideo);
+  // backgroundVideo is retained as a legacy alias for the conversation scene.
+  const conversationVideoDataUrl = await loadBackgroundVideo(
+    "Conversation video",
+    raw.conversationVideo ?? raw.backgroundVideo,
+  );
   let selectedLeafDataUrl = "none";
   if (raw.selectedLeaf !== undefined) {
     if (typeof raw.selectedLeaf !== "string" || path.basename(raw.selectedLeaf) !== raw.selectedLeaf ||
@@ -476,7 +486,10 @@ async function loadThemePackage(themeDir, baseCss) {
     artDataUrl,
     conversationArtDataUrl,
     motionArtDataUrl: motionImageDataUrl,
-    backgroundVideoDataUrl,
+    homeSoftVideoDataUrl,
+    conversationSoftVideoDataUrl,
+    homeVideoDataUrl,
+    conversationVideoDataUrl,
     usageArtDataUrl,
     swatches: [theme.accent, theme.accentAlt, theme.surface],
   };
@@ -620,9 +633,14 @@ async function verifySession(session) {
     const actionGrid = home?.querySelector('#codex-dream-skin-actions') ?? null;
     const cards = actionGrid ? [...actionGrid.querySelectorAll('button')].map(box) : [];
     const title = home?.querySelector('#codex-dream-skin-title') ?? null;
+    const homeVisualAnchor = home?.querySelector('.dream-home-hero') ??
+      home?.querySelector('.dream-home-stage') ??
+      home?.querySelector('#codex-dream-home-overlay') ??
+      null;
     const switcher = document.getElementById('codex-dream-theme-switcher');
     const themeCards = switcher ? [...switcher.querySelectorAll('[data-dream-theme-id]')] : [];
     const conversation = document.querySelector('[role="main"].dream-conversation');
+    const backgroundVideo = document.getElementById('codex-dream-background-video');
     const outputPanel = document.querySelector('.dream-output-panel');
     const composerNode = document.querySelector('.composer-surface-chrome');
     const composerRect = composerNode?.getBoundingClientRect() ?? null;
@@ -693,6 +711,18 @@ async function verifySession(session) {
       themeCardCount: themeCards.length,
       themeCount: window.__CODEX_DREAM_SKIN_STATE__?.themeCount ?? 0,
       activeThemeId: window.__CODEX_DREAM_SKIN_STATE__?.activeThemeId ?? null,
+      motionLevel: window.__CODEX_DREAM_SKIN_STATE__?.activeMotionLevel ?? null,
+      backgroundVideo: backgroundVideo ? {
+        scene: backgroundVideo.dataset.dreamScene ?? null,
+        ready: backgroundVideo.classList.contains('is-ready'),
+        readyState: backgroundVideo.readyState,
+        paused: backgroundVideo.paused,
+        currentTime: Number(backgroundVideo.currentTime.toFixed(3)),
+        duration: Number.isFinite(backgroundVideo.duration) ? Number(backgroundVideo.duration.toFixed(3)) : null,
+        display: getComputedStyle(backgroundVideo).display,
+        opacity: getComputedStyle(backgroundVideo).opacity,
+        box: box(backgroundVideo),
+      } : null,
       conversation: conversation ? {
         box: box(conversation),
         backgroundColor: getComputedStyle(conversation).backgroundColor,
@@ -724,7 +754,7 @@ async function verifySession(session) {
         left: inspectPoint(Math.max(0, composerRect.left - 10), composerRect.top + composerRect.height / 2),
         right: inspectPoint(Math.min(innerWidth - 1, composerRect.right + 10), composerRect.top + composerRect.height / 2),
       } : null,
-      hero: box(home?.firstElementChild?.firstElementChild?.firstElementChild),
+      hero: box(homeVisualAnchor),
       cards,
       composer: box(document.querySelector('.composer-surface-chrome')),
       sidebar: box(document.querySelector('aside.app-shell-left-panel')),

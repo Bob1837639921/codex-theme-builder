@@ -702,6 +702,17 @@ html.codex-dream-skin main.main-surface.dream-conversation-shell::after {
   animation: none !important;
 }
 
+/* The soft and full scene videos already contain their intended atmosphere.
+   Suppress the older CSS accents after a video is ready so bubbles and light
+   effects are not duplicated over the authored footage. */
+:root.codex-dream-skin:is([data-dream-motion="low"], [data-dream-motion="high"])
+  main.main-surface:has(> #codex-dream-background-video.is-ready)::after,
+:root.codex-dream-skin[data-dream-motion="high"]
+  body:has(main.main-surface > #codex-dream-background-video.is-ready)::after {
+  display: none !important;
+  animation: none !important;
+}
+
 @keyframes abyss-plankton-drift {
   from { transform: translate3d(12px, 30px, 0) scale(.98); }
   to { transform: translate3d(var(--abyss-drift-x), var(--abyss-drift-y), 0) scale(1.03); }
