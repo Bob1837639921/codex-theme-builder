@@ -15,7 +15,11 @@ palette, pearls, character art, or theme-local selectors into another theme.
    video treatments. Never reuse a home crop in conversation.
 3. Let the shared atomic video handoff own first load, route changes, theme
    changes, and soft/full changes. A theme may remove static art only with
-   `is-covering`; it may not create a second crossfade.
+   `is-covering`; it may not create a second crossfade. When Codex replaces the
+   route shell, the shared runtime keeps the playing scene video on a stable
+   document layer, then retains it as the outgoing painted fallback after
+   reattachment. The static route image must not become opaque while the
+   incoming scene video decodes.
 4. Keep the composer decoration attached to `.composer-surface-chrome` so it
    grows with multiline input. The center and native control strip remain clear.
 5. Set explicit composer colors for editor text, placeholder, access mode,
@@ -36,6 +40,8 @@ palette, pearls, character art, or theme-local selectors into another theme.
 - Static, soft, and full captures use the same protected-subject composition or
   the shared shield fully conceals their atomic swap.
 - No static poster remains mixed beneath an opaque ready video.
+- Neither `home -> conversation` nor `conversation -> home` exposes a static
+  poster between two moving scenes, including when the main shell is replaced.
 - No native toolbar or composer geometry changes during the handoff.
 - Runtime verification waits until the handoff shield is gone and the active
   video is ready before accepting injection or taking a screenshot.

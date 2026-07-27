@@ -225,6 +225,8 @@ if ($injectorText -notmatch 'MAX_VIDEO_BYTES\s*=\s*8\s*\*\s*1024\s*\*\s*1024' -o
     $injectorText -notmatch 'conversationSoftVideoDataUrl' -or
     $injectorText -notmatch 'homeVideoDataUrl' -or
     $injectorText -notmatch 'conversationVideoDataUrl' -or
+    $injectorText -notmatch 'options\.motionLevel' -or
+    $injectorText -notmatch 'applyMotionLevel\?\.' -or
     $injectorText -notmatch 'backgroundVideo:\s*backgroundVideo\s*\?' -or
     $injectorText -notmatch 'currentTime:\s*Number\(backgroundVideo\.currentTime\.toFixed' -or
     $injectorText -notmatch 'videoHandoffShieldPresent:\s*Boolean\(document\.getElementById\(''codex-dream-video-handoff-shield''\)\)' -or
@@ -247,8 +249,18 @@ if ($injectorText -notmatch 'MAX_VIDEO_BYTES\s*=\s*8\s*\*\s*1024\s*\*\s*1024' -o
     $runtimeJs -notmatch 'removeOutgoingBackgroundVideos' -or
     $runtimeJs -notmatch 'classList\.add\(BACKGROUND_VIDEO_LAYER_CLASS,\s*"is-outgoing"\)' -or
     $runtimeJs -notmatch 'VIDEO_HANDOFF_SHIELD_ID\s*=\s*"codex-dream-video-handoff-shield"' -or
+    $runtimeJs -notmatch 'ensureVideoHandoffShield' -or
+    $runtimeJs -notmatch 'protectDetachedBackgroundVideo' -or
+    $runtimeJs -notmatch 'clearRoutePendingVideo' -or
+    $runtimeJs -notmatch 'activeBackgroundVideoElement' -or
+    $runtimeJs -notmatch 'lastBackgroundVideoShellRect' -or
+    $runtimeJs -notmatch 'classList\.add\("is-route-pending"\)' -or
+    $runtimeJs -notmatch 'classList\.add\("dream-video-route-pending"\)' -or
+    $runtimeJs -notmatch 'sceneIsKnown' -or
+    $runtimeJs -notmatch 'if\s*\(!sceneIsKnown\)\s*return\s+null' -or
     $runtimeJs -notmatch 'shield\.classList\.add\("is-opaque"\)' -or
     $runtimeJs -notmatch 'video\.classList\.add\("is-handoff-swap",\s*"is-ready",\s*"is-covering"\)' -or
+    $runtimeJs -notmatch 'if\s*\(!document\.hidden\s*&&\s*video\.paused\)\s*video\.play\(\)\.catch' -or
     $runtimeJs -notmatch 'shield\.classList\.remove\("is-opaque"\)' -or
     $runtimeJs -notmatch 'video\.classList\.remove\("is-handoff-swap"\)' -or
     $runtimeJs -notmatch 'video\.preload\s*=\s*"auto"' -or
@@ -257,9 +269,13 @@ if ($injectorText -notmatch 'MAX_VIDEO_BYTES\s*=\s*8\s*\*\s*1024\s*\*\s*1024' -o
     $baseCss -notmatch '(?s)#codex-dream-background-video,\s*\.codex-dream-background-video-layer\s*\{[^}]*pointer-events:\s*none\s*!important' -or
     $baseCss -notmatch '(?s)#codex-dream-background-video\.is-ready\s*\{[^}]*opacity:\s*1' -or
     $baseCss -notmatch '(?s)#codex-dream-video-handoff-shield\s*\{[^}]*z-index:\s*0\s*!important[^}]*pointer-events:\s*none\s*!important' -or
-    $baseCss -notmatch '(?s)#codex-dream-video-handoff-shield\.is-opaque\s*\{[^}]*opacity:\s*\.97' -or
+    $baseCss -notmatch '(?s)#codex-dream-video-handoff-shield\.is-opaque\s*\{[^}]*opacity:\s*1' -or
+    $baseCss -notmatch '(?s)#codex-dream-video-handoff-shield\.is-loading\s*\{[^}]*opacity:\s*1[^}]*transition:\s*none\s*!important' -or
+    $baseCss -notmatch '(?s)dream-video-route-pending #codex-dream-background-video\.is-route-pending\s*\{[^}]*position:\s*fixed\s*!important[^}]*opacity:\s*1\s*!important' -or
+    $baseCss -notmatch '(?s)dream-video-route-pending main\.main-surface\s*\{[^}]*background-color:\s*transparent\s*!important[^}]*background-image:\s*none\s*!important' -or
     $baseCss -notmatch '(?s)#codex-dream-background-video\.is-handoff-swap\s*\{[^}]*transition:\s*none\s*!important' -or
     $baseCss -notmatch '#codex-dream-background-video\.is-covering' -or
+    $baseCss -notmatch 'main\.main-surface:has\(> \.codex-dream-background-video-layer\.is-outgoing\)' -or
     $baseCss -notmatch '(?s)\.codex-dream-background-video-layer\.is-outgoing\s*\{[^}]*opacity:\s*1\s*!important') {
   throw 'Scene-specific background videos must stay local, bounded, tier-aware, visibility-aware, reduced-motion safe, and non-interactive.'
 }

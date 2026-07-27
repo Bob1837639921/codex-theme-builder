@@ -3,6 +3,7 @@ param(
   [Parameter(Mandatory)][string]$ThemePath,
   [Parameter(Mandatory)][string]$ScreenshotPath,
   [string]$ThemeId,
+  [ValidateSet('off', 'low', 'high')][string]$MotionLevel,
   [switch]$OpenHome,
   [switch]$OpenSwitcher,
   [switch]$TestSwitcher,
@@ -39,6 +40,7 @@ if ($OpenHome) { $arguments += '--open-home' }
 if ($OpenSwitcher) { $arguments += '--open-switcher' }
 if ($TestSwitcher) { $arguments += '--test-switcher' }
 if ($ThemeId) { $arguments += @('--select-theme', $ThemeId) }
+if ($MotionLevel) { $arguments += @('--motion-level', $MotionLevel) }
 if ($HoverSelectedThread) { $arguments += '--hover-selected-thread' }
 
 & $node @arguments

@@ -73,6 +73,9 @@ asynchronous:
 
 1. Keep the route's declared static artwork, or the currently playing scene video,
    painted while the replacement video loads.
+   On first injection, do not guess a scene before the home/conversation marker is
+   available. Once the scene is known, an opaque loading shield may cover the
+   static artwork until that scene's video has decoded.
 2. Hold the replacement video paused on its decoded first frame.
 3. Fade in the transient `#codex-dream-video-handoff-shield` above both
    backgrounds but below native Codex content. Its colors come from active theme
@@ -81,10 +84,22 @@ asynchronous:
 4. At the shield's opacity peak, apply `is-handoff-swap`, `is-ready`, and
    `is-covering` atomically, remove the old static/outgoing background, and keep
    the incoming first frame paused.
-5. Fade the shield out, remove it, then start incoming playback. Never expose a
-   direct crossfade between differently aligned protected subjects.
+5. Start incoming playback behind the opaque shield, then fade the shield out and
+   remove it. This reveals an already-moving frame instead of holding the decoded
+   first frame visibly on screen. Never expose a direct crossfade between
+   differently aligned protected subjects.
 6. Clear both shield timers whenever a video is replaced so rapid theme, route,
    or motion-tier changes cannot let an obsolete handoff alter the new scene.
+7. If Codex replaces the entire main-surface node during navigation, preserve the
+   playing video element before the browser paints: temporarily mount it on the
+   stable document canvas with its last shell rectangle, keep the replacement
+   main surface transparent, then attach it to the new shell. Do not fall back to
+   the route's static raster merely because the React-owned shell was replaced.
+8. After the preserved video is attached to the replacement shell, keep both the
+   shell and its route content transparent while that video is marked outgoing.
+   The outgoing video, not the static raster, remains the painted fallback until
+   the incoming scene is decoded and covering. Removing the active video ID must
+   never make the route artwork opaque during this interval.
 
 The active and single outgoing handoff video remain route-local, muted,
 pointer-free, visibility-aware and reduced-motion safe. The shield is transient,

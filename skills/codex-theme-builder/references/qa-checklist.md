@@ -82,6 +82,9 @@
 
 - Check a narrower window without horizontal overflow.
 - Switch between home and conversation routes.
+- For video themes, test both route directions separately. While the incoming
+  scene decodes, the outgoing moving scene remains visible and the static
+  poster never flashes back, even if Codex replaces `main.main-surface`.
 - Reload or open a second task and confirm reinjection.
 - Restore and confirm the native UI returns.
 - Re-run after a Codex update.

@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, "..");
-const SKIN_VERSION = "2.2.3-theme-library";
+const SKIN_VERSION = "2.2.6-theme-library";
 const MAX_ART_BYTES = 8 * 1024 * 1024;
 const MAX_VIDEO_BYTES = 8 * 1024 * 1024;
 const LOOPBACK_HOSTS = new Set(["127.0.0.1", "localhost", "[::1]", "::1"]);
@@ -23,6 +23,7 @@ function parseArgs(argv) {
     testActions: false,
     testSwitcher: false,
     selectTheme: null,
+    motionLevel: null,
     reload: false,
     hoverSelectedThread: false,
     browserId: null,
@@ -44,6 +45,7 @@ function parseArgs(argv) {
     else if (arg === "--test-actions") options.testActions = true;
     else if (arg === "--test-switcher") options.testSwitcher = true;
     else if (arg === "--select-theme") options.selectTheme = argv[++i];
+    else if (arg === "--motion-level") options.motionLevel = argv[++i];
     else if (arg === "--reload") options.reload = true;
     else if (arg === "--hover-selected-thread") options.hoverSelectedThread = true;
     else if (arg === "--self-test") options.mode = "self-test";
@@ -61,6 +63,9 @@ function parseArgs(argv) {
   }
   if (options.selectTheme !== null && !/^[a-z0-9][a-z0-9-]{0,63}$/.test(options.selectTheme)) {
     throw new Error(`Invalid theme ID: ${options.selectTheme}`);
+  }
+  if (options.motionLevel !== null && !["off", "low", "high"].includes(options.motionLevel)) {
+    throw new Error(`Invalid motion level: ${options.motionLevel}`);
   }
   if (["watch", "once", "verify", "remove"].includes(options.mode) && !options.browserId) {
     throw new Error(`--browser-id is required in ${options.mode} mode`);
@@ -949,6 +954,15 @@ async function runOneShot(options) {
         if (options.selectTheme) {
           const selected = await session.evaluate(`window.__CODEX_DREAM_SKIN_STATE__?.activateTheme?.(${JSON.stringify(options.selectTheme)}) ?? false`);
           if (!selected) throw new Error(`Could not activate requested theme: ${options.selectTheme}`);
+          await new Promise((resolve) => setTimeout(resolve, 180));
+        }
+        if (options.motionLevel) {
+          const selectedMotion = await session.evaluate(
+            `window.__CODEX_DREAM_SKIN_STATE__?.applyMotionLevel?.(${JSON.stringify(options.motionLevel)}, false) ?? null`,
+          );
+          if (selectedMotion !== options.motionLevel) {
+            throw new Error(`Could not activate requested motion level: ${options.motionLevel}`);
+          }
           await new Promise((resolve) => setTimeout(resolve, 180));
         }
         const verified = options.mode === "remove"

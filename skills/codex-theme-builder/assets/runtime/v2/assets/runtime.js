@@ -13,7 +13,7 @@
   const STORAGE_KEY = "codex-dream-theme-active";
   const MOTION_STORAGE_KEY = "codex-dream-motion-level";
   const MOTION_LEVELS = ["off", "low", "high"];
-  const RUNTIME_VERSION = "2.2.3-theme-library";
+  const RUNTIME_VERSION = "2.2.6-theme-library";
   const THEME_SEARCH_THRESHOLD = 6;
   const MUTATION_COALESCE_MS = 96;
   const actions = [
@@ -50,6 +50,8 @@
   const themeMap = new Map(themeCatalog.map((item) => [item.id, item]));
   if (!themeMap.size || !themeMap.has(initialThemeId)) throw new Error("Theme catalog is empty or missing the initial theme");
   const objectUrls = new Map();
+  let activeBackgroundVideoElement = null;
+  let lastBackgroundVideoShellRect = null;
   const dataUrlToObjectUrl = (dataUrl) => {
     const comma = dataUrl.indexOf(",");
     const binary = atob(dataUrl.slice(comma + 1));
@@ -403,6 +405,23 @@
     shield.remove();
   };
 
+  const ensureVideoHandoffShield = (shell, loading = false) => {
+    let shield = document.getElementById(VIDEO_HANDOFF_SHIELD_ID);
+    if (shield && shield.parentElement !== shell) {
+      disposeVideoHandoffShield();
+      shield = null;
+    }
+    if (!shield) {
+      shield = document.createElement("div");
+      shield.id = VIDEO_HANDOFF_SHIELD_ID;
+      shield.setAttribute("aria-hidden", "true");
+      shell.appendChild(shield);
+    }
+    shield.classList.toggle("is-loading", loading);
+    if (loading) shield.classList.add("is-opaque");
+    return shield;
+  };
+
   const disposeBackgroundVideo = (releaseUrl = true) => {
     disposeVideoHandoffShield();
     const videos = document.querySelectorAll(`#${BACKGROUND_VIDEO_ID}, .${BACKGROUND_VIDEO_LAYER_CLASS}`);
@@ -413,7 +432,37 @@
       video.load();
       video.remove();
     }
+    activeBackgroundVideoElement = null;
+    lastBackgroundVideoShellRect = null;
+    document.documentElement?.classList.remove("dream-video-route-pending");
     if (releaseUrl) releaseBackgroundVideoUrls();
+  };
+
+  const clearRoutePendingVideo = (video, shell = null) => {
+    if (!video) return;
+    video.classList.remove("is-route-pending");
+    for (const property of ["left", "top", "width", "height"]) {
+      video.style.removeProperty(property);
+    }
+    document.documentElement?.classList.remove("dream-video-route-pending");
+    if (shell && video.parentElement !== shell) shell.prepend(video);
+  };
+
+  const protectDetachedBackgroundVideo = () => {
+    const video = activeBackgroundVideoElement;
+    const rect = lastBackgroundVideoShellRect;
+    if (!video || video.isConnected || !rect || !document.body ||
+        !video.classList.contains("is-covering")) {
+      return false;
+    }
+    video.classList.add("is-route-pending");
+    video.style.setProperty("left", `${Math.round(rect.left)}px`, "important");
+    video.style.setProperty("top", `${Math.round(rect.top)}px`, "important");
+    video.style.setProperty("width", `${Math.round(rect.width)}px`, "important");
+    video.style.setProperty("height", `${Math.round(rect.height)}px`, "important");
+    document.documentElement?.classList.add("dream-video-route-pending");
+    document.body.appendChild(video);
+    return true;
   };
 
   const removeOutgoingBackgroundVideos = (except = null) => {
@@ -431,11 +480,9 @@
     if (document.getElementById(BACKGROUND_VIDEO_ID) !== video) return;
     const shell = video.parentElement;
     if (!shell) return;
-    disposeVideoHandoffShield();
-    const shield = document.createElement("div");
-    shield.id = VIDEO_HANDOFF_SHIELD_ID;
-    shield.setAttribute("aria-hidden", "true");
-    shell.appendChild(shield);
+    const wasLoading = document.getElementById(VIDEO_HANDOFF_SHIELD_ID)?.classList.contains("is-loading") || false;
+    const shield = ensureVideoHandoffShield(shell);
+    shield.classList.remove("is-loading");
 
     const completeHandoff = () => {
       if (document.getElementById(BACKGROUND_VIDEO_ID) !== video) {
@@ -450,13 +497,13 @@
             if (shield.isConnected) shield.remove();
             return;
           }
+          if (!document.hidden && video.paused) video.play().catch(() => {});
           shield.classList.add("is-leaving");
           shield.classList.remove("is-opaque");
           shield._dreamRemoveTimer = setTimeout(() => {
             if (shield.isConnected) shield.remove();
             video.classList.remove("is-handoff-swap");
             if (document.hidden) video.pause();
-            else if (video.paused) video.play().catch(() => {});
           }, 360);
         });
       });
@@ -466,12 +513,24 @@
       requestAnimationFrame(() => {
         if (document.getElementById(BACKGROUND_VIDEO_ID) !== video) return;
         shield.classList.add("is-opaque");
-        shield._dreamSwapTimer = setTimeout(completeHandoff, 240);
+        shield._dreamSwapTimer = setTimeout(completeHandoff, wasLoading ? 0 : 240);
       });
     });
   };
 
   const syncBackgroundVideo = (shell = document.querySelector("main.main-surface") || document.querySelector("main")) => {
+    const sceneIsKnown = shell?.classList.contains("dream-home-shell") ||
+      shell?.classList.contains("dream-conversation-shell");
+    if (!sceneIsKnown) return null;
+    const shellRect = shell.getBoundingClientRect();
+    if (shellRect.width > 0 && shellRect.height > 0) {
+      lastBackgroundVideoShellRect = {
+        left: shellRect.left,
+        top: shellRect.top,
+        width: shellRect.width,
+        height: shellRect.height,
+      };
+    }
     const scene = shell?.classList.contains("dream-home-shell") ? "home" : "conversation";
     const videoTier = activeMotionLevel === "high" ? "high" :
       activeMotionLevel === "low" ? "soft" : null;
@@ -497,6 +556,9 @@
       urls[urlKey] = dataUrlToObjectUrl(videoDataUrl);
     }
     let video = document.getElementById(BACKGROUND_VIDEO_ID);
+    if (video?.classList.contains("is-route-pending")) {
+      clearRoutePendingVideo(video, shell);
+    }
     if (!video || video.dataset.dreamThemeId !== activeTheme.id ||
         video.dataset.dreamScene !== scene || video.dataset.dreamMotionTier !== videoTier) {
       disposeVideoHandoffShield();
@@ -520,6 +582,7 @@
         if (video.parentElement !== shell) shell.prepend(video);
       }
       video = document.createElement("video");
+      activeBackgroundVideoElement = video;
       video.id = BACKGROUND_VIDEO_ID;
       video.dataset.dreamThemeId = activeTheme.id;
       video.dataset.dreamScene = scene;
@@ -538,9 +601,13 @@
       video.preload = "auto";
       video.setAttribute("aria-hidden", "true");
       video.addEventListener("canplay", () => revealBackgroundVideo(video), { once: true });
+      if (!document.querySelector(`.${BACKGROUND_VIDEO_LAYER_CLASS}.is-outgoing`)) {
+        ensureVideoHandoffShield(shell, true);
+      }
       video.src = urls[urlKey];
     }
-    if (video.parentElement !== shell) shell.prepend(video);
+    clearRoutePendingVideo(video, shell);
+    activeBackgroundVideoElement = video;
     if (document.hidden) {
       video.pause();
     } else if (video.classList.contains("is-covering") && video.paused) {
@@ -1190,6 +1257,7 @@
     else queueFrame();
   };
   const observer = new MutationObserver((mutations) => {
+    protectDetachedBackgroundVideo();
     const relevantMutations = mutations.filter((mutation) => !mutationIsRuntimeOwned(mutation));
     if (relevantMutations.length) scheduleEnsure(relevantMutations);
   });

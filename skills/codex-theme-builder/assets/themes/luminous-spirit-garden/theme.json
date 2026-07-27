@@ -8,7 +8,8 @@
     "sidebarImage":  "sidebar.webp",
     "motionImage":  "jellyfish-motion.webp",
     "homeVideo":  "home-motion.mp4",
-    "conversationVideo":  "background-motion.mp4",
+    "conversationSoftVideo":  "conversation-motion-soft.mp4",
+    "conversationVideo":  "conversation-motion.mp4",
     "usageImage":  "usage-background.webp",
     "selectedLeaf":  "selected-jellyfish.webp",
     "icons":  {
