@@ -66,6 +66,31 @@ Rules:
 - `launcher-ui.ps1` only displays the supplied error and disposes every form/image resource.
 - Process termination remains identity-checked through `common-windows.ps1`.
 
+## Video handoff contract
+
+Scene video changes are atomic from the user's perspective even though decoding is
+asynchronous:
+
+1. Keep the route's declared static artwork, or the currently playing scene video,
+   painted while the replacement video loads.
+2. Hold the replacement video paused on its decoded first frame.
+3. Fade in the transient `#codex-dream-video-handoff-shield` above both
+   backgrounds but below native Codex content. Its colors come from active theme
+   tokens, so a dark theme never flashes white and a light theme never flashes
+   black.
+4. At the shield's opacity peak, apply `is-handoff-swap`, `is-ready`, and
+   `is-covering` atomically, remove the old static/outgoing background, and keep
+   the incoming first frame paused.
+5. Fade the shield out, remove it, then start incoming playback. Never expose a
+   direct crossfade between differently aligned protected subjects.
+6. Clear both shield timers whenever a video is replaced so rapid theme, route,
+   or motion-tier changes cannot let an obsolete handoff alter the new scene.
+
+The active and single outgoing handoff video remain route-local, muted,
+pointer-free, visibility-aware and reduced-motion safe. The shield is transient,
+does not blur or filter the viewport, and has no steady-state rendering cost.
+Do not solve handoff flashes by decoding every theme video in the background.
+
 ## Change placement
 
 Before adding code, choose exactly one owner:

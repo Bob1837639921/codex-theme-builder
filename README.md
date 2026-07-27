@@ -150,8 +150,26 @@ powershell -ExecutionPolicy Bypass -File `
   -Id "my-theme" -Name "My Theme" `
   -HomeImage "C:\path\home.png" `
   -ConversationImage "C:\path\conversation.png" `
+  -HomeSoftVideo "C:\path\home-soft.mp4" `
+  -ConversationSoftVideo "C:\path\conversation-soft.mp4" `
+  -HomeVideo "C:\path\home-full.mp4" `
+  -ConversationVideo "C:\path\conversation-full.mp4" `
   -OutputDirectory ".\themes"
 ```
+
+四个视频参数均可省略。需要动效时，脚手架会把首页/对话页与柔和/完整两档分别建模，运行时统一使用原子切换：新视频完成解码前保留上一帧，准备好后一次性交接，避免静态图闪现、人物位移或两段视频叠放。
+
+### 通用对话质量基准
+
+新主题不复制「潮汐圣歌」的海洋配色或素材，但必须达到它当前对话页的完整度：
+
+- 侧栏与内容区共享一张连续画布，正文区域只叠加可读遮罩，不重复裁切第二张背景。
+- 输入框边框和装饰跟随组件本身伸缩，多行输入与文件变更提示出现时不移位。
+- 占位文字、权限、模型、麦克风、附件、提交/停止等控件都有明确的主题色和对比度。
+- 静态、柔和、完整三档分别验证首页与对话页；柔和档保留清晰可见但更轻的效果，完整档使用更丰富的局部动效。
+- 输出栏、插件搜索、使用量面板、菜单和弹窗属于同一主题验收范围，不允许只完成首页。
+
+完整规则见 `references/conversation-quality-baseline.md`，仓库校验会阻止遗漏这些通用结构的修改通过。
 
 验证主题：
 
@@ -206,6 +224,7 @@ powershell -ExecutionPolicy Bypass -File `
    ├─ scripts/                         # 面向用户的创建、预览、验证、恢复与打包入口
    ├─ references/
    │  ├─ autonomous-workflow.md        # 自动化端到端工作流
+   │  ├─ conversation-quality-baseline.md # 潮汐圣歌级对话完整度与动效交接基准
    │  ├─ new-theme-blueprint.md        # 新主题必须覆盖的界面结构
    │  ├─ runtime-architecture.md       # 运行时分层、依赖方向与边界
    │  ├─ theme-contract.md             # 可移植主题包契约

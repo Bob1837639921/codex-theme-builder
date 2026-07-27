@@ -29,7 +29,9 @@
 
 ## Conversation view
 
+- Treat Tidal Hymn's conversation treatment as the completeness benchmark, not as an art-direction dependency: every theme must provide an equally coherent canvas, readable mask, composer hierarchy, and control treatment in its own visual language.
 - Background covers the full task surface, including the right side and lower area.
+- Sidebar and conversation content read as one coordinated full-window scene; the content column must not restart, tile, or crop a second copy of the same raster.
 - Background detail remains crisp at the largest available target viewport without runtime sharpening or full-screen filters.
 - Text, code, diffs, tool output, links, and image previews remain legible.
 - Composer aligns with the content column.
@@ -37,6 +39,8 @@
 - Trigger a file change and verify no white strip appears behind the file-changes summary pill.
 - Inspect a populated file-change summary card: header, file paths, added/deleted counts, undo/review controls, hover state, and expanded rows must remain readable on one coherent themed surface.
 - Model, microphone, access mode, attachment, and submit/stop controls remain usable.
+- Every composer control, placeholder, tooltip, disabled state, and filled submit/stop icon has an explicit readable color in both soft and full tiers.
+- Grow the composer to multiple lines and trigger file-change summaries; decorative borders remain attached to the composer box and never depend on a fixed viewport position.
 - Running progress uses only small-area motion and stops under reduced-motion preferences.
 - Current thread remains legible when pin/archive controls appear; controls do not shift the title.
 - Selected-state artwork stays attached to the title label, ahead of its text, when thread action controls appear or disappear.
@@ -70,6 +74,7 @@
 - If the full-window wander layer is enabled, verify exactly three independent motifs, distinct sizes and routes, movement beyond the home-task region, full fade-out before route reseeding, new coordinates after `animationiteration`, `pointer-events: none`, and complete removal under reduced motion.
 - If `homeVideo` or `conversationVideo` is present, verify the runtime selects the matching scene on route changes, appears only at the full motion tier, is muted/looping/non-interactive, keeps the matching static poster until playable, fully replaces that poster when ready, pauses while the document is hidden, is removed outside the full tier, and never runs under reduced motion.
 - If `homeSoftVideo` or `conversationSoftVideo` is present, verify it appears only at the soft tier, contains the approved restrained treatment, has no audio, is cheaper to decode than the full clip, and is atomically replaced by the full-tier video rather than layered beneath it.
+- Test all six scene/tier combinations: home static, home soft, home full, conversation static, conversation soft, and conversation full. The active scene must never reuse the other scene's poster or video as a temporary frame.
 - Inspect directional video motion across the entire clip and at the loop seam. Bubbles, rain, snow, petals, smoke, and drifting motes must continue in one physical direction, never reverse during the second half, and never snap across protected reading regions. Reject generated footage when faces, hands, instruments, silhouettes, or the approved composition drift; use a deterministic environmental overlay on the static scene when generation cannot keep those anchors stable.
 - When otherwise-approved generated footage has mismatched endpoints, search short windows near the beginning and end for the pair with the closest protected-subject pose and composition. Trim to those cyclic cut points and use a short forward-only overlap (normally 6–12 frames) ordered as the uninterrupted body followed by the tail-to-head blend. The blend must end on the same forward-time frame that begins the next loop; never append a head segment that makes the player jump backward at wraparound. Compare adjacent-frame difference across the seam against the untouched source and retain the optimized version only when the peak discontinuity is materially lower without visible subject ghosting.
 

@@ -7,6 +7,10 @@ param(
   [Parameter(Mandatory)][ValidateScript({ Test-Path -LiteralPath $_ -PathType Leaf })][string]$UsageImage,
   [ValidateScript({ -not $_ -or (Test-Path -LiteralPath $_ -PathType Leaf) })][string]$SidebarImage = '',
   [ValidateScript({ -not $_ -or (Test-Path -LiteralPath $_ -PathType Leaf) })][string]$MotionImage = '',
+  [ValidateScript({ -not $_ -or (Test-Path -LiteralPath $_ -PathType Leaf) })][string]$HomeSoftVideo = '',
+  [ValidateScript({ -not $_ -or (Test-Path -LiteralPath $_ -PathType Leaf) })][string]$ConversationSoftVideo = '',
+  [ValidateScript({ -not $_ -or (Test-Path -LiteralPath $_ -PathType Leaf) })][string]$HomeVideo = '',
+  [ValidateScript({ -not $_ -or (Test-Path -LiteralPath $_ -PathType Leaf) })][string]$ConversationVideo = '',
   [ValidateScript({ -not $_ -or (Test-Path -LiteralPath $_ -PathType Leaf) })][string]$SelectedMarkerImage = '',
   [ValidateScript({ -not $_ -or (Test-Path -LiteralPath $_ -PathType Leaf) })][string]$ComposerEdgeImage = '',
   [ValidateSet('left', 'center', 'right')][string]$ComposerEdgeHorizontal = 'left',
@@ -66,6 +70,18 @@ $sidebarName = if ([string]::IsNullOrWhiteSpace($SidebarImage)) { '' } else {
 $motionName = if ([string]::IsNullOrWhiteSpace($MotionImage)) { '' } else {
   Copy-ThemeAsset -Source $MotionImage -Stem 'motion' -AllowedExtensions @('.webp')
 }
+$homeSoftVideoName = if ([string]::IsNullOrWhiteSpace($HomeSoftVideo)) { '' } else {
+  Copy-ThemeAsset -Source $HomeSoftVideo -Stem 'home-motion-soft' -AllowedExtensions @('.mp4')
+}
+$conversationSoftVideoName = if ([string]::IsNullOrWhiteSpace($ConversationSoftVideo)) { '' } else {
+  Copy-ThemeAsset -Source $ConversationSoftVideo -Stem 'conversation-motion-soft' -AllowedExtensions @('.mp4')
+}
+$homeVideoName = if ([string]::IsNullOrWhiteSpace($HomeVideo)) { '' } else {
+  Copy-ThemeAsset -Source $HomeVideo -Stem 'home-motion' -AllowedExtensions @('.mp4')
+}
+$conversationVideoName = if ([string]::IsNullOrWhiteSpace($ConversationVideo)) { '' } else {
+  Copy-ThemeAsset -Source $ConversationVideo -Stem 'conversation-motion' -AllowedExtensions @('.mp4')
+}
 $usageName = Copy-ThemeAsset -Source $UsageImage -Stem 'usage-background' -AllowedExtensions @('.png', '.jpg', '.jpeg', '.webp')
 $selectedMarkerName = if ([string]::IsNullOrWhiteSpace($SelectedMarkerImage)) { '' } else {
   Copy-ThemeAsset -Source $SelectedMarkerImage -Stem 'selected-marker' -AllowedExtensions @('.png', '.webp')
@@ -92,6 +108,10 @@ $manifest = [ordered]@{
 }
 if ($sidebarName) { $manifest.sidebarImage = $sidebarName }
 if ($motionName) { $manifest.motionImage = $motionName }
+if ($homeSoftVideoName) { $manifest.homeSoftVideo = $homeSoftVideoName }
+if ($conversationSoftVideoName) { $manifest.conversationSoftVideo = $conversationSoftVideoName }
+if ($homeVideoName) { $manifest.homeVideo = $homeVideoName }
+if ($conversationVideoName) { $manifest.conversationVideo = $conversationVideoName }
 $manifest.usageImage = $usageName
 if ($selectedMarkerName) { $manifest.selectedLeaf = $selectedMarkerName }
 if ($composerEdgeName) {

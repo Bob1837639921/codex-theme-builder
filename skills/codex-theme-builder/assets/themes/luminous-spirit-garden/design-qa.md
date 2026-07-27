@@ -37,6 +37,18 @@
 
 final result: passed
 
+## Home background video QA
+
+- User-approved source: 1280 x 720, 24 fps, 10 seconds.
+- The user-selected opening frame begins at 2.00 s. Cyclic-cut search compared its protected right-side character region and the full frame against the stable tail; 9.75 s was the closest accepted endpoint.
+- The final 0.50 s blends the forward-moving tail into the forward 1.50-2.00 s lead-in and ends on the same pose that starts the next loop; no whole-clip ping-pong or backward playback is used.
+- First-to-last-frame SSIM is approximately 0.914. Visual inspection found no face, hand, lantern, or silhouette double exposure at the wrap.
+- Delivery asset: `home-motion.mp4`, H.264 High profile, yuv420p, 24 fps, 7.75 seconds, 2,946,523 bytes.
+- The AAC audio track is removed and fast-start metadata is enabled.
+- `homeVideo` is route-scoped to the home shell and runs only at the full motion tier.
+- The conversation route continues to use `background-motion.mp4`; route changes replace the active source atomically.
+- Off, soft, document-hidden, and reduced-motion states do not decode the home video.
+
 ## Background video super-resolution QA
 
 - Source: `background-motion.mp4`, 1280 x 720, 24 fps, 9 seconds, 2,499,372 bytes.

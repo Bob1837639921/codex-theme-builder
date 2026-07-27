@@ -29,7 +29,7 @@ When a real Codex screenshot exists, treat the work as a constrained edit rather
 - Produce a distributable archive: run `scripts/package-theme.ps1`.
 - Install a verified theme launcher on the Windows desktop: run `scripts/install-desktop-shortcut.ps1` from the installed skill.
 
-Read [theme-contract.md](references/theme-contract.md) before authoring or modifying a theme. When creating or porting a visual direction, also read [new-theme-blueprint.md](references/new-theme-blueprint.md); it is the reusable map of assets, Codex surfaces, control-safe zones, and acceptance states that every new theme must cover. Read [artwork-quality.md](references/artwork-quality.md) before creating, replacing, enlarging, or compressing full-canvas artwork. Read [runtime-architecture.md](references/runtime-architecture.md) before modifying shared runtime, launcher, process-control, progress, or switching infrastructure. Read [windows-runtime.md](references/windows-runtime.md) before live application. Use [qa-checklist.md](references/qa-checklist.md) for final verification.
+Read [theme-contract.md](references/theme-contract.md) before authoring or modifying a theme. When creating or porting a visual direction, also read [new-theme-blueprint.md](references/new-theme-blueprint.md) and [conversation-quality-baseline.md](references/conversation-quality-baseline.md); together they define the reusable surface map and the soft/full conversation quality bar that every new theme must meet. Read [artwork-quality.md](references/artwork-quality.md) before creating, replacing, enlarging, or compressing full-canvas artwork. Read [runtime-architecture.md](references/runtime-architecture.md) before modifying shared runtime, launcher, process-control, progress, or switching infrastructure. Read [windows-runtime.md](references/windows-runtime.md) before live application. Use [qa-checklist.md](references/qa-checklist.md) for final verification.
 
 ## Build a theme
 
@@ -44,8 +44,14 @@ powershell -ExecutionPolicy Bypass -File scripts/new-theme.ps1 `
   -HomeImage "C:\path\home.png" `
   -ConversationImage "C:\path\conversation.png" `
   -UsageImage "C:\path\usage-background.webp" `
+  -HomeSoftVideo "C:\path\home-soft.mp4" `
+  -ConversationSoftVideo "C:\path\conversation-soft.mp4" `
+  -HomeVideo "C:\path\home-full.mp4" `
+  -ConversationVideo "C:\path\conversation-full.mp4" `
   -OutputDirectory "C:\path\themes"
 ```
+
+The four video arguments are optional. When motion is approved, keep home and conversation clips independent in both soft and full tiers so route changes and motion-level changes can use the shared atomic handoff without falling back through a mismatched static composition.
 
 5. Tune `theme.css` using theme-scoped selectors under `:root.codex-dream-skin`. Every theme must define its own usage-panel ink, muted, accent, overlay, and border tokens; do not inherit another theme's palette or reuse its home artwork.
 6. Work through every row in `new-theme-blueprint.md`, including both compact and full usage surfaces. Keep generic DOM discovery and safety behavior in the shared runtime; keep palette, imagery, spacing, and theme identity in the theme folder.

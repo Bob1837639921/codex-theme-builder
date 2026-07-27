@@ -389,8 +389,10 @@ html.codex-dream-skin .composer-surface-chrome :is(button, [role="button"], svg,
   -webkit-text-fill-color: #26485c !important;
 }
 
-html.codex-dream-skin .composer-surface-chrome button[class*="bg-token-foreground"],
-html.codex-dream-skin .composer-surface-chrome button[class*="bg-token-foreground"] :is(svg, span) {
+/* Match only the native filled submit/stop token. Substring matching also
+   catches ordinary controls whose hover utility mentions this token. */
+html.codex-dream-skin .composer-surface-chrome button[class~="bg-token-foreground"],
+html.codex-dream-skin .composer-surface-chrome button[class~="bg-token-foreground"] :is(svg, span) {
   color: #f4fbfe !important;
   -webkit-text-fill-color: #f4fbfe !important;
 }

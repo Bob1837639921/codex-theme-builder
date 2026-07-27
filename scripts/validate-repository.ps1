@@ -11,6 +11,9 @@ $catalogPath = Join-Path $themesRoot 'theme-catalog.json'
 $setupScript = Join-Path $PSScriptRoot 'setup-windows.ps1'
 $shortcutInstaller = Join-Path $skill 'scripts\install-desktop-shortcut.ps1'
 $runtimeArchitecture = Join-Path $skill 'references\runtime-architecture.md'
+$conversationQuality = Join-Path $skill 'references\conversation-quality-baseline.md'
+$newThemeScript = Join-Path $skill 'scripts\new-theme.ps1'
+$themeTemplateCss = Join-Path $skill 'assets\theme-template\theme.css'
 $desktopLauncher = Join-Path $skill 'assets\runtime\v2\desktop-launch.ps1'
 $launcherUi = Join-Path $skill 'assets\runtime\v2\ui\launcher-ui.ps1'
 $launchCore = Join-Path $skill 'assets\runtime\v2\launch.ps1'
@@ -23,6 +26,9 @@ foreach ($required in @(
   $setupScript,
   $shortcutInstaller,
   $runtimeArchitecture,
+  $conversationQuality,
+  $newThemeScript,
+  $themeTemplateCss,
   $desktopLauncher,
   $launcherUi,
   $launchCore
@@ -39,9 +45,41 @@ if ($skillText -notmatch '(?s)^---\s*\r?\nname:\s*codex-theme-builder\s*\r?\ndes
 
 $agentText = Get-Content -Raw -Encoding UTF8 -LiteralPath $agentMetadata
 foreach ($key in @('display_name:', 'short_description:', 'default_prompt:')) {
-  if ($agentText -notmatch [regex]::Escape($key)) {
+if ($agentText -notmatch [regex]::Escape($key)) {
     throw "agents/openai.yaml is missing: $key"
   }
+}
+
+$newThemeText = Get-Content -Raw -Encoding UTF8 -LiteralPath $newThemeScript
+$templateText = Get-Content -Raw -Encoding UTF8 -LiteralPath $themeTemplateCss
+$qualityText = Get-Content -Raw -Encoding UTF8 -LiteralPath $conversationQuality
+if ($skillText -notmatch 'conversation-quality-baseline\.md' -or
+    $qualityText -notmatch '(?i)tidal-hymn|Tidal Hymn' -or
+    $qualityText -notmatch '(?i)atomic video handoff') {
+  throw 'The reusable Skill must keep the conversation quality baseline and its Tidal Hymn benchmark.'
+}
+foreach ($videoField in @(
+  'HomeSoftVideo',
+  'ConversationSoftVideo',
+  'HomeVideo',
+  'ConversationVideo',
+  "Stem 'home-motion-soft'",
+  "Stem 'conversation-motion-soft'",
+  "Stem 'home-motion'",
+  "Stem 'conversation-motion'"
+)) {
+  if ($newThemeText -notmatch [regex]::Escape($videoField)) {
+    throw "The new-theme scaffold is missing the reusable motion field: $videoField"
+  }
+}
+if ($templateText -notmatch '(?s)body\s*\{[^}]*--dream-conversation-art' -or
+    $templateText -notmatch '(?s)body:has\(main\.dream-home-shell\)\s*\{[^}]*--dream-art' -or
+    $templateText -notmatch '(?s)\.composer-surface-chrome::before\s*\{' -or
+    $templateText -notmatch '(?s)\.composer-surface-chrome::after\s*\{' -or
+    $templateText -notmatch 'button\[class~="bg-token-foreground"\]' -or
+    $templateText -notmatch 'dream-output-panel' -or
+    $templateText -notmatch 'dream-plugin-search-shell') {
+  throw 'The reusable theme template must keep its shared canvas, scalable composer, control, output-panel, and plugin-search contracts.'
 }
 
 $parseErrors = @()

@@ -183,18 +183,18 @@ html.codex-dream-skin aside.app-shell-left-panel .dream-selected-thread-label {
 }
 
 :root.codex-dream-skin[data-dream-motion="high"]
-  body:has(main.main-surface.dream-conversation-shell > #codex-dream-background-video.is-ready) {
+  body:has(main.main-surface:is(.dream-home-shell, .dream-conversation-shell) > #codex-dream-background-video.is-covering) {
   background-color: #dfe4ef !important;
   background-image:
     linear-gradient(180deg, rgb(242 245 251 / 97%) 0 36px, transparent 36px) !important;
 }
 
 :root.codex-dream-skin[data-dream-motion="high"]
-  body:has(main.main-surface.dream-conversation-shell > #codex-dream-background-video.is-ready)
-  main.main-surface.dream-conversation-shell,
+  body:has(main.main-surface:is(.dream-home-shell, .dream-conversation-shell) > #codex-dream-background-video.is-covering)
+  main.main-surface:is(.dream-home-shell, .dream-conversation-shell),
 :root.codex-dream-skin[data-dream-motion="high"]
-  body:has(main.main-surface.dream-conversation-shell > #codex-dream-background-video.is-ready)
-  [role="main"].dream-conversation {
+  body:has(main.main-surface:is(.dream-home-shell, .dream-conversation-shell) > #codex-dream-background-video.is-covering)
+  [role="main"]:is(.dream-home, .dream-conversation) {
   background-color: transparent !important;
   background-image: none !important;
 }
@@ -204,7 +204,7 @@ html.codex-dream-skin aside.app-shell-left-panel .dream-selected-thread-label {
 }
 
 :root.codex-dream-skin[data-dream-motion="high"]
-  main.main-surface.dream-conversation-shell > #codex-dream-background-video {
+  main.main-surface:is(.dream-home-shell, .dream-conversation-shell) > #codex-dream-background-video {
   display: block !important;
   position: absolute !important;
   z-index: -1 !important;
@@ -219,11 +219,7 @@ html.codex-dream-skin aside.app-shell-left-panel .dream-selected-thread-label {
 }
 
 :root.codex-dream-skin[data-dream-motion="high"]
-  main.main-surface.dream-conversation-shell > #codex-dream-background-video.is-ready {
-  /*
-   * The video replaces only the conversation poster at the high tier.
-   * The home route always retains its approved static home artwork.
-   */
+  main.main-surface:is(.dream-home-shell, .dream-conversation-shell) > #codex-dream-background-video.is-ready {
   opacity: 1;
 }
 

@@ -706,9 +706,9 @@ html.codex-dream-skin main.main-surface.dream-conversation-shell::after {
    Suppress the older CSS accents after a video is ready so bubbles and light
    effects are not duplicated over the authored footage. */
 :root.codex-dream-skin:is([data-dream-motion="low"], [data-dream-motion="high"])
-  main.main-surface:has(> #codex-dream-background-video.is-ready)::after,
+  main.main-surface:has(> #codex-dream-background-video.is-covering)::after,
 :root.codex-dream-skin[data-dream-motion="high"]
-  body:has(main.main-surface > #codex-dream-background-video.is-ready)::after {
+  body:has(main.main-surface > #codex-dream-background-video.is-covering)::after {
   display: none !important;
   animation: none !important;
 }

@@ -2,6 +2,12 @@
 
 Read this reference whenever creating, porting, or substantially redesigning a theme. The built-in ink and frost themes are examples, not templates that constrain the visual direction.
 
+For conversation behavior, also follow
+[`conversation-quality-baseline.md`](conversation-quality-baseline.md).
+`tidal-hymn` is the present quality benchmark for coherent static, soft, and
+full conversation states, but its palette and decorative identity remain local
+to that theme.
+
 ## Keep the architecture split
 
 - Put palette, imagery, typography treatment, theme-specific spacing, and motion values in `assets/themes/<theme-id>/`.

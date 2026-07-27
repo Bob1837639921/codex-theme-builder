@@ -170,6 +170,15 @@ if ($templateCss -notmatch 'data-dream-motion="low"' -or
     $tidalCss -notmatch '(?s)data-dream-motion="high".*?main\.main-surface\.dream-conversation-shell::after') {
   throw 'Motion-enabled themes must use distinct off/low/high effect tiers and a reduced-motion fallback.'
 }
+if ($templateCss -notmatch '(?s)body\s*\{[^}]*--dream-conversation-art' -or
+    $templateCss -notmatch '(?s)body:has\(main\.dream-home-shell\)\s*\{[^}]*--dream-art' -or
+    $templateCss -notmatch '(?s)\.composer-surface-chrome::before\s*\{' -or
+    $templateCss -notmatch '(?s)\.composer-surface-chrome::after\s*\{' -or
+    $templateCss -notmatch 'button\[class~="bg-token-foreground"\]' -or
+    $templateCss -notmatch 'dream-output-panel' -or
+    $templateCss -notmatch 'dream-plugin-search-shell') {
+  throw 'The generic template must retain the Tidal-quality shared canvas, scalable composer, explicit control, output, and plugin-search contracts.'
+}
 if ($tidalManifest.motionImage -ne 'motion-caustics.webp' -or
     -not (Test-Path (Join-Path $tidalTheme $tidalManifest.motionImage)) -or
     (Get-Item -LiteralPath (Join-Path $tidalTheme $tidalManifest.motionImage)).Length -gt 2MB -or
@@ -196,7 +205,7 @@ if ($runtimeJs -notmatch 'MOTION_LAYER_ID\s*=\s*"codex-dream-motion-layer"' -or
 $videoContracts = @(
   @{ Name = 'frost-sword-immortal'; Root = $frostTheme; Manifest = $frostManifest; Fields = @('homeVideo', 'conversationVideo') }
   @{ Name = 'sunken-opera'; Root = $sunkenTheme; Manifest = $sunkenManifest; Fields = @('homeSoftVideo', 'conversationSoftVideo', 'homeVideo', 'conversationVideo') }
-  @{ Name = 'luminous-spirit-garden'; Root = $luminousTheme; Manifest = $luminousManifest; Fields = @('conversationVideo') }
+  @{ Name = 'luminous-spirit-garden'; Root = $luminousTheme; Manifest = $luminousManifest; Fields = @('homeVideo', 'conversationVideo') }
 )
 foreach ($contract in $videoContracts) {
   foreach ($field in $contract.Fields) {
@@ -218,6 +227,8 @@ if ($injectorText -notmatch 'MAX_VIDEO_BYTES\s*=\s*8\s*\*\s*1024\s*\*\s*1024' -o
     $injectorText -notmatch 'conversationVideoDataUrl' -or
     $injectorText -notmatch 'backgroundVideo:\s*backgroundVideo\s*\?' -or
     $injectorText -notmatch 'currentTime:\s*Number\(backgroundVideo\.currentTime\.toFixed' -or
+    $injectorText -notmatch 'videoHandoffShieldPresent:\s*Boolean\(document\.getElementById\(''codex-dream-video-handoff-shield''\)\)' -or
+    $injectorText -notmatch '!result\.videoHandoffShieldPresent' -or
     $runtimeJs -notmatch 'BACKGROUND_VIDEO_ID\s*=\s*"codex-dream-background-video"' -or
     $runtimeJs -notmatch 'dataset\.dreamScene' -or
     $runtimeJs -notmatch 'dataset\.dreamMotionTier' -or
@@ -231,9 +242,25 @@ if ($injectorText -notmatch 'MAX_VIDEO_BYTES\s*=\s*8\s*\*\s*1024\s*\*\s*1024' -o
     $runtimeJs -notmatch 'reducedMotionQuery\?\.matches' -or
     $runtimeJs -notmatch 'video\.pause\(\)' -or
     $runtimeJs -notmatch 'video\.play\(\)\.catch' -or
+    $runtimeJs -notmatch 'revealBackgroundVideo' -or
+    $runtimeJs -notmatch 'BACKGROUND_VIDEO_LAYER_CLASS\s*=\s*"codex-dream-background-video-layer"' -or
+    $runtimeJs -notmatch 'removeOutgoingBackgroundVideos' -or
+    $runtimeJs -notmatch 'classList\.add\(BACKGROUND_VIDEO_LAYER_CLASS,\s*"is-outgoing"\)' -or
+    $runtimeJs -notmatch 'VIDEO_HANDOFF_SHIELD_ID\s*=\s*"codex-dream-video-handoff-shield"' -or
+    $runtimeJs -notmatch 'shield\.classList\.add\("is-opaque"\)' -or
+    $runtimeJs -notmatch 'video\.classList\.add\("is-handoff-swap",\s*"is-ready",\s*"is-covering"\)' -or
+    $runtimeJs -notmatch 'shield\.classList\.remove\("is-opaque"\)' -or
+    $runtimeJs -notmatch 'video\.classList\.remove\("is-handoff-swap"\)' -or
+    $runtimeJs -notmatch 'video\.preload\s*=\s*"auto"' -or
+    $runtimeJs -notmatch 'classList\.contains\("is-covering"\)\s*&&\s*video\.paused' -or
     $baseCss -notmatch '(?s)data-dream-motion="low".*?data-dream-motion="high".*?#codex-dream-background-video' -or
-    $baseCss -notmatch '(?s)#codex-dream-background-video\s*\{[^}]*pointer-events:\s*none\s*!important' -or
-    $baseCss -notmatch '(?s)#codex-dream-background-video\.is-ready\s*\{[^}]*opacity:\s*1') {
+    $baseCss -notmatch '(?s)#codex-dream-background-video,\s*\.codex-dream-background-video-layer\s*\{[^}]*pointer-events:\s*none\s*!important' -or
+    $baseCss -notmatch '(?s)#codex-dream-background-video\.is-ready\s*\{[^}]*opacity:\s*1' -or
+    $baseCss -notmatch '(?s)#codex-dream-video-handoff-shield\s*\{[^}]*z-index:\s*0\s*!important[^}]*pointer-events:\s*none\s*!important' -or
+    $baseCss -notmatch '(?s)#codex-dream-video-handoff-shield\.is-opaque\s*\{[^}]*opacity:\s*\.97' -or
+    $baseCss -notmatch '(?s)#codex-dream-background-video\.is-handoff-swap\s*\{[^}]*transition:\s*none\s*!important' -or
+    $baseCss -notmatch '#codex-dream-background-video\.is-covering' -or
+    $baseCss -notmatch '(?s)\.codex-dream-background-video-layer\.is-outgoing\s*\{[^}]*opacity:\s*1\s*!important') {
   throw 'Scene-specific background videos must stay local, bounded, tier-aware, visibility-aware, reduced-motion safe, and non-interactive.'
 }
 if ($injectorText -notmatch 'const\s+homeVisualAnchor\s*=\s*home\?\.querySelector\(''\.dream-home-hero''\)' -or

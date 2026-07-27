@@ -8,10 +8,12 @@
   const SWITCHER_ID = "codex-dream-theme-switcher";
   const MOTION_LAYER_ID = "codex-dream-motion-layer";
   const BACKGROUND_VIDEO_ID = "codex-dream-background-video";
+  const BACKGROUND_VIDEO_LAYER_CLASS = "codex-dream-background-video-layer";
+  const VIDEO_HANDOFF_SHIELD_ID = "codex-dream-video-handoff-shield";
   const STORAGE_KEY = "codex-dream-theme-active";
   const MOTION_STORAGE_KEY = "codex-dream-motion-level";
   const MOTION_LEVELS = ["off", "low", "high"];
-  const RUNTIME_VERSION = "2.2.0-theme-library";
+  const RUNTIME_VERSION = "2.2.3-theme-library";
   const THEME_SEARCH_THRESHOLD = 6;
   const MUTATION_COALESCE_MS = 96;
   const actions = [
@@ -29,10 +31,12 @@
   if (previous?.scheduler?.frame) cancelAnimationFrame(previous.scheduler.frame);
   previous?.removeSwitcherListeners?.();
   previous?.removeBackgroundVideoListeners?.();
+  previous?.disposeVideoHandoffShield?.();
   previous?.restoreSidebarControls?.();
   document.getElementById(SWITCHER_ID)?.remove();
   document.getElementById(MOTION_LAYER_ID)?.remove();
-  document.getElementById(BACKGROUND_VIDEO_ID)?.remove();
+  document.getElementById(VIDEO_HANDOFF_SHIELD_ID)?.remove();
+  document.querySelectorAll(`#${BACKGROUND_VIDEO_ID}, .${BACKGROUND_VIDEO_LAYER_CLASS}`).forEach((video) => video.remove());
   for (const urls of previous?.objectUrls?.values?.() || []) {
     URL.revokeObjectURL(urls.artUrl);
     URL.revokeObjectURL(urls.conversationUrl);
@@ -391,15 +395,80 @@
     }
   };
 
+  const disposeVideoHandoffShield = () => {
+    const shield = document.getElementById(VIDEO_HANDOFF_SHIELD_ID);
+    if (!shield) return;
+    if (shield._dreamSwapTimer) clearTimeout(shield._dreamSwapTimer);
+    if (shield._dreamRemoveTimer) clearTimeout(shield._dreamRemoveTimer);
+    shield.remove();
+  };
+
   const disposeBackgroundVideo = (releaseUrl = true) => {
-    const video = document.getElementById(BACKGROUND_VIDEO_ID);
-    if (video) {
+    disposeVideoHandoffShield();
+    const videos = document.querySelectorAll(`#${BACKGROUND_VIDEO_ID}, .${BACKGROUND_VIDEO_LAYER_CLASS}`);
+    for (const video of videos) {
+      if (video._dreamCoverTimer) clearTimeout(video._dreamCoverTimer);
       video.pause();
       video.removeAttribute("src");
       video.load();
       video.remove();
     }
     if (releaseUrl) releaseBackgroundVideoUrls();
+  };
+
+  const removeOutgoingBackgroundVideos = (except = null) => {
+    document.querySelectorAll(`.${BACKGROUND_VIDEO_LAYER_CLASS}.is-outgoing`).forEach((video) => {
+      if (video === except) return;
+      if (video._dreamCoverTimer) clearTimeout(video._dreamCoverTimer);
+      video.pause();
+      video.removeAttribute("src");
+      video.load();
+      video.remove();
+    });
+  };
+
+  const revealBackgroundVideo = (video) => {
+    if (document.getElementById(BACKGROUND_VIDEO_ID) !== video) return;
+    const shell = video.parentElement;
+    if (!shell) return;
+    disposeVideoHandoffShield();
+    const shield = document.createElement("div");
+    shield.id = VIDEO_HANDOFF_SHIELD_ID;
+    shield.setAttribute("aria-hidden", "true");
+    shell.appendChild(shield);
+
+    const completeHandoff = () => {
+      if (document.getElementById(BACKGROUND_VIDEO_ID) !== video) {
+        if (shield.isConnected) shield.remove();
+        return;
+      }
+      video.classList.add("is-handoff-swap", "is-ready", "is-covering");
+      removeOutgoingBackgroundVideos();
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          if (document.getElementById(BACKGROUND_VIDEO_ID) !== video) {
+            if (shield.isConnected) shield.remove();
+            return;
+          }
+          shield.classList.add("is-leaving");
+          shield.classList.remove("is-opaque");
+          shield._dreamRemoveTimer = setTimeout(() => {
+            if (shield.isConnected) shield.remove();
+            video.classList.remove("is-handoff-swap");
+            if (document.hidden) video.pause();
+            else if (video.paused) video.play().catch(() => {});
+          }, 360);
+        });
+      });
+    };
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        if (document.getElementById(BACKGROUND_VIDEO_ID) !== video) return;
+        shield.classList.add("is-opaque");
+        shield._dreamSwapTimer = setTimeout(completeHandoff, 240);
+      });
+    });
   };
 
   const syncBackgroundVideo = (shell = document.querySelector("main.main-surface") || document.querySelector("main")) => {
@@ -430,13 +499,35 @@
     let video = document.getElementById(BACKGROUND_VIDEO_ID);
     if (!video || video.dataset.dreamThemeId !== activeTheme.id ||
         video.dataset.dreamScene !== scene || video.dataset.dreamMotionTier !== videoTier) {
-      disposeBackgroundVideo(false);
+      disposeVideoHandoffShield();
+      const interruptedOutgoing = document.querySelector(
+        `.${BACKGROUND_VIDEO_LAYER_CLASS}.is-outgoing`,
+      );
+      if (video && !video.classList.contains("is-covering") && interruptedOutgoing) {
+        if (video._dreamCoverTimer) clearTimeout(video._dreamCoverTimer);
+        video.pause();
+        video.removeAttribute("src");
+        video.load();
+        video.remove();
+        video = interruptedOutgoing;
+      }
+      removeOutgoingBackgroundVideos(video);
+      if (video) {
+        if (video._dreamCoverTimer) clearTimeout(video._dreamCoverTimer);
+        video.removeAttribute("id");
+        video.classList.remove("is-ready", "is-covering", "is-handoff-swap");
+        video.classList.add(BACKGROUND_VIDEO_LAYER_CLASS, "is-outgoing");
+        if (video.parentElement !== shell) shell.prepend(video);
+      }
       video = document.createElement("video");
       video.id = BACKGROUND_VIDEO_ID;
       video.dataset.dreamThemeId = activeTheme.id;
       video.dataset.dreamScene = scene;
       video.dataset.dreamMotionTier = videoTier;
-      video.classList.add(scene === "home" ? "dream-home-video" : "dream-conversation-video");
+      video.classList.add(
+        BACKGROUND_VIDEO_LAYER_CLASS,
+        scene === "home" ? "dream-home-video" : "dream-conversation-video",
+      );
       video.muted = true;
       video.defaultMuted = true;
       video.loop = true;
@@ -444,17 +535,17 @@
       video.autoplay = false;
       video.controls = false;
       video.disablePictureInPicture = true;
-      video.preload = "metadata";
+      video.preload = "auto";
       video.setAttribute("aria-hidden", "true");
-      video.addEventListener("canplay", () => video.classList.add("is-ready"), { once: true });
+      video.addEventListener("canplay", () => revealBackgroundVideo(video), { once: true });
       video.src = urls[urlKey];
     }
     if (video.parentElement !== shell) shell.prepend(video);
     if (document.hidden) {
       video.pause();
-      } else if (video.paused) {
-        video.play().catch(() => {});
-      }
+    } else if (video.classList.contains("is-covering") && video.paused) {
+      video.play().catch(() => {});
+    }
     return video;
   };
 
@@ -1055,7 +1146,7 @@
   };
 
   const scheduler = { frame: null, timeout: null, lastRun: 0, pending: false, runCount: 0 };
-  const runtimeOwnerSelector = `#${STYLE_ID}, #${CHROME_ID}, #${HOME_OVERLAY_ID}, #${SWITCHER_ID}, #${MOTION_LAYER_ID}, #${BACKGROUND_VIDEO_ID}`;
+  const runtimeOwnerSelector = `#${STYLE_ID}, #${CHROME_ID}, #${HOME_OVERLAY_ID}, #${SWITCHER_ID}, #${MOTION_LAYER_ID}, #${BACKGROUND_VIDEO_ID}, #${VIDEO_HANDOFF_SHIELD_ID}, .${BACKGROUND_VIDEO_LAYER_CLASS}`;
   const isRuntimeOwnedNode = (node) => {
     const element = node?.nodeType === Node.ELEMENT_NODE ? node : node?.parentElement;
     return Boolean(element?.matches?.(runtimeOwnerSelector) || element?.closest?.(runtimeOwnerSelector));
@@ -1125,6 +1216,7 @@
     applyMotionLevel,
     removeSwitcherListeners,
     removeBackgroundVideoListeners,
+    disposeVideoHandoffShield,
     restoreSidebarControls,
     get activeThemeId() { return activeTheme.id; },
     get activeMotionLevel() { return activeMotionLevel; },

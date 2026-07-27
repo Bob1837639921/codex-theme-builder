@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, "..");
-const SKIN_VERSION = "2.2.0-theme-library";
+const SKIN_VERSION = "2.2.3-theme-library";
 const MAX_ART_BYTES = 8 * 1024 * 1024;
 const MAX_VIDEO_BYTES = 8 * 1024 * 1024;
 const LOOPBACK_HOSTS = new Set(["127.0.0.1", "localhost", "[::1]", "::1"]);
@@ -723,6 +723,7 @@ async function verifySession(session) {
         opacity: getComputedStyle(backgroundVideo).opacity,
         box: box(backgroundVideo),
       } : null,
+      videoHandoffShieldPresent: Boolean(document.getElementById('codex-dream-video-handoff-shield')),
       conversation: conversation ? {
         box: box(conversation),
         backgroundColor: getComputedStyle(conversation).backgroundColor,
@@ -790,6 +791,10 @@ async function verifySession(session) {
       ((result.themeCount < 2 && !result.switcherPresent && result.themeCardCount === 0) ||
         (result.themeCount >= 2 && result.switcherPresent && result.themeCardCount === result.themeCount)) &&
       Boolean(result.activeThemeId) &&
+      (!result.backgroundVideo || (result.backgroundVideo.ready &&
+        result.backgroundVideo.readyState >= 3 &&
+        Number.parseFloat(result.backgroundVideo.opacity) >= .99 &&
+        !result.videoHandoffShieldPresent)) &&
       (!result.homePresent || (Boolean(result.hero) && result.titlePresent &&
         result.actionGridPresent && result.iconsPresent && result.cards.length === 4));
     return result;

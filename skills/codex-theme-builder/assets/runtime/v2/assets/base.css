@@ -23,7 +23,8 @@ html.codex-dream-skin [role="dialog"] {
   display: none;
 }
 
-#codex-dream-background-video {
+#codex-dream-background-video,
+.codex-dream-background-video-layer {
   display: none !important;
   position: absolute !important;
   z-index: -1 !important;
@@ -39,6 +40,42 @@ html.codex-dream-skin [role="dialog"] {
   transition: opacity 600ms ease !important;
 }
 
+.codex-dream-background-video-layer.is-outgoing {
+  display: block !important;
+  z-index: -2 !important;
+  opacity: 1 !important;
+}
+
+#codex-dream-background-video.is-handoff-swap {
+  opacity: 1 !important;
+  transition: none !important;
+}
+
+#codex-dream-video-handoff-shield {
+  display: block !important;
+  position: absolute !important;
+  z-index: 0 !important;
+  inset: 0 !important;
+  opacity: 0;
+  background:
+    radial-gradient(
+      circle at 68% 34%,
+      color-mix(in srgb, var(--dream-accent-alt, var(--dream-accent, #7895aa)) 14%, transparent),
+      transparent 58%
+    ),
+    color-mix(in srgb, var(--dream-surface, var(--dream-paper, #edf2f5)) 97%, transparent);
+  pointer-events: none !important;
+  transition: opacity 220ms cubic-bezier(.2, .75, .25, 1) !important;
+}
+
+#codex-dream-video-handoff-shield.is-opaque {
+  opacity: .97;
+}
+
+#codex-dream-video-handoff-shield.is-leaving {
+  transition-duration: 340ms !important;
+}
+
 :root.codex-dream-skin:is([data-dream-motion="low"], [data-dream-motion="high"])
   main.main-surface:is(.dream-home-shell, .dream-conversation-shell) {
   position: relative !important;
@@ -47,7 +84,13 @@ html.codex-dream-skin [role="dialog"] {
 
 :root.codex-dream-skin:is([data-dream-motion="low"], [data-dream-motion="high"])
   main.main-surface:is(.dream-home-shell, .dream-conversation-shell)
-  > #codex-dream-background-video {
+  > :not(#codex-dream-background-video, .codex-dream-background-video-layer, #codex-dream-video-handoff-shield) {
+  z-index: 1;
+}
+
+:root.codex-dream-skin:is([data-dream-motion="low"], [data-dream-motion="high"])
+  main.main-surface:is(.dream-home-shell, .dream-conversation-shell)
+  > :is(#codex-dream-background-video, .codex-dream-background-video-layer) {
   display: block !important;
 }
 
@@ -58,9 +101,9 @@ html.codex-dream-skin [role="dialog"] {
 }
 
 :root.codex-dream-skin:is([data-dream-motion="low"], [data-dream-motion="high"])
-  main.main-surface:has(> #codex-dream-background-video.is-ready),
+  main.main-surface:has(> #codex-dream-background-video.is-covering),
 :root.codex-dream-skin:is([data-dream-motion="low"], [data-dream-motion="high"])
-  main.main-surface:has(> #codex-dream-background-video.is-ready)
+  main.main-surface:has(> #codex-dream-background-video.is-covering)
   [role="main"]:is(.dream-home, .dream-conversation) {
   background-color: transparent !important;
   background-image: none !important;
