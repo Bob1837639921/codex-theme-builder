@@ -701,6 +701,18 @@ async function verifySession(session) {
       const image = button.querySelector('img');
       return Boolean(image?.src?.startsWith('data:image/svg+xml;base64,'));
     }) : false;
+    const toolbarButtons = [...document.querySelectorAll('main.main-surface > header.app-header-tint button')]
+      .filter((button) => {
+        const rect = button.getBoundingClientRect();
+        const style = getComputedStyle(button);
+        return rect.width >= 20 && rect.height >= 20 && style.display !== 'none' &&
+          style.visibility !== 'hidden' && Number.parseFloat(style.opacity || '1') > 0;
+      });
+    const toolbarButtonsInteractive = toolbarButtons.every((button) => {
+      const rect = button.getBoundingClientRect();
+      const hit = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
+      return hit === button || button.contains(hit);
+    });
     const result = {
       installed: document.documentElement.classList.contains('codex-dream-skin'),
       version: window.__CODEX_DREAM_SKIN_STATE__?.version ?? null,
@@ -708,6 +720,8 @@ async function verifySession(session) {
       stylePresent: Boolean(document.getElementById('codex-dream-skin-style')),
       chromePresent: Boolean(document.getElementById('codex-dream-skin-chrome')),
       chromePointerEvents: getComputedStyle(document.getElementById('codex-dream-skin-chrome') || document.body).pointerEvents,
+      toolbarButtonCount: toolbarButtons.length,
+      toolbarButtonsInteractive,
       homePresent: Boolean(home),
       actionGridPresent: Boolean(actionGrid),
       titlePresent: Boolean(title),
@@ -792,7 +806,8 @@ async function verifySession(session) {
     };
     result.pass = result.installed && result.version === result.expectedVersion &&
       result.stylePresent && result.chromePresent &&
-      result.chromePointerEvents === 'none' && Boolean(result.composer) && Boolean(result.sidebar) &&
+      result.chromePointerEvents === 'none' && result.toolbarButtonsInteractive &&
+      Boolean(result.composer) && Boolean(result.sidebar) &&
       ((result.themeCount < 2 && !result.switcherPresent && result.themeCardCount === 0) ||
         (result.themeCount >= 2 && result.switcherPresent && result.themeCardCount === result.themeCount)) &&
       Boolean(result.activeThemeId) &&

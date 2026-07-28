@@ -39,6 +39,9 @@
 - Trigger a file change and verify no white strip appears behind the file-changes summary pill.
 - Inspect a populated file-change summary card: header, file paths, added/deleted counts, undo/review controls, hover state, and expanded rows must remain readable on one coherent themed surface.
 - Model, microphone, access mode, attachment, and submit/stop controls remain usable.
+- Click every visible conversation-toolbar control, including output, bottom
+  panel, pinned summary, and sidebar toggles. The native content viewport must
+  never be the top `elementFromPoint` result at a toolbar button center.
 - Every composer control, placeholder, tooltip, disabled state, and filled submit/stop icon has an explicit readable color in both soft and full tiers.
 - Grow the composer to multiple lines and trigger file-change summaries; decorative borders remain attached to the composer box and never depend on a fixed viewport position.
 - Running progress uses only small-area motion and stops under reduced-motion preferences.
@@ -82,6 +85,10 @@
 
 - Check a narrower window without horizontal overflow.
 - Switch between home and conversation routes.
+- Sign out and verify the login/authentication window is completely native:
+  no static artwork, video, handoff shield, theme chrome, switcher, or motion
+  layer may cover its controls. Confirm video resources are released, then sign
+  in again and verify the selected theme resumes without restarting Codex.
 - For video themes, test both route directions separately. While the incoming
   scene decodes, the outgoing moving scene remains visible and the static
   poster never flashes back, even if Codex replaces `main.main-surface`.

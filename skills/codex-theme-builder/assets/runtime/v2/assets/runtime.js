@@ -52,6 +52,11 @@
   const objectUrls = new Map();
   let activeBackgroundVideoElement = null;
   let lastBackgroundVideoShellRect = null;
+  let themeSuspendedForNativeSurface = false;
+  const isNativeAppSurfaceAvailable = (
+    shell = document.querySelector("main.main-surface"),
+    sidebar = document.querySelector("aside.app-shell-left-panel"),
+  ) => Boolean(shell && sidebar);
   const dataUrlToObjectUrl = (dataUrl) => {
     const comma = dataUrl.indexOf(",");
     const binary = atob(dataUrl.slice(comma + 1));
@@ -438,6 +443,33 @@
     if (releaseUrl) releaseBackgroundVideoUrls();
   };
 
+  const suspendThemeForNativeSurface = () => {
+    themeSuspendedForNativeSurface = true;
+    document.documentElement?.classList.remove("codex-dream-skin", "dream-video-route-pending");
+    document.querySelectorAll(".dream-home").forEach((node) => node.classList.remove("dream-home"));
+    document.querySelectorAll(".dream-home-stage").forEach((node) => node.classList.remove("dream-home-stage"));
+    document.querySelectorAll(".dream-home-hero").forEach((node) => node.classList.remove("dream-home-hero"));
+    document.querySelectorAll(".dream-native-home-suggestions").forEach((node) => node.classList.remove("dream-native-home-suggestions"));
+    document.querySelectorAll(".dream-conversation").forEach((node) => node.classList.remove("dream-conversation"));
+    document.querySelectorAll(".dream-home-shell").forEach((node) => node.classList.remove("dream-home-shell"));
+    document.querySelectorAll(".dream-conversation-shell").forEach((node) => node.classList.remove("dream-conversation-shell"));
+    document.querySelectorAll(".dream-home-promo").forEach((node) => node.classList.remove("dream-home-promo"));
+    document.querySelectorAll(".dream-plugin-search").forEach((node) => node.classList.remove("dream-plugin-search"));
+    document.querySelectorAll(".dream-plugin-search-shell").forEach((node) => node.classList.remove("dream-plugin-search-shell"));
+    Object.keys(markerState).forEach((key) => { markerState[key] = null; });
+    clearDetailMarkers();
+    restoreSidebarControls();
+    document.getElementById(CHROME_ID)?.remove();
+    document.getElementById(ACTIONS_ID)?.remove();
+    document.getElementById(TITLE_ID)?.remove();
+    document.getElementById(HOME_OVERLAY_ID)?.remove();
+    document.getElementById(SWITCHER_ID)?.remove();
+    document.getElementById(MOTION_LAYER_ID)?.remove();
+    removeSwitcherListeners?.();
+    removeSwitcherListeners = null;
+    disposeBackgroundVideo(true);
+  };
+
   const clearRoutePendingVideo = (video, shell = null) => {
     if (!video) return;
     video.classList.remove("is-route-pending");
@@ -451,7 +483,8 @@
   const protectDetachedBackgroundVideo = () => {
     const video = activeBackgroundVideoElement;
     const rect = lastBackgroundVideoShellRect;
-    if (!video || video.isConnected || !rect || !document.body ||
+    if (!document.querySelector("aside.app-shell-left-panel") ||
+        !video || video.isConnected || !rect || !document.body ||
         !video.classList.contains("is-covering")) {
       return false;
     }
@@ -519,6 +552,10 @@
   };
 
   const syncBackgroundVideo = (shell = document.querySelector("main.main-surface") || document.querySelector("main")) => {
+    if (!isNativeAppSurfaceAvailable(shell)) {
+      disposeBackgroundVideo(true);
+      return null;
+    }
     const sceneIsKnown = shell?.classList.contains("dream-home-shell") ||
       shell?.classList.contains("dream-conversation-shell");
     if (!sceneIsKnown) return null;
@@ -967,6 +1004,16 @@
     if (window.__CODEX_DREAM_SKIN_DISABLED__) return;
     const root = document.documentElement;
     if (!root) return;
+    const shellMain = document.querySelector("main.main-surface");
+    const sidebar = document.querySelector("aside.app-shell-left-panel");
+    if (!isNativeAppSurfaceAvailable(shellMain, sidebar)) {
+      suspendThemeForNativeSurface();
+      return;
+    }
+    if (themeSuspendedForNativeSurface) {
+      themeSuspendedForNativeSurface = false;
+      syncMotionLayer(urlsFor(activeTheme));
+    }
     root.classList.add("codex-dream-skin");
     let style = document.getElementById(STYLE_ID);
     if (!style) {
@@ -979,7 +1026,6 @@
       style = document.getElementById(STYLE_ID);
     }
 
-    const shellMain = document.querySelector("main.main-surface") || document.querySelector("main");
     const home = document.querySelector('[role="main"]:has([data-testid="home-icon"])');
     syncMarker("home", home, "dream-home");
     const homeStage = home?.querySelector(":scope > div:first-child > div:first-child") ?? null;
@@ -1139,7 +1185,7 @@
     shellMain.classList.toggle("dream-conversation-shell", !home);
     syncBackgroundVideo(shellMain);
     markDetailSurfaces();
-    ensureThemeSwitcher(document.querySelector("aside.app-shell-left-panel"));
+    ensureThemeSwitcher(sidebar);
     let chrome = document.getElementById(CHROME_ID);
     if (!chrome || chrome.parentElement !== document.body) {
       chrome?.remove();

@@ -106,6 +106,28 @@ pointer-free, visibility-aware and reduced-motion safe. The shield is transient,
 does not blur or filter the viewport, and has no steady-state rendering cost.
 Do not solve handoff flashes by decoding every theme video in the background.
 
+Do not assign a shared `z-index` to every direct child of `main.main-surface`.
+Codex owns the stacking relationship between its fixed toolbar and scrolling
+content viewport; flattening both to the same layer lets the viewport intercept
+toolbar pointer events. Keep only injected video and shield layers explicitly
+stacked, and verify native toolbar buttons with `elementFromPoint`.
+
+## Native authentication boundary
+
+Theme visuals may run only while both `main.main-surface` and
+`aside.app-shell-left-panel` are mounted. Signed-out, authentication, onboarding,
+and account-recovery windows do not expose that native application shell.
+
+- When the shell is absent, remove the theme root class, route markers, theme
+  chrome, switcher, motion layer, handoff shield, and all background videos.
+- Release video object URLs so a signed-out window retains no decoder or GPU
+  workload.
+- Keep the theme package and selected theme in memory so the runtime can restore
+  the theme after a successful login without restarting Codex.
+- CSS must independently hide injected visuals whenever the sidebar is absent;
+  this closes the short interval before the mutation observer runs.
+- Never classify an arbitrary signed-out `<main>` as a conversation route.
+
 ## Change placement
 
 Before adding code, choose exactly one owner:

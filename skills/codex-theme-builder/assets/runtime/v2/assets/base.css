@@ -23,6 +23,22 @@ html.codex-dream-skin [role="dialog"] {
   display: none;
 }
 
+/* Authentication, onboarding, and signed-out windows do not mount the native
+   Codex sidebar. Hide every injected visual immediately while the runtime
+   removes the theme class and releases video resources. */
+html.codex-dream-skin:not(:has(aside.app-shell-left-panel))
+  :is(
+    #codex-dream-skin-chrome,
+    #codex-dream-home-overlay,
+    #codex-dream-theme-switcher,
+    #codex-dream-motion-layer,
+    #codex-dream-background-video,
+    #codex-dream-video-handoff-shield,
+    .codex-dream-background-video-layer
+  ) {
+  display: none !important;
+}
+
 #codex-dream-background-video,
 .codex-dream-background-video-layer {
   display: none !important;
@@ -101,12 +117,6 @@ html.codex-dream-skin [role="dialog"] {
   main.main-surface:is(.dream-home-shell, .dream-conversation-shell) {
   position: relative !important;
   isolation: isolate;
-}
-
-:root.codex-dream-skin:is([data-dream-motion="low"], [data-dream-motion="high"])
-  main.main-surface:is(.dream-home-shell, .dream-conversation-shell)
-  > :not(#codex-dream-background-video, .codex-dream-background-video-layer, #codex-dream-video-handoff-shield) {
-  z-index: 1;
 }
 
 :root.codex-dream-skin:is([data-dream-motion="low"], [data-dream-motion="high"])

@@ -230,6 +230,9 @@ if ($injectorText -notmatch 'MAX_VIDEO_BYTES\s*=\s*8\s*\*\s*1024\s*\*\s*1024' -o
     $injectorText -notmatch 'backgroundVideo:\s*backgroundVideo\s*\?' -or
     $injectorText -notmatch 'currentTime:\s*Number\(backgroundVideo\.currentTime\.toFixed' -or
     $injectorText -notmatch 'videoHandoffShieldPresent:\s*Boolean\(document\.getElementById\(''codex-dream-video-handoff-shield''\)\)' -or
+    $injectorText -notmatch 'toolbarButtonsInteractive' -or
+    $injectorText -notmatch 'elementFromPoint\(rect\.left \+ rect\.width / 2,\s*rect\.top \+ rect\.height / 2\)' -or
+    $injectorText -notmatch 'result\.chromePointerEvents === ''none'' && result\.toolbarButtonsInteractive' -or
     $injectorText -notmatch '!result\.videoHandoffShieldPresent' -or
     $runtimeJs -notmatch 'BACKGROUND_VIDEO_ID\s*=\s*"codex-dream-background-video"' -or
     $runtimeJs -notmatch 'dataset\.dreamScene' -or
@@ -254,6 +257,13 @@ if ($injectorText -notmatch 'MAX_VIDEO_BYTES\s*=\s*8\s*\*\s*1024\s*\*\s*1024' -o
     $runtimeJs -notmatch 'clearRoutePendingVideo' -or
     $runtimeJs -notmatch 'activeBackgroundVideoElement' -or
     $runtimeJs -notmatch 'lastBackgroundVideoShellRect' -or
+    $runtimeJs -notmatch 'isNativeAppSurfaceAvailable' -or
+    $runtimeJs -notmatch 'suspendThemeForNativeSurface' -or
+    $runtimeJs -notmatch 'themeSuspendedForNativeSurface' -or
+    $runtimeJs -notmatch 'aside\.app-shell-left-panel' -or
+    $runtimeJs -notmatch 'if\s*\(!isNativeAppSurfaceAvailable\(shell\)\)\s*\{\s*disposeBackgroundVideo\(true\)' -or
+    $runtimeJs -notmatch 'if\s*\(!isNativeAppSurfaceAvailable\(shellMain,\s*sidebar\)\)\s*\{\s*suspendThemeForNativeSurface\(\)' -or
+    $baseCss -notmatch '(?s)html\.codex-dream-skin:not\(:has\(aside\.app-shell-left-panel\)\).*?#codex-dream-background-video.*?display:\s*none\s*!important' -or
     $runtimeJs -notmatch 'classList\.add\("is-route-pending"\)' -or
     $runtimeJs -notmatch 'classList\.add\("dream-video-route-pending"\)' -or
     $runtimeJs -notmatch 'sceneIsKnown' -or
@@ -274,10 +284,11 @@ if ($injectorText -notmatch 'MAX_VIDEO_BYTES\s*=\s*8\s*\*\s*1024\s*\*\s*1024' -o
     $baseCss -notmatch '(?s)dream-video-route-pending #codex-dream-background-video\.is-route-pending\s*\{[^}]*position:\s*fixed\s*!important[^}]*opacity:\s*1\s*!important' -or
     $baseCss -notmatch '(?s)dream-video-route-pending main\.main-surface\s*\{[^}]*background-color:\s*transparent\s*!important[^}]*background-image:\s*none\s*!important' -or
     $baseCss -notmatch '(?s)#codex-dream-background-video\.is-handoff-swap\s*\{[^}]*transition:\s*none\s*!important' -or
+    $baseCss -match '(?s)main\.main-surface:is\(\.dream-home-shell,\s*\.dream-conversation-shell\)\s*>\s*:not\([^}]*\)\s*\{[^}]*z-index:' -or
     $baseCss -notmatch '#codex-dream-background-video\.is-covering' -or
     $baseCss -notmatch 'main\.main-surface:has\(> \.codex-dream-background-video-layer\.is-outgoing\)' -or
     $baseCss -notmatch '(?s)\.codex-dream-background-video-layer\.is-outgoing\s*\{[^}]*opacity:\s*1\s*!important') {
-  throw 'Scene-specific background videos must stay local, bounded, tier-aware, visibility-aware, reduced-motion safe, and non-interactive.'
+  throw 'Scene-specific background videos must stay local, bounded, tier-aware, visibility-aware, reduced-motion safe, authentication-safe, toolbar-safe, and non-interactive.'
 }
 if ($injectorText -notmatch 'const\s+homeVisualAnchor\s*=\s*home\?\.querySelector\(''\.dream-home-hero''\)' -or
     $injectorText -match 'hero:\s*box\(home\?\.firstElementChild') {
@@ -379,7 +390,7 @@ if ($runtimeJs -notmatch 'codex-dream-home-overlay' -or
     $baseCss -notmatch '#codex-dream-home-overlay') {
   throw 'The reusable home overlay, full-width stage, and project-picker hooks must remain present.'
 }
-if ($templateCss -notmatch '(?s)main\.main-surface\.dream-home-shell.*?background-image:\s*var\(--dream-art\)\s*!important' -or
+if ($templateCss -notmatch '(?s)body:has\(main\.dream-home-shell\)\s*\{[^}]*background-image:\s*var\(--dream-art\)\s*!important' -or
     $templateCss -notmatch '(?s)\.dream-home \.dream-home-hero\s*\{[^}]*border-radius:\s*0\s*!important[^}]*background:\s*transparent\s*!important') {
   throw 'New themes must paint home artwork on the full home shell and keep the native hero free of inset photo-frame styling.'
 }
