@@ -23,6 +23,10 @@
 - Four action blocks appear, align, and retain icons.
 - Clicking an action fills the native composer without submitting.
 - Sidebar, menus, project selection, and window controls remain usable.
+- Collapse and expand the native sidebar with both its toolbar button and `Ctrl+B`.
+  The active theme, scene background/video, motion tier, content styling, and
+  composer must remain active while collapsed; the switcher must return when the
+  sidebar expands without resetting the selected theme.
 - On the first home render, only the themed four-action grid is visible; Codex's native suggestion cards never peek out behind it.
 - When the Fast-mode promotion is present, it remains clickable and dismissible without moving the project selector or composer below the viewport.
 - Expand and collapse a long project list; the resulting show-more/show-less control remains readable over the sidebar artwork.
@@ -94,6 +98,8 @@
   scene decodes, the outgoing moving scene remains visible and the static
   poster never flashes back, even if Codex replaces `main.main-surface`.
 - Reload or open a second task and confirm reinjection.
+- Start or verify the theme while the sidebar is already collapsed; the semantic
+  shell header must pass verification without weakening signed-out cleanup.
 - Restore and confirm the native UI returns.
 - Re-run after a Codex update.
 - Record source and output dimensions, encoded size, normal viewport, largest tested viewport, and any accepted quality exception in `design-qa.md`.

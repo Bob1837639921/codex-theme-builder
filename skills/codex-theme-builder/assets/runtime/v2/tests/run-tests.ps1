@@ -264,9 +264,15 @@ if ($injectorText -notmatch 'MAX_VIDEO_BYTES\s*=\s*8\s*\*\s*1024\s*\*\s*1024' -o
     $runtimeJs -notmatch 'suspendThemeForNativeSurface' -or
     $runtimeJs -notmatch 'themeSuspendedForNativeSurface' -or
     $runtimeJs -notmatch 'aside\.app-shell-left-panel' -or
+    $runtimeJs -notmatch 'hasNativeShellHeader' -or
     $runtimeJs -notmatch 'if\s*\(!isNativeAppSurfaceAvailable\(shell\)\)\s*\{\s*disposeBackgroundVideo\(true\)' -or
-    $runtimeJs -notmatch 'if\s*\(!isNativeAppSurfaceAvailable\(shellMain,\s*sidebar\)\)\s*\{\s*suspendThemeForNativeSurface\(\)' -or
-    $baseCss -notmatch '(?s)html\.codex-dream-skin:not\(:has\(aside\.app-shell-left-panel\)\).*?#codex-dream-background-video.*?display:\s*none\s*!important' -or
+    $runtimeJs -notmatch 'if\s*\(!isNativeAppSurfaceAvailable\(shellMain\)\)\s*\{\s*suspendThemeForNativeSurface\(\)' -or
+    $runtimeJs -match 'isNativeAppSurfaceAvailable\(shellMain,\s*sidebar\)' -or
+    $baseCss -notmatch '(?s)html\.codex-dream-skin:not\(:has\(main > header \[data-testid="app-shell-header-context-menu-surface"\]\)\).*?#codex-dream-background-video.*?display:\s*none\s*!important' -or
+    $injectorText -notmatch 'markers\.shell\s*&&\s*markers\.header\s*&&' -or
+    $injectorText -match 'markers\.shell\s*&&\s*markers\.sidebar\s*&&' -or
+    $injectorText -notmatch '!result\.sidebar\s*&&\s*!result\.switcherPresent\s*&&\s*result\.themeCardCount\s*===\s*0' -or
+    $injectorText -match 'Boolean\(result\.composer\)\s*&&\s*Boolean\(result\.sidebar\)' -or
     $runtimeJs -notmatch 'classList\.add\("is-route-pending"\)' -or
     $runtimeJs -notmatch 'classList\.add\("dream-video-route-pending"\)' -or
     $runtimeJs -notmatch 'sceneIsKnown' -or

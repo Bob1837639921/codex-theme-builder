@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, "..");
-const SKIN_VERSION = "2.2.6-theme-library";
+const SKIN_VERSION = "2.2.7-sidebar-collapse";
 const MAX_ART_BYTES = 8 * 1024 * 1024;
 const MAX_VIDEO_BYTES = 8 * 1024 * 1024;
 const LOOPBACK_HOSTS = new Set(["127.0.0.1", "localhost", "[::1]", "::1"]);
@@ -539,19 +539,18 @@ async function loadPayload(themeDir) {
 
 async function probeSession(session) {
   return session.evaluate(`(() => {
-    const shell = document.querySelector('main.main-surface') ||
-      [...document.querySelectorAll('main')].find((candidate) =>
-        candidate.querySelector(':scope > header [data-testid="app-shell-header-context-menu-surface"]')) ||
-      null;
+    const shell = [...document.querySelectorAll('main')].find((candidate) =>
+      candidate.querySelector(':scope > header [data-testid="app-shell-header-context-menu-surface"]')) || null;
     const markers = {
       shell: Boolean(shell),
+      header: Boolean(shell?.querySelector(':scope > header [data-testid="app-shell-header-context-menu-surface"]')),
       sidebar: Boolean(document.querySelector('aside.app-shell-left-panel')),
       composer: Boolean(document.querySelector('.composer-surface-chrome')),
       main: Boolean(document.querySelector('[role="main"]')),
     };
     return {
       markers,
-      codex: location.protocol === 'app:' && markers.shell && markers.sidebar && (markers.composer || markers.main),
+      codex: location.protocol === 'app:' && markers.shell && markers.header && (markers.composer || markers.main),
     };
   })()`);
 }
@@ -811,9 +810,11 @@ async function verifySession(session) {
     result.pass = result.installed && result.version === result.expectedVersion &&
       result.stylePresent && result.chromePresent &&
       result.chromePointerEvents === 'none' && result.toolbarButtonsInteractive &&
-      Boolean(result.composer) && Boolean(result.sidebar) &&
-      ((result.themeCount < 2 && !result.switcherPresent && result.themeCardCount === 0) ||
-        (result.themeCount >= 2 && result.switcherPresent && result.themeCardCount === result.themeCount)) &&
+      Boolean(result.shell) && Boolean(result.composer) &&
+      ((!result.sidebar && !result.switcherPresent && result.themeCardCount === 0) ||
+        (Boolean(result.sidebar) &&
+          ((result.themeCount < 2 && !result.switcherPresent && result.themeCardCount === 0) ||
+            (result.themeCount >= 2 && result.switcherPresent && result.themeCardCount === result.themeCount)))) &&
       Boolean(result.activeThemeId) &&
       (!result.backgroundVideo || (result.backgroundVideo.ready &&
         result.backgroundVideo.readyState >= 3 &&

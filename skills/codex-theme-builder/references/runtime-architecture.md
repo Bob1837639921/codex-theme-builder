@@ -114,9 +114,11 @@ stacked, and verify native toolbar buttons with `elementFromPoint`.
 
 ## Native authentication boundary
 
-Theme visuals may run only while both `main.main-surface` and
-`aside.app-shell-left-panel` are mounted. Signed-out, authentication, onboarding,
-and account-recovery windows do not expose that native application shell.
+Theme visuals may run only while the semantic main shell and its direct native
+header anchor (`data-testid="app-shell-header-context-menu-surface"`) are mounted.
+The sidebar is optional because Codex removes `aside.app-shell-left-panel` from
+the DOM when the user collapses it. Signed-out, authentication, onboarding, and
+account-recovery windows do not expose the semantic shell header anchor.
 
 - When the shell is absent, remove the theme root class, route markers, theme
   chrome, switcher, motion layer, handoff shield, and all background videos.
@@ -132,12 +134,18 @@ and account-recovery windows do not expose that native application shell.
 
 Codex may replace the historical `main.main-surface` and `header.app-header-tint`
 classes with generated CSS-module names. Locate the authenticated main shell by
-the simultaneous presence of `aside.app-shell-left-panel` and the direct header's
-`data-testid="app-shell-header-context-menu-surface"` anchor. Add the historical
+the direct header's `data-testid="app-shell-header-context-menu-surface"` anchor;
+do not require the optional sidebar. Add the historical
 classes only as reversible runtime compatibility markers, record marker ownership
 in `data-dream-compat-*`, and remove only runtime-owned markers during cleanup.
 The injector probe and page runtime must share this semantic fallback so startup
 verification cannot reject a renderer that the runtime can safely theme.
+
+Collapsing or expanding the native sidebar is an authenticated layout transition,
+not a suspension boundary. Preserve the active theme, route markers, static/video
+background, motion level, and selected theme while the sidebar is absent. Remove
+the sidebar-owned switcher naturally with the sidebar and recreate it when the
+sidebar returns without resetting the rest of the themed shell.
 
 ## Change placement
 

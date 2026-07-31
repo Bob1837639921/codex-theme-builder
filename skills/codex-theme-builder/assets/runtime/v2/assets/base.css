@@ -24,9 +24,9 @@ html.codex-dream-skin [role="dialog"] {
 }
 
 /* Authentication, onboarding, and signed-out windows do not mount the native
-   Codex sidebar. Hide every injected visual immediately while the runtime
-   removes the theme class and releases video resources. */
-html.codex-dream-skin:not(:has(aside.app-shell-left-panel))
+   Codex shell header anchor. The sidebar is deliberately not part of this gate:
+   Codex removes it from the DOM when the user collapses it. */
+html.codex-dream-skin:not(:has(main > header [data-testid="app-shell-header-context-menu-surface"]))
   :is(
     #codex-dream-skin-chrome,
     #codex-dream-home-overlay,

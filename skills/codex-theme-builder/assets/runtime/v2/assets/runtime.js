@@ -13,7 +13,7 @@
   const STORAGE_KEY = "codex-dream-theme-active";
   const MOTION_STORAGE_KEY = "codex-dream-motion-level";
   const MOTION_LEVELS = ["off", "low", "high"];
-  const RUNTIME_VERSION = "2.2.6-theme-library";
+  const RUNTIME_VERSION = "2.2.7-sidebar-collapse";
   const THEME_SEARCH_THRESHOLD = 6;
   const MUTATION_COALESCE_MS = 96;
   const actions = [
@@ -54,14 +54,14 @@
   let activeBackgroundVideoElement = null;
   let lastBackgroundVideoShellRect = null;
   let themeSuspendedForNativeSurface = false;
-  const locateNativeShellMain = () => document.querySelector("main.main-surface") ||
-    [...document.querySelectorAll("main")].find((candidate) =>
-      candidate.querySelector(':scope > header [data-testid="app-shell-header-context-menu-surface"]')) ||
-    null;
+  const hasNativeShellHeader = (candidate) => Boolean(candidate?.querySelector(
+    ':scope > header [data-testid="app-shell-header-context-menu-surface"]',
+  ));
+  const locateNativeShellMain = () =>
+    [...document.querySelectorAll("main")].find(hasNativeShellHeader) || null;
   const ensureCompatibilityMarkers = () => {
     const shell = locateNativeShellMain();
-    const sidebar = document.querySelector("aside.app-shell-left-panel");
-    if (!shell || !sidebar) return null;
+    if (!shell) return null;
     if (!shell.classList.contains("main-surface")) {
       shell.classList.add("main-surface");
       shell.dataset.dreamCompatMainSurface = "true";
@@ -85,8 +85,7 @@
   };
   const isNativeAppSurfaceAvailable = (
     shell = locateNativeShellMain(),
-    sidebar = document.querySelector("aside.app-shell-left-panel"),
-  ) => Boolean(shell && sidebar);
+  ) => Boolean(shell && hasNativeShellHeader(shell));
   const dataUrlToObjectUrl = (dataUrl) => {
     const comma = dataUrl.indexOf(",");
     const binary = atob(dataUrl.slice(comma + 1));
@@ -539,8 +538,7 @@
   const protectDetachedBackgroundVideo = () => {
     const video = activeBackgroundVideoElement;
     const rect = lastBackgroundVideoShellRect;
-    if (!document.querySelector("aside.app-shell-left-panel") ||
-        !video || video.isConnected || !rect || !document.body ||
+    if (!isNativeAppSurfaceAvailable() || !video || video.isConnected || !rect || !document.body ||
         !video.classList.contains("is-covering")) {
       return false;
     }
@@ -1062,7 +1060,7 @@
     if (!root) return;
     const shellMain = ensureCompatibilityMarkers();
     const sidebar = document.querySelector("aside.app-shell-left-panel");
-    if (!isNativeAppSurfaceAvailable(shellMain, sidebar)) {
+    if (!isNativeAppSurfaceAvailable(shellMain)) {
       suspendThemeForNativeSurface();
       return;
     }
