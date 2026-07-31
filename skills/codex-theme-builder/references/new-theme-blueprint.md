@@ -20,12 +20,12 @@ to that theme.
 | File or field | Purpose | Required action for a new theme |
 |---|---|---|
 | `theme.json` | Identity, asset names, colors | Set a unique ID, name, subtitle, four colors, and local filenames. |
-| Home image | Landing artwork | Compose a wide crop with a calm title and four-action safe zone. |
-| Conversation image | Task background | Compose a tall crop with low contrast behind text, diffs, code, and composer. |
+| Home image | Landing artwork | Compose a wide crop with a calm title and four-action safe zone. When a character has meaningful outfit variants, choose a home-specific costume and pose instead of reusing the conversation figure. |
+| Conversation image | Task background | Compose a tall crop with low contrast behind text, diffs, code, and composer. Use an independently authored pose/costume when the direction calls for visible page-to-page differentiation. |
 | Usage image | Required usage-details background | Create a lightweight portrait crop at or below 300 KB, with edge decoration and a calm central reading zone. Never reuse the home or conversation artwork. |
 | Sidebar image | Optional sidebar texture | Keep navigation and task labels readable in normal, hover, and selected states. |
 | Four action icons | Home actions | Match the new direction while retaining the four native action meanings. |
-| Selected marker | Optional current-task accent | Attach it before the label, not before the row; keep it stable when pin/archive actions appear. |
+| Selected marker | Optional current-task accent | Either attach a compact motif before the label or use a stretch-safe, low-detail strip as the complete selected-row background. Keep the text center clear, preserve native pin/archive actions, and disable transitions that can flash during row replacement. |
 | Composer edge | Optional transparent foreground art | Anchor to a corner, keep its center transparent, and reserve native controls. |
 | `theme.css` | Theme-specific presentation | Scope every rule under the theme root and style only mapped surfaces. |
 | `theme-catalog.json` | In-app availability | Add the new theme ID when it should appear in live switching. Keep every sibling theme self-contained. |
@@ -120,6 +120,12 @@ disabled. Codex may replace the row while mounting hover actions; the native
 ARIA state is present on the replacement before the runtime marker is restored.
 Using both selectors prevents a one-frame missing border without weakening the
 runtime-selected label artwork.
+
+If the design uses a complete ornamental strip rather than a small leading
+marker, apply `var(--dream-selected-leaf)` to the selected row itself with a
+stretch-safe center and keep the label free of a second copy. The strip must be
+close to its rendered size, must leave the central text area low-detail, and
+must not move, pulse, or arrive after the selected border.
 
 The shared runtime removes `.dream-selected-thread` and
 `.dream-selected-thread-label` whenever the New Task home route is active.

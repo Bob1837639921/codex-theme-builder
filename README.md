@@ -2,7 +2,7 @@
 
 一个可被 Codex 自动调用的 Codex Desktop 主题设计、开发、预览、验证与打包 Skill。
 
-它不绑定某一种视觉风格。你可以给 Codex 一段文字需求、截图、设计稿或已有主题，Codex 会完成视觉方案、实现映射、主题开发、实时预览、视觉修正和最终打包。仓库内附带五套示例主题，并提供可扩展主题目录的侧栏切换器；新增主题只需遵循统一主题包结构并加入目录。
+它不绑定某一种视觉风格。你可以给 Codex 一段文字需求、截图、设计稿或已有主题，Codex 会完成视觉方案、实现映射、主题开发、实时预览、视觉修正和最终打包。仓库内附带六套示例主题，并提供可扩展主题目录的侧栏切换器；新增主题只需遵循统一主题包结构并加入目录。
 
 <table>
   <tr>
@@ -35,7 +35,16 @@
   </tr>
 </table>
 
-> 五张图均为当前版本的真实主题首页，并经过隐私安全裁切与独立 WebP 压缩；不包含侧栏、账户、项目或对话内容，也不会让 README 加载完整运行时原图。
+<table>
+  <tr>
+    <td><img src="docs/images/frostleaf-illusionist-preview.webp" alt="翡翠寒森主题首页" width="960" height="540" loading="lazy"></td>
+  </tr>
+  <tr>
+    <td align="center"><strong>翡翠寒森</strong> · 翡翠霜林、双服装场景、晶叶选中条与独立用量庭院</td>
+  </tr>
+</table>
+
+> 六张图均为当前版本的主题视觉，并经过隐私安全裁切与独立 WebP 压缩；不包含账户、项目或真实对话内容，也不会让 README 加载完整运行时原图。
 
 [查看完整主题与新增功能图鉴](docs/themes-and-features.md)
 
@@ -214,7 +223,7 @@ powershell -ExecutionPolicy Bypass -File `
 │  ├─ images/                           # 经过体积约束的隐私安全 WebP 展示图
 │  ├─ theme-development-architecture.md # 新主题的分层、界面契约和交付流程
 │  ├─ runtime-performance.md            # 保留效果前提下的运行时性能策略
-│  └─ themes-and-features.md            # 五套主题与界面能力图鉴
+│  └─ themes-and-features.md            # 六套主题与界面能力图鉴
 ├─ scripts/
 │  ├─ install-skill.ps1
 │  └─ validate-repository.ps1
@@ -251,7 +260,8 @@ powershell -ExecutionPolicy Bypass -File `
          ├─ frost-sword-immortal/       # 雪魄剑仙示例主题
          ├─ sunken-opera/               # 沉歌剧院：深色连续全局画布
          ├─ tidal-hymn/                 # 潮汐圣歌：明亮连续全局画布
-         └─ luminous-spirit-garden/     # 萤梦花庭：月白灵界花庭与紫晶引魂灯
+         ├─ luminous-spirit-garden/     # 萤梦花庭：月白灵界花庭与紫晶引魂灯
+         └─ frostleaf-illusionist/      # 翡翠寒森：翡翠霜林与晶叶玻璃界面
 ```
 
 Skill 的自动工作流、主题格式和 QA 标准分别位于：

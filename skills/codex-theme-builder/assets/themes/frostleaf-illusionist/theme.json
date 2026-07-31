@@ -1,0 +1,23 @@
+{
+    "schemaVersion":  1,
+    "id":  "frostleaf-illusionist",
+    "name":  "翡翠寒森",
+    "subtitle":  "JADE FROST FOREST · CODEX",
+    "image":  "home.webp",
+    "conversationImage":  "conversation.webp",
+    "sidebarImage":  "sidebar.webp",
+    "usageImage":  "usage-background.webp",
+    "selectedLeaf":  "selected-marker.webp",
+    "icons":  {
+                  "build":  "icon-build.svg",
+                  "analyze":  "icon-analyze.svg",
+                  "automate":  "icon-automate.svg",
+                  "debug":  "icon-debug.svg"
+              },
+    "colors":  {
+                   "accent":  "#57C7BE",
+                   "accentAlt":  "#92D8C8",
+                   "surface":  "#062E2D",
+                   "text":  "#EDF9F5"
+               }
+}
