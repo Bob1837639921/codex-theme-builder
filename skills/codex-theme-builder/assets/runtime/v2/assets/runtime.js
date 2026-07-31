@@ -33,6 +33,7 @@
   previous?.removeBackgroundVideoListeners?.();
   previous?.disposeVideoHandoffShield?.();
   previous?.restoreSidebarControls?.();
+  previous?.restoreCompatibilityMarkers?.();
   document.getElementById(SWITCHER_ID)?.remove();
   document.getElementById(MOTION_LAYER_ID)?.remove();
   document.getElementById(VIDEO_HANDOFF_SHIELD_ID)?.remove();
@@ -53,8 +54,37 @@
   let activeBackgroundVideoElement = null;
   let lastBackgroundVideoShellRect = null;
   let themeSuspendedForNativeSurface = false;
+  const locateNativeShellMain = () => document.querySelector("main.main-surface") ||
+    [...document.querySelectorAll("main")].find((candidate) =>
+      candidate.querySelector(':scope > header [data-testid="app-shell-header-context-menu-surface"]')) ||
+    null;
+  const ensureCompatibilityMarkers = () => {
+    const shell = locateNativeShellMain();
+    const sidebar = document.querySelector("aside.app-shell-left-panel");
+    if (!shell || !sidebar) return null;
+    if (!shell.classList.contains("main-surface")) {
+      shell.classList.add("main-surface");
+      shell.dataset.dreamCompatMainSurface = "true";
+    }
+    const header = shell.querySelector(":scope > header");
+    if (header && !header.classList.contains("app-header-tint")) {
+      header.classList.add("app-header-tint");
+      header.dataset.dreamCompatHeaderTint = "true";
+    }
+    return shell;
+  };
+  const restoreCompatibilityMarkers = () => {
+    document.querySelectorAll('[data-dream-compat-main-surface="true"]').forEach((node) => {
+      node.classList.remove("main-surface");
+      delete node.dataset.dreamCompatMainSurface;
+    });
+    document.querySelectorAll('[data-dream-compat-header-tint="true"]').forEach((node) => {
+      node.classList.remove("app-header-tint");
+      delete node.dataset.dreamCompatHeaderTint;
+    });
+  };
   const isNativeAppSurfaceAvailable = (
-    shell = document.querySelector("main.main-surface"),
+    shell = locateNativeShellMain(),
     sidebar = document.querySelector("aside.app-shell-left-panel"),
   ) => Boolean(shell && sidebar);
   const dataUrlToObjectUrl = (dataUrl) => {
@@ -109,6 +139,7 @@
     progressScanRequested: true,
     outputScanRequested: true,
     usagePanel: document.querySelector(".dream-usage-panel"),
+    queuedMessageList: document.querySelector(".dream-queued-message-list"),
   };
   const syncMarker = (key, node, className) => {
     const previousNode = markerState[key];
@@ -160,6 +191,8 @@
     document.querySelectorAll(".dream-file-changes-summary").forEach((node) => node.classList.remove("dream-file-changes-summary"));
     document.querySelectorAll(".dream-output-panel").forEach((node) => node.classList.remove("dream-output-panel"));
     document.querySelectorAll(".dream-usage-panel").forEach((node) => node.classList.remove("dream-usage-panel"));
+    document.querySelectorAll(".dream-queued-message-list").forEach((node) => node.classList.remove("dream-queued-message-list"));
+    detailState.queuedMessageList = null;
     restoreSidebarControls();
   };
 
@@ -170,6 +203,25 @@
       if (!diffCards.has(node)) node.classList.remove("dream-file-changes-summary");
     });
     diffCards.forEach((node) => node.classList.add("dream-file-changes-summary"));
+
+    /* Queued follow-up prompts are rendered above the composer as a native
+       vertical-scroll-fade-mask list. Mark only the language-independent
+       max-height variant owned by QueuedMessageList; its action labels are
+       localized and therefore unsuitable as the primary selector. */
+    const conversationShell = document.querySelector("main.dream-conversation-shell");
+    const queuedMessageList = conversationShell ?
+      [...conversationShell.querySelectorAll(".vertical-scroll-fade-mask.hide-scrollbar")].find((node) =>
+        node.classList.contains("max-h-[30dvh]") &&
+        node.querySelector("button") &&
+        node.getBoundingClientRect().height > 0) || null : null;
+    if (detailState.queuedMessageList && detailState.queuedMessageList !== queuedMessageList) {
+      detailState.queuedMessageList.classList.remove("dream-queued-message-list");
+    }
+    document.querySelectorAll(".dream-queued-message-list").forEach((node) => {
+      if (node !== queuedMessageList) node.classList.remove("dream-queued-message-list");
+    });
+    queuedMessageList?.classList.add("dream-queued-message-list");
+    detailState.queuedMessageList = queuedMessageList;
 
     const progressPattern = /\u7b2c\s*\d+\s*\/\s*\d+\s*\u6b65|\d+\s*\u4e2a?\u6587\u4ef6\u5df2\u66f4/;
     let progress = document.querySelector(".dream-progress-pill");
@@ -233,8 +285,12 @@
         let selected = detailState.selectedThread;
         const cachedTitle = (detailState.selectedLabel?.textContent || "").trim();
         const taskHeaderText = (document.querySelector("main.main-surface > header.app-header-tint")?.textContent || "").trim();
+        const nativeCurrentRow = sidebar.querySelector(
+          '[aria-current="page"].sidebar-item, [aria-selected="true"].sidebar-item'
+        );
         const cachedSelectionIsCurrent = selected?.isConnected && sidebar.contains(selected) &&
-          (!cachedTitle || !taskHeaderText || taskHeaderText.includes(cachedTitle));
+          (!nativeCurrentRow || nativeCurrentRow === selected) &&
+          (!cachedTitle || !taskHeaderText || taskHeaderText === cachedTitle);
         if (!cachedSelectionIsCurrent) {
         const matchingTitleLabel = taskHeaderText ? [...sidebar.querySelectorAll("span, p, div")].filter((node) => {
           if (node.querySelector("button") || node.children.length > 0) return false;
@@ -251,7 +307,7 @@
         }
         if (matchingTitleRow === sidebar) matchingTitleRow = null;
 
-        selected = matchingTitleRow || [...sidebar.querySelectorAll(
+        selected = nativeCurrentRow || matchingTitleRow || [...sidebar.querySelectorAll(
           '[aria-current="page"], [aria-selected="true"], [data-state="active"], [class~="bg-token-list-hover-background"]'
         )].filter((node) => {
           const rect = node.getBoundingClientRect();
@@ -1004,7 +1060,7 @@
     if (window.__CODEX_DREAM_SKIN_DISABLED__) return;
     const root = document.documentElement;
     if (!root) return;
-    const shellMain = document.querySelector("main.main-surface");
+    const shellMain = ensureCompatibilityMarkers();
     const sidebar = document.querySelector("aside.app-shell-left-panel");
     if (!isNativeAppSurfaceAvailable(shellMain, sidebar)) {
       suspendThemeForNativeSurface();
@@ -1225,6 +1281,7 @@
     document.querySelectorAll(".dream-conversation").forEach((node) => node.classList.remove("dream-conversation"));
     document.querySelectorAll(".dream-home-shell").forEach((node) => node.classList.remove("dream-home-shell"));
     document.querySelectorAll(".dream-conversation-shell").forEach((node) => node.classList.remove("dream-conversation-shell"));
+    restoreCompatibilityMarkers();
     document.getElementById(STYLE_ID)?.remove();
     document.getElementById(CHROME_ID)?.remove();
     document.getElementById(ACTIONS_ID)?.remove();
@@ -1332,6 +1389,7 @@
     removeBackgroundVideoListeners,
     disposeVideoHandoffShield,
     restoreSidebarControls,
+    restoreCompatibilityMarkers,
     get activeThemeId() { return activeTheme.id; },
     get activeMotionLevel() { return activeMotionLevel; },
     themeCount: themeCatalog.length,

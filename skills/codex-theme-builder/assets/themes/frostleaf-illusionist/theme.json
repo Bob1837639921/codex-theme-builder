@@ -7,6 +7,9 @@
     "conversationImage":  "conversation.webp",
     "sidebarImage":  "sidebar.webp",
     "usageImage":  "usage-background.webp",
+    "homeVideo":  "home-motion.mp4",
+    "conversationSoftVideo":  "conversation-motion-soft.mp4",
+    "conversationVideo":  "conversation-motion.mp4",
     "selectedLeaf":  "selected-marker.webp",
     "icons":  {
                   "build":  "icon-build.svg",

@@ -31,6 +31,9 @@ html.codex-dream-skin body {
 
 html.codex-dream-skin body:has(main.dream-home-shell) {
   background-image: linear-gradient(180deg, #eef4f8 0, #eef4f8 36px, transparent 36px), var(--dream-art) !important;
+  background-position: center, center !important;
+  background-size: 100% 100%, cover !important;
+  background-attachment: fixed, fixed !important;
 }
 
 html.codex-dream-skin main.main-surface,
@@ -47,10 +50,10 @@ html.codex-dream-skin main.main-surface {
 
 html.codex-dream-skin main.main-surface > header.app-header-tint {
   color: var(--dream-ink) !important;
-  background: rgba(4, 29, 29, .92) !important;
-  border-bottom: 1px solid var(--dream-line) !important;
-  box-shadow: none !important;
-  backdrop-filter: blur(10px) !important;
+  background: linear-gradient(90deg, rgba(3, 26, 26, .58), rgba(4, 35, 34, .46)) !important;
+  border-bottom: 1px solid rgba(145, 221, 208, .18) !important;
+  box-shadow: inset 0 1px rgba(237, 249, 245, .035) !important;
+  backdrop-filter: blur(14px) saturate(1.12) !important;
 }
 
 html.codex-dream-skin main.main-surface > header.app-header-tint * {
@@ -126,7 +129,7 @@ html.codex-dream-skin aside.app-shell-left-panel .dream-selected-thread button:f
 
 html.codex-dream-skin main.main-surface.dream-conversation-shell,
 html.codex-dream-skin [role="main"].dream-conversation {
-  background-color: rgba(4, 31, 30, .14) !important;
+  background-color: rgba(3, 27, 27, .16) !important;
   background-image: none !important;
 }
 
@@ -380,6 +383,51 @@ html.codex-dream-skin .composer-surface-chrome [class*="text-orange"] * {
 
 html.codex-dream-skin .composer-surface-chrome .ProseMirror p.is-editor-empty:first-child::before {
   color: #91aeba !important;
+}
+
+/* A queued follow-up is a native light composer surface. Give the entire
+   guide row its own dark jade glass and explicit descendants so inherited
+   near-white theme ink never lands on a pale blue background. */
+html.codex-dream-skin main.dream-conversation-shell .dream-queued-message-list {
+  color: #eaf7fc !important;
+  background: linear-gradient(105deg, rgba(3, 35, 38, .96), rgba(7, 61, 60, .91)) !important;
+  border: 1px solid rgba(126, 224, 211, .48) !important;
+  border-radius: 15px !important;
+  box-shadow: inset 0 1px rgba(230, 255, 250, .10), 0 10px 28px rgba(0, 19, 22, .30) !important;
+  backdrop-filter: blur(14px) saturate(1.12) !important;
+}
+
+html.codex-dream-skin main.dream-conversation-shell .dream-queued-message-list
+  [class*="bg-token-main-surface"],
+html.codex-dream-skin main.dream-conversation-shell .dream-queued-message-list
+  [class*="bg-token-input"] {
+  background: transparent !important;
+}
+
+html.codex-dream-skin main.dream-conversation-shell .dream-queued-message-list
+  :is(div, p, span, strong, small, button, svg) {
+  color: #eaf7fc !important;
+  -webkit-text-fill-color: #eaf7fc !important;
+  text-shadow: none !important;
+}
+
+html.codex-dream-skin main.dream-conversation-shell .dream-queued-message-list
+  :is([class*="text-token-text-secondary"], [class*="text-token-description-foreground"]) {
+  color: #c6e1e8 !important;
+  -webkit-text-fill-color: #c6e1e8 !important;
+}
+
+html.codex-dream-skin main.dream-conversation-shell .dream-queued-message-list
+  button:not(:disabled):hover {
+  color: #a8fff1 !important;
+  -webkit-text-fill-color: #a8fff1 !important;
+  background-color: rgba(105, 220, 203, .13) !important;
+}
+
+html.codex-dream-skin main.dream-conversation-shell .dream-queued-message-list
+  .composer-attachment-surface {
+  border-color: rgba(149, 230, 218, .48) !important;
+  box-shadow: 0 2px 8px rgba(0, 13, 16, .28) !important;
 }
 
 html.codex-dream-skin div:has(> .composer-surface-chrome)::after {

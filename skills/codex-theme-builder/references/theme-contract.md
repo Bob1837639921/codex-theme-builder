@@ -101,6 +101,7 @@ Start every override from `:root.codex-dream-skin` or one of the runtime classes
 - `#codex-dream-skin-actions`
 - `.dream-progress-pill` and `.dream-progress-indicator`
 - `.dream-file-changes-summary` for the complete native file-change card, including its `.group\/turn-diff-header`
+- `.dream-queued-message-list` for queued follow-up guidance above the composer
 - `.dream-selected-thread` and `.dream-selected-thread-label`
 - `.dream-output-panel`
 - `.dream-usage-panel`
@@ -112,6 +113,8 @@ Define `--dream-light-overlay-ink` independently from `--dream-ink`. Codex's sid
 The full usage-details dialog is a required, separate surface from the compact quota warning. Every theme must explicitly define `--dream-usage-ink`, `--dream-usage-muted`, `--dream-usage-accent`, `--dream-usage-overlay`, and `--dream-usage-border`. Theme it through `.dream-usage-panel`; the reading overlay must preserve contrast for the title, reset dates, availability chips, progress indicator, close control, disabled states, and actions.
 
 Use detail marker classes only when their native surfaces are present. Scope searches to the composer, sidebar, or output region, and retain connected markers instead of rescanning the entire conversation on every mutation.
+
+Queued follow-up guidance is a separate native surface above the composer. Theme it through `.dream-queued-message-list`; explicitly coordinate its background, primary and secondary copy, action icons, hover state, and attachment preview border. Do not rely on the composer foreground alone because Codex may render this queue as a light input surface even inside a dark conversation theme.
 
 The neutral scaffold already treats `.dream-file-changes-summary` and portaled `[role="dialog"]` content as mandatory semantic surfaces. Preserve those blocks when creating a theme. Override their tokens or presentation for the visual direction; do not remove the complete-card styling, explicit descendant foregrounds, muted text, links, disabled states, or green/red diff semantics. In dark themes, setting only the outer `color` is insufficient because Codex utility classes may assign nested foreground and WebKit text-fill values.
 

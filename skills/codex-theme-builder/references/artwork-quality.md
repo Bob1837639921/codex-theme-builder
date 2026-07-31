@@ -32,6 +32,33 @@ Read this reference before creating, replacing, enlarging, or compressing home a
 - Do not add JavaScript upscaling, canvas redraw loops, continuous CSS filters, animated full-screen layers, or GPU-heavy recovery effects.
 - At runtime, load the static encoded image and use ordinary CSS background compositing.
 
+## Optimize scene video without undoing approved motion
+
+- Inspect every declared MP4 with `ffprobe` before changing it. Record codec,
+  dimensions, pixel format, average frame rate, frame count, duration, payload,
+  bitrate, and whether an audio stream is present.
+- Treat an explicitly approved frame rate as part of the artwork. Do not
+  interpolate an already optimized 24 fps scene merely to advertise a larger
+  number. Preserve frame rate, frame count, duration, direction, and loop timing
+  during resolution enhancement.
+- For the full motion tier, prefer 2560x1440 H.264 when a 1280x720 source is
+  visibly soft on a large display. Use offline, content-preserving
+  super-resolution such as `RealESRGAN_x2plus`; do not diffuse or redraw faces,
+  hands, costumes, instruments, weapons, silhouettes, or scene composition.
+- Keep the soft tier materially cheaper than the full tier. Prefer 1280x720 at
+  the approved frame rate, remove audio, and avoid carrying a 1440p soft clip
+  when the full clip is not more expensive.
+- Background videos must be silent. Remove accidental audio streams; when the
+  picture already passes, copy the video stream instead of re-encoding it.
+- Encode distributable clips as H.264 `yuv420p`, enable fast start, and keep each
+  declared video below the 8 MB manifest limit. Retain a high-quality
+  intermediate outside the theme directory only while visual QA is active.
+- After enhancement, verify exact frame count and duration, compare a downscaled
+  enhanced frame against the source, inspect protected subjects at several
+  timestamps, and check the loop seam. Reject over-sharpening, temporal shimmer,
+  edge halos, texture crawling, face drift, or a larger file with no visible
+  benefit.
+
 ## Verify at real scale
 
 1. Run `scripts/inspect-theme-artwork.ps1 -ThemePath <theme>` and record dimensions and encoded sizes.

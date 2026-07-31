@@ -105,6 +105,7 @@ $injectorText = Get-Content -LiteralPath $injector -Raw
 $sunkenCss = Get-Content -LiteralPath (Join-Path $Root '..\..\themes\sunken-opera\theme.css') -Raw
 $tidalCss = Get-Content -LiteralPath (Join-Path $Root '..\..\themes\tidal-hymn\theme.css') -Raw
 $luminousCss = Get-Content -LiteralPath (Join-Path $Root '..\..\themes\luminous-spirit-garden\theme.css') -Raw
+$frostleafCss = Get-Content -LiteralPath (Join-Path $Root '..\..\themes\frostleaf-illusionist\theme.css') -Raw
 $luminousTheme = Join-Path $Root '..\..\themes\luminous-spirit-garden'
 $luminousManifest = Get-Content -LiteralPath (Join-Path $luminousTheme 'theme.json') -Raw | ConvertFrom-Json
 $frostTheme = Join-Path $Root '..\..\themes\frost-sword-immortal'
@@ -144,6 +145,8 @@ if ($runtimeJs -notmatch 'codex-dream-theme-switcher' -or
     $baseCss -notmatch '(?s)\.dream-motion-option\.is-selected\s*\{[^}]*background:\s*#ffffff\s*!important' -or
     $baseCss -notmatch '(?s)\.dream-theme-grid\s*\{[^}]*max-height:\s*min\(200px,\s*42vh\)[^}]*overflow-y:\s*auto' -or
     $baseCss -notmatch '(?s)\.dream-theme-current\s*\{[^}]*border-radius:\s*999px' -or
+    $baseCss -notmatch '(?s)#codex-dream-theme-switcher\s*\{[^}]*right:\s*78px' -or
+    $baseCss -notmatch '(?s)\.dream-theme-trigger\s*\{[^}]*width:\s*32px[^}]*min-width:\s*32px' -or
     $baseCss -notmatch '(?s)#codex-dream-theme-switcher \.dream-theme-panel\s*\{[^}]*-webkit-text-fill-color:\s*#26302b\s*!important' -or
     $baseCss -notmatch '(?s)#codex-dream-theme-switcher \.dream-theme-panel\s+:is\(strong,\s*span,\s*p,\s*button,\s*label,\s*input\)\s*\{[^}]*-webkit-text-fill-color:\s*currentColor\s*!important' -or
     $runtimeJs -match 'dream-theme-check' -or
@@ -294,6 +297,13 @@ if ($injectorText -notmatch 'const\s+homeVisualAnchor\s*=\s*home\?\.querySelecto
     $injectorText -match 'hero:\s*box\(home\?\.firstElementChild') {
   throw 'Injection verification must use stable runtime home markers instead of Codex DOM depth.'
 }
+if ($runtimeJs -notmatch 'locateNativeShellMain' -or
+    $runtimeJs -notmatch 'app-shell-header-context-menu-surface' -or
+    $runtimeJs -notmatch 'dreamCompatMainSurface' -or
+    $runtimeJs -notmatch 'restoreCompatibilityMarkers' -or
+    $injectorText -notmatch 'app-shell-header-context-menu-surface') {
+  throw 'Runtime and verification must recognize the CSS-module Codex main surface through a reversible semantic compatibility marker.'
+}
 if ($themeCss -notmatch '(?s)main\.dream-conversation-shell\s+\.sticky\.bottom-0\s+\[class~="bg-gradient-to-t"\]\s*\{[^}]*background-image:\s*none\s*!important') {
   throw 'Conversation composer fades must stay transparent, including the in-progress file-summary state.'
 }
@@ -332,7 +342,11 @@ if ($runtimeJs -notmatch 'markDetailSurfaces' -or
   $runtimeJs -notmatch 'detailState\.selectedThread = null' -or
   $runtimeJs -notmatch 'detailState\.selectedLabel = null' -or
   $runtimeJs -notmatch 'cachedSelectionIsCurrent' -or
-  $runtimeJs -notmatch 'taskHeaderText\.includes\(cachedTitle\)' -or
+  $runtimeJs -notmatch 'nativeCurrentRow' -or
+  $runtimeJs -notmatch 'nativeCurrentRow === selected' -or
+  $runtimeJs -notmatch 'taskHeaderText === cachedTitle' -or
+  $runtimeJs -notmatch 'selected = nativeCurrentRow \|\| matchingTitleRow' -or
+  $runtimeJs -match 'taskHeaderText\.includes\(cachedTitle\)' -or
   $runtimeJs -notmatch 'matchingTitleRow' -or
   $runtimeJs -notmatch 'attributeFilter:\s*\["aria-current",\s*"aria-selected"\]' -or
   $runtimeJs -notmatch 'MUTATION_COALESCE_MS = 96' -or
@@ -345,10 +359,17 @@ if ($runtimeJs -notmatch 'markDetailSurfaces' -or
   $runtimeJs -notmatch 'dream-file-changes-summary' -or
   $runtimeJs -notmatch 'group/turn-diff-header' -or
   $runtimeJs -notmatch 'dream-output-panel' -or
+  $runtimeJs -notmatch 'dream-queued-message-list' -or
+  $runtimeJs -notmatch 'max-h-\[30dvh\]' -or
   $runtimeJs -notmatch 'classList\?\.contains\("bg-token-dropdown-background"\)' -or
   $runtimeJs -notmatch 'outputCandidates\.find\(intersectsViewport\)' -or
   $runtimeJs -notmatch 'document\.querySelectorAll\("\.dream-output-panel"\)\.forEach') {
-  throw 'Detail-surface markers must remain scoped, stable, cleared on home, frame-coalesced, and available for theme polish.'
+  throw 'Detail-surface markers must remain scoped, stable, cleared on home, prefix-safe across task changes, frame-coalesced, and available for theme polish.'
+}
+if ($frostleafCss -notmatch '(?s)\.dream-queued-message-list\s*\{[^}]*background:.*?border:' -or
+    $frostleafCss -notmatch '(?s)\.dream-queued-message-list.*?text-token-text-secondary.*?-webkit-text-fill-color:' -or
+    $templateCss -notmatch '(?s)\.dream-queued-message-list\s*\{[^}]*background:\s*var\(--theme-solid-panel\).*?border:') {
+  throw 'Queued follow-up guidance must use a reusable marker with explicit background and descendant contrast.'
 }
 if ($themeCss -notmatch '(?s):is\(\.dream-selected-thread,\s*\[aria-current="page"\]\.sidebar-item\)\s*\{[^}]*border:.*?transition:\s*none\s*!important' -or
     $templateCss -notmatch '(?s):is\(\.dream-selected-thread,\s*\[aria-current="page"\]\.sidebar-item\)\s*\{[^}]*border:.*?transition:\s*none\s*!important') {

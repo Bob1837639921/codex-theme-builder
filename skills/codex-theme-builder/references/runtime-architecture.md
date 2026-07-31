@@ -128,6 +128,17 @@ and account-recovery windows do not expose that native application shell.
   this closes the short interval before the mutation observer runs.
 - Never classify an arbitrary signed-out `<main>` as a conversation route.
 
+## Native shell compatibility
+
+Codex may replace the historical `main.main-surface` and `header.app-header-tint`
+classes with generated CSS-module names. Locate the authenticated main shell by
+the simultaneous presence of `aside.app-shell-left-panel` and the direct header's
+`data-testid="app-shell-header-context-menu-surface"` anchor. Add the historical
+classes only as reversible runtime compatibility markers, record marker ownership
+in `data-dream-compat-*`, and remove only runtime-owned markers during cleanup.
+The injector probe and page runtime must share this semantic fallback so startup
+verification cannot reject a renderer that the runtime can safely theme.
+
 ## Change placement
 
 Before adding code, choose exactly one owner:
@@ -140,6 +151,18 @@ Before adding code, choose exactly one owner:
 - Launcher layout, copy, color, or component: `ui/launcher-ui.ps1`.
 
 Do not duplicate a rule across modules. If two modules need the same low-level behavior, move it downward into a neutral shared primitive rather than calling sideways.
+
+Selected-task marker caching must follow the native current-row state. Reuse a cached
+row only while the native `aria-current`/`aria-selected` row is unchanged and the
+normalized header title matches exactly. Prefix-related titles such as `Task` and
+`Task 2` are distinct; a substring match can leave the previous label marker and its
+decorative padding attached after navigation or a theme switch.
+
+Queued follow-up guidance uses the runtime-owned `.dream-queued-message-list`
+marker. Discovery is scoped to the conversation shell and the native
+`vertical-scroll-fade-mask` list whose language-independent `max-h-[30dvh]`
+utility identifies `QueuedMessageList`; do not depend on localized labels such as
+`Steer` or `引导`. Remove the marker immediately when the queue is emptied.
 
 ## Verification gate
 

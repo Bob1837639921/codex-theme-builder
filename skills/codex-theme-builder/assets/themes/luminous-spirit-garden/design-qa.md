@@ -35,8 +35,6 @@
 - Routes begin near the lower viewport edge and finish above the top edge; two monotonic vertical waypoints add only restrained lateral sway, so the jellyfish always reads as rising rather than sliding sideways.
 - System reduced-motion hides the entire runtime motion layer.
 
-final result: passed
-
 ## Home background video QA
 
 - User-approved source: 1280 x 720, 24 fps, 10 seconds.
@@ -60,3 +58,15 @@ final result: passed
 - Delivery-to-master comparison: average PSNR 46.98 dB and SSIM approximately 0.9904.
 - Route scoping keeps `home.webp` on the home route and reveals the video only on populated conversations at the full motion tier.
 - The superseded 720p file was replaced in place; no alternate background video remains in the theme directory.
+
+## Conversation full-tier clarity correction
+
+- The approved full-tier scene and its gold mote / petal motion were retained; it was not replaced with the soft-tier ribbon scene.
+- The original 1280 x 720, 24 fps, 240-frame master was rebuilt with the local ComfyUI `4x-UltraSharp.pth` model and bicubic-reduced to 2560 x 1440.
+- Delivery asset: `conversation-motion.mp4`, H.264/yuv420p, 24 fps, 10 seconds, 7,973,518 bytes, silent and fast-start enabled.
+- Downscaled delivery-to-master SSIM is approximately 0.9865.
+- Native-resolution crops confirmed stronger eye, hair, flower, costume, and lantern edges without visible halos or scene changes.
+- Live Codex captures at 0.5 seconds and 8.5 seconds verified both the formerly soft opening region and the later section at the actual viewport size.
+- The full tier remains separate from `conversation-motion-soft.mp4`; the latter keeps the lower-cost ribbon treatment.
+
+final result: passed

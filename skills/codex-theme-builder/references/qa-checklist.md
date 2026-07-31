@@ -39,6 +39,7 @@
 - Trigger a file change and verify no white strip appears behind the file-changes summary pill.
 - Inspect a populated file-change summary card: header, file paths, added/deleted counts, undo/review controls, hover state, and expanded rows must remain readable on one coherent themed surface.
 - Model, microphone, access mode, attachment, and submit/stop controls remain usable.
+- While a turn is running, queue a follow-up and verify its guide row background, main copy, secondary copy, attachment preview, Steer/retry action, delete/menu controls, hover states, and disabled states remain readable; emptying the queue removes the themed marker.
 - Click every visible conversation-toolbar control, including output, bottom
   panel, pinned summary, and sidebar toggles. The native content viewport must
   never be the top `elementFromPoint` result at a toolbar button center.

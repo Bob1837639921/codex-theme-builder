@@ -371,7 +371,7 @@ html.codex-dream-skin aside.app-shell-left-panel
   position: absolute;
   z-index: 2147483000;
   top: 7px;
-  right: 48px;
+  right: 78px;
   color: var(--dream-ink, #252a27);
   font-family: "Microsoft YaHei UI", system-ui, sans-serif;
 }
@@ -392,8 +392,8 @@ html.codex-dream-skin aside.app-shell-left-panel #codex-dream-theme-switcher * {
 #codex-dream-theme-switcher .dream-theme-trigger {
   display: grid;
   place-items: center;
-  width: 36px;
-  min-width: 36px;
+  width: 32px;
+  min-width: 32px;
   height: 34px;
   padding: 0;
   border: 1px solid transparent;

@@ -205,6 +205,44 @@
   -webkit-text-fill-color: var(--theme-composer-placeholder) !important;
 }
 
+/* Native queued follow-ups sit above the composer and may otherwise retain a
+   light Codex surface while inheriting dark-theme text tokens. New themes get
+   a complete, palette-driven surface by default. */
+:root.codex-dream-skin main.dream-conversation-shell .dream-queued-message-list {
+  color: var(--theme-panel-text) !important;
+  background: var(--theme-solid-panel) !important;
+  border: 1px solid var(--theme-border) !important;
+  border-radius: 16px !important;
+  box-shadow: var(--theme-shadow) !important;
+}
+
+:root.codex-dream-skin main.dream-conversation-shell .dream-queued-message-list
+  [class*="bg-token-main-surface"],
+:root.codex-dream-skin main.dream-conversation-shell .dream-queued-message-list
+  [class*="bg-token-input"] {
+  background: transparent !important;
+}
+
+:root.codex-dream-skin main.dream-conversation-shell .dream-queued-message-list
+  :is(div, p, span, strong, small, button, svg) {
+  color: var(--theme-panel-text) !important;
+  -webkit-text-fill-color: var(--theme-panel-text) !important;
+  text-shadow: none !important;
+}
+
+:root.codex-dream-skin main.dream-conversation-shell .dream-queued-message-list
+  :is([class*="text-token-text-secondary"], [class*="text-token-description-foreground"]) {
+  color: var(--theme-composer-placeholder) !important;
+  -webkit-text-fill-color: var(--theme-composer-placeholder) !important;
+}
+
+:root.codex-dream-skin main.dream-conversation-shell .dream-queued-message-list
+  button:not(:disabled):hover {
+  color: var(--dream-accent, #58766c) !important;
+  -webkit-text-fill-color: var(--dream-accent, #58766c) !important;
+  background-color: color-mix(in srgb, var(--dream-accent, #58766c) 12%, transparent) !important;
+}
+
 :root.codex-dream-skin #codex-dream-skin-actions button {
   border-color: var(--theme-border);
 }

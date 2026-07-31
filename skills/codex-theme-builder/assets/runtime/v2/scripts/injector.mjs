@@ -539,8 +539,12 @@ async function loadPayload(themeDir) {
 
 async function probeSession(session) {
   return session.evaluate(`(() => {
+    const shell = document.querySelector('main.main-surface') ||
+      [...document.querySelectorAll('main')].find((candidate) =>
+        candidate.querySelector(':scope > header [data-testid="app-shell-header-context-menu-surface"]')) ||
+      null;
     const markers = {
-      shell: Boolean(document.querySelector('main.main-surface')),
+      shell: Boolean(shell),
       sidebar: Boolean(document.querySelector('aside.app-shell-left-panel')),
       composer: Boolean(document.querySelector('.composer-surface-chrome')),
       main: Boolean(document.querySelector('[role="main"]')),
@@ -884,9 +888,15 @@ async function runOneShot(options) {
       try {
         if (options.openHome) {
           const opened = await session.evaluate(`(() => {
-            const button = [...document.querySelectorAll('button')].find((candidate) =>
-              /新建任务|new task/i.test(candidate.textContent || '')
-            );
+            const newTaskLabel = /新建任务|新任务|新对话|new task|new chat/i;
+            const button = [...document.querySelectorAll('button,[role="button"]')].find((candidate) => {
+              const label = [
+                candidate.textContent,
+                candidate.getAttribute('aria-label'),
+                candidate.getAttribute('title'),
+              ].filter(Boolean).join(' ');
+              return newTaskLabel.test(label);
+            });
             if (!button) return false;
             button.click();
             return true;
