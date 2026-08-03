@@ -13,7 +13,7 @@
   const STORAGE_KEY = "codex-dream-theme-active";
   const MOTION_STORAGE_KEY = "codex-dream-motion-level";
   const MOTION_LEVELS = ["off", "low", "high"];
-  const RUNTIME_VERSION = "2.2.7-sidebar-collapse";
+  const RUNTIME_VERSION = "2.2.9-promo-overlay";
   const THEME_SEARCH_THRESHOLD = 6;
   const MUTATION_COALESCE_MS = 96;
   const actions = [
@@ -126,6 +126,7 @@
     nativeHomeSuggestions: document.querySelector(".dream-native-home-suggestions"),
     conversation: document.querySelector(".dream-conversation"),
     promo: document.querySelector(".dream-home-promo"),
+    promoHost: document.querySelector(".dream-home-promo-host"),
     projectPicker: document.querySelector(".dream-project-picker"),
     pluginSearch: document.querySelector(".dream-plugin-search"),
     pluginSearchShell: document.querySelector(".dream-plugin-search-shell"),
@@ -509,6 +510,7 @@
     document.querySelectorAll(".dream-home-shell").forEach((node) => node.classList.remove("dream-home-shell"));
     document.querySelectorAll(".dream-conversation-shell").forEach((node) => node.classList.remove("dream-conversation-shell"));
     document.querySelectorAll(".dream-home-promo").forEach((node) => node.classList.remove("dream-home-promo"));
+    document.querySelectorAll(".dream-home-promo-host").forEach((node) => node.classList.remove("dream-home-promo-host"));
     document.querySelectorAll(".dream-plugin-search").forEach((node) => node.classList.remove("dream-plugin-search"));
     document.querySelectorAll(".dream-plugin-search-shell").forEach((node) => node.classList.remove("dream-plugin-search-shell"));
     Object.keys(markerState).forEach((key) => { markerState[key] = null; });
@@ -1102,41 +1104,37 @@
     syncMarker("pluginSearch", pluginSearch, "dream-plugin-search");
     syncMarker("pluginSearchShell", pluginSearchShell, "dream-plugin-search-shell");
 
-    if (home && (!markerState.promo?.isConnected || !home.contains(markerState.promo))) {
-      const promoSeed = [...home.querySelectorAll("div, span, p")].filter((node) => {
-        const value = (node.textContent || "").trim();
-        return /(?:\u542f\u7528\u5feb\u901f\u6a21\u5f0f|Fast could have saved|Increases plan usage)/i.test(value) &&
-          value.length < 360;
-      }).sort((left, right) => {
-        const a = left.getBoundingClientRect();
-        const b = right.getBoundingClientRect();
-        return (a.width * a.height) - (b.width * b.height);
-      })[0];
-      let promo = promoSeed;
-      while (promo && promo !== home) {
-        const rect = promo.getBoundingClientRect();
-        if (rect.width > 500 && rect.height > 40 && rect.height < 130 && promo.querySelectorAll("button").length >= 1) break;
-        promo = promo.parentElement;
-      }
-      syncMarker("promo", promo && promo !== home ? promo : null, "dream-home-promo");
-    }
-
     if (!home) {
       syncMarker("promo", null, "dream-home-promo");
-    } else if (!markerState.promo?.isConnected || !home.contains(markerState.promo)) {
-      const promoText = [...document.querySelectorAll("div, span, p")].find((node) => {
-        const value = (node.textContent || "").trim();
-        return value.startsWith("启用快速模式") && value.length < 180;
-      });
-      let promo = promoText;
-      while (promo && promo !== home) {
-        const rect = promo.getBoundingClientRect();
-        if (rect.width > 500 && rect.height > 40 && rect.height < 130 && promo.querySelectorAll("button").length >= 1) {
-          break;
+      syncMarker("promoHost", null, "dream-home-promo-host");
+    } else {
+      const promoNeedsRefresh = !markerState.promo?.isConnected ||
+        !home.contains(markerState.promo) ||
+        markerState.promo.tagName !== "ASIDE";
+      if (promoNeedsRefresh) {
+        const promoText = [...home.querySelectorAll("div, span, p")].filter((node) => {
+          const value = (node.textContent || "").trim();
+          return /(?:\u542f\u7528\u5feb\u901f\u6a21\u5f0f|Fast could have saved|Increases plan usage)/i.test(value) &&
+            value.length < 360;
+        }).sort((left, right) => {
+          const a = left.getBoundingClientRect();
+          const b = right.getBoundingClientRect();
+          return (a.width * a.height) - (b.width * b.height);
+        })[0];
+        let promo = promoText;
+        while (promo && promo !== home) {
+          const rect = promo.getBoundingClientRect();
+          if (rect.width > 500 && rect.height > 40 && rect.height < 130 && promo.querySelectorAll("button").length >= 1) {
+            break;
+          }
+          promo = promo.parentElement;
         }
-        promo = promo.parentElement;
+        const promoShell = promo?.closest("aside");
+        if (promoShell && home.contains(promoShell)) promo = promoShell;
+        syncMarker("promo", promo && promo !== home ? promo : null, "dream-home-promo");
       }
-      syncMarker("promo", promo && promo !== home ? promo : null, "dream-home-promo");
+      const promoHost = markerState.promo?.closest(".home-banners") ?? null;
+      syncMarker("promoHost", promoHost && home.contains(promoHost) ? promoHost : null, "dream-home-promo-host");
     }
 
     const existingActions = document.getElementById(ACTIONS_ID);
@@ -1291,6 +1289,7 @@
     removeSwitcherListeners?.();
     removeBackgroundVideoListeners();
     document.querySelectorAll(".dream-home-promo").forEach((node) => node.classList.remove("dream-home-promo"));
+    document.querySelectorAll(".dream-home-promo-host").forEach((node) => node.classList.remove("dream-home-promo-host"));
     document.querySelectorAll(".dream-plugin-search").forEach((node) => node.classList.remove("dream-plugin-search"));
     document.querySelectorAll(".dream-plugin-search-shell").forEach((node) => node.classList.remove("dream-plugin-search-shell"));
     clearDetailMarkers();

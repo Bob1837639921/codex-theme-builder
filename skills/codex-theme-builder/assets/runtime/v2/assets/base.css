@@ -12,6 +12,9 @@
   --dream-plugin-ink: var(--dream-ink, #252a27);
   --dream-plugin-surface: color-mix(in srgb, var(--dream-surface, #f5f2e9) 82%, transparent);
   --dream-plugin-border: color-mix(in srgb, var(--dream-accent, #5f7c72) 28%, transparent);
+  --dream-unread-dot: color-mix(in srgb, var(--dream-accent-alt, var(--dream-accent, #5f7c72)) 72%, white);
+  --dream-unread-ring: color-mix(in srgb, var(--dream-accent, #5f7c72) 78%, black);
+  --dream-unread-glow: color-mix(in srgb, var(--dream-accent-alt, var(--dream-accent, #5f7c72)) 76%, transparent);
 }
 
 html.codex-dream-skin [role="dialog"] {
@@ -154,6 +157,61 @@ html.codex-dream-skin .composer-surface-chrome > * {
   z-index: 3;
 }
 
+/* The compact shell can expose a native "open with app" action in this
+   slot. Keep that native control above theme paint layers without creating or
+   repositioning it; Codex still owns its responsive visibility and click
+   handling. */
+html.codex-dream-skin main.main-surface > header.app-header-tint
+  :is([data-test-id="header-shell-slot"], [data-testid="header-shell-slot"]) {
+  position: relative !important;
+  z-index: 2 !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  overflow: visible !important;
+  pointer-events: auto !important;
+}
+
+html.codex-dream-skin main.main-surface > header.app-header-tint
+  :is([data-test-id="header-shell-slot"], [data-testid="header-shell-slot"])
+  :is(button, [role="button"]) {
+  position: relative !important;
+  z-index: 3 !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+/* Keep Codex's native conversation quick-jump rail visible on every theme.
+   This is a paint-only treatment: the native nav, buttons, focus handling,
+   and scroll-to-message behavior remain untouched. */
+html.codex-dream-skin main.main-surface.dream-conversation-shell
+  nav[aria-label="用户消息"] {
+  position: absolute !important;
+  z-index: 28 !important;
+  color: color-mix(in srgb, var(--dream-ink, #252a27) 72%, var(--dream-accent, #5f7c72) 28%) !important;
+  isolation: isolate;
+}
+
+html.codex-dream-skin main.main-surface.dream-conversation-shell
+  nav[aria-label="用户消息"] button {
+  color: inherit !important;
+  opacity: 1 !important;
+}
+
+html.codex-dream-skin main.main-surface.dream-conversation-shell
+  nav[aria-label="用户消息"] button > span > span {
+  background-color: var(--dream-quick-jump-marker, var(--dream-accent, #5f7c72)) !important;
+  opacity: .64 !important;
+  transition: width 160ms ease, opacity 160ms ease, background-color 160ms ease !important;
+}
+
+html.codex-dream-skin main.main-surface.dream-conversation-shell
+  nav[aria-label="用户消息"] button:is(:hover, :focus-visible) > span > span {
+  width: 12px !important;
+  background-color: var(--dream-quick-jump-active, var(--dream-accent-alt, #7895aa)) !important;
+  opacity: 1 !important;
+}
+
 html.codex-dream-skin div:has(> .composer-surface-chrome) {
   position: relative !important;
   isolation: isolate;
@@ -285,6 +343,20 @@ html.codex-dream-skin .dream-home .dream-home-promo {
   margin: 0 !important;
 }
 
+/* The native promo lives in HomeBanners, whose top padding otherwise keeps an
+   empty in-flow row after the card itself becomes an overlay. Collapse only
+   that runtime-marked host so the composer stays bottom-aligned and Home does
+   not gain a scrollbar while the promotion is visible. */
+html.codex-dream-skin .dream-home .dream-home-promo-host {
+  height: 0 !important;
+  min-height: 0 !important;
+  max-height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  gap: 0 !important;
+  overflow: visible !important;
+}
+
 /* Plugin discovery uses a native sticky white search rail. Runtime markers
    make that structure themeable without coupling theme packages to utility
    classes from one Codex release. */
@@ -357,6 +429,19 @@ html.codex-dream-skin aside.app-shell-left-panel
   color: var(--dream-sidebar-control-text, #eef3ef) !important;
   opacity: .9 !important;
   text-shadow: none !important;
+}
+
+/* Preserve the native unread state and interaction model. Only the tiny
+   status paint is strengthened so it remains legible on every theme's sidebar. */
+html.codex-dream-skin aside.app-shell-left-panel
+  [data-app-action-sidebar-thread-row]
+  span.icon-xs.relative.scale-50
+  > span.absolute.inset-0.rounded-full[style*="--vscode-textLink-foreground"] {
+  background-color: var(--dream-unread-dot) !important;
+  box-shadow:
+    0 0 0 2px var(--dream-unread-ring),
+    0 0 9px var(--dream-unread-glow) !important;
+  opacity: 1 !important;
 }
 
 html.codex-dream-skin aside.app-shell-left-panel
