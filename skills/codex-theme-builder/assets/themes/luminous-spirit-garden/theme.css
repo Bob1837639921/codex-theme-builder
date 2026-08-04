@@ -4,6 +4,9 @@
   --dream-muted: #687185;
   --dream-accent: #786fa8;
   --dream-accent-alt: #769c8d;
+  --dream-unread-dot: #d8cbff;
+  --dream-unread-ring: rgb(75 65 119 / 92%);
+  --dream-unread-glow: rgb(175 151 255 / 84%);
   --dream-paper: #e7eaf3;
   --dream-panel: rgb(247 248 253 / 76%);
   --dream-line: rgb(92 84 137 / 19%);
