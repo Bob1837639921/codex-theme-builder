@@ -317,6 +317,15 @@ if ($runtimeJs -notmatch 'locateNativeShellMain' -or
     $injectorText -notmatch 'app-shell-header-context-menu-surface') {
   throw 'Runtime and verification must recognize the CSS-module Codex main surface through a reversible semantic compatibility marker.'
 }
+if ($runtimeJs -notmatch 'data-codex-composer-root' -or
+    $runtimeJs -notmatch 'data-composer-surface-variant' -or
+    $runtimeJs -notmatch 'dreamCompatComposerSurface' -or
+    $runtimeJs -notmatch 'classList\.add\("composer-surface-chrome"\)' -or
+    $runtimeJs -notmatch 'classList\.remove\("composer-surface-chrome"\)' -or
+    $injectorText -notmatch 'data-codex-composer-root' -or
+    $injectorText -notmatch 'data-codex-composer="true"') {
+  throw 'Runtime and verification must preserve themed composer styling through the native semantic composer contract.'
+}
 if ($themeCss -notmatch '(?s)main\.dream-conversation-shell\s+\.sticky\.bottom-0\s+\[class~="bg-gradient-to-t"\]\s*\{[^}]*background-image:\s*none\s*!important') {
   throw 'Conversation composer fades must stay transparent, including the in-progress file-summary state.'
 }

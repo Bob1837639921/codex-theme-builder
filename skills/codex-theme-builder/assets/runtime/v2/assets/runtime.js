@@ -13,7 +13,7 @@
   const STORAGE_KEY = "codex-dream-theme-active";
   const MOTION_STORAGE_KEY = "codex-dream-motion-level";
   const MOTION_LEVELS = ["off", "low", "high"];
-  const RUNTIME_VERSION = "2.2.10-route-verification";
+  const RUNTIME_VERSION = "2.2.11-composer-compat";
   const THEME_SEARCH_THRESHOLD = 6;
   const MUTATION_COALESCE_MS = 96;
   const actions = [
@@ -71,6 +71,16 @@
       header.classList.add("app-header-tint");
       header.dataset.dreamCompatHeaderTint = "true";
     }
+    const composerSurfaces = new Set([
+      ...document.querySelectorAll('[data-codex-composer-root] [data-composer-surface-variant]'),
+      document.querySelector('[data-codex-composer="true"]')?.closest('[data-composer-surface-variant]'),
+    ].filter(Boolean));
+    composerSurfaces.forEach((composerSurface) => {
+      if (!composerSurface.classList.contains("composer-surface-chrome")) {
+        composerSurface.classList.add("composer-surface-chrome");
+        composerSurface.dataset.dreamCompatComposerSurface = "true";
+      }
+    });
     return shell;
   };
   const restoreCompatibilityMarkers = () => {
@@ -81,6 +91,10 @@
     document.querySelectorAll('[data-dream-compat-header-tint="true"]').forEach((node) => {
       node.classList.remove("app-header-tint");
       delete node.dataset.dreamCompatHeaderTint;
+    });
+    document.querySelectorAll('[data-dream-compat-composer-surface="true"]').forEach((node) => {
+      node.classList.remove("composer-surface-chrome");
+      delete node.dataset.dreamCompatComposerSurface;
     });
   };
   const isNativeAppSurfaceAvailable = (

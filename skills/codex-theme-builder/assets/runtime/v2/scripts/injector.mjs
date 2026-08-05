@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, "..");
-const SKIN_VERSION = "2.2.10-route-verification";
+const SKIN_VERSION = "2.2.11-composer-compat";
 const MAX_ART_BYTES = 8 * 1024 * 1024;
 const MAX_VIDEO_BYTES = 8 * 1024 * 1024;
 const LOOPBACK_HOSTS = new Set(["127.0.0.1", "localhost", "[::1]", "::1"]);
@@ -545,7 +545,9 @@ async function probeSession(session) {
       shell: Boolean(shell),
       header: Boolean(shell?.querySelector(':scope > header [data-testid="app-shell-header-context-menu-surface"]')),
       sidebar: Boolean(document.querySelector('aside.app-shell-left-panel')),
-      composer: Boolean(document.querySelector('.composer-surface-chrome')),
+      composer: Boolean(document.querySelector('.composer-surface-chrome') ??
+        document.querySelector('[data-codex-composer-root] [data-composer-surface-variant]') ??
+        document.querySelector('[data-codex-composer="true"]')?.closest('[data-composer-surface-variant]')),
       main: Boolean(document.querySelector('[role="main"]')),
     };
     return {
@@ -650,7 +652,10 @@ async function verifySession(session) {
     const conversation = document.querySelector('[role="main"].dream-conversation');
     const backgroundVideo = document.getElementById('codex-dream-background-video');
     const outputPanel = document.querySelector('.dream-output-panel');
-    const composerNode = document.querySelector('.composer-surface-chrome');
+    const composerNode = document.querySelector('.composer-surface-chrome') ??
+      document.querySelector('[data-codex-composer-root] [data-composer-surface-variant]') ??
+      document.querySelector('[data-codex-composer="true"]')?.closest('[data-composer-surface-variant]') ??
+      null;
     const composerRect = composerNode?.getBoundingClientRect() ?? null;
     const stickyComposer = composerNode ? [...composerNode.closest('.thread-scroll-container')?.querySelectorAll('.sticky') ?? []]
       .find((node) => node.contains(composerNode)) : null;
@@ -780,7 +785,7 @@ async function verifySession(session) {
       } : null,
       hero: box(homeVisualAnchor),
       cards,
-      composer: box(document.querySelector('.composer-surface-chrome')),
+      composer: box(composerNode),
       sidebar: box(document.querySelector('aside.app-shell-left-panel')),
       viewport: { width: innerWidth, height: innerHeight },
       documentOverflow: {
