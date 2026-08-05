@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, "..");
-const SKIN_VERSION = "2.2.9-promo-overlay";
+const SKIN_VERSION = "2.2.10-route-verification";
 const MAX_ART_BYTES = 8 * 1024 * 1024;
 const MAX_VIDEO_BYTES = 8 * 1024 * 1024;
 const LOOPBACK_HOSTS = new Set(["127.0.0.1", "localhost", "[::1]", "::1"]);
@@ -726,6 +726,7 @@ async function verifySession(session) {
       toolbarButtonCount: toolbarButtons.length,
       toolbarButtonsInteractive,
       homePresent: Boolean(home),
+      routeKind: home ? 'home' : (conversation ? 'conversation' : 'native'),
       actionGridPresent: Boolean(actionGrid),
       titlePresent: Boolean(title),
       iconsPresent,
@@ -807,10 +808,14 @@ async function verifySession(session) {
         }).filter((item) => item.backgroundColor !== 'rgba(0, 0, 0, 0)' || item.backgroundImage !== 'none') : [],
       },
     };
+    result.composerRequired = result.routeKind === 'conversation';
+    result.composerReady = !result.composerRequired || Boolean(result.composer);
+    result.homeReady = !result.homePresent || (Boolean(result.hero) && result.titlePresent &&
+      result.actionGridPresent && result.iconsPresent && result.cards.length === 4);
     result.pass = result.installed && result.version === result.expectedVersion &&
       result.stylePresent && result.chromePresent &&
       result.chromePointerEvents === 'none' && result.toolbarButtonsInteractive &&
-      Boolean(result.shell) && Boolean(result.composer) &&
+      Boolean(result.shell) && result.composerReady &&
       ((!result.sidebar && !result.switcherPresent && result.themeCardCount === 0) ||
         (Boolean(result.sidebar) &&
           ((result.themeCount < 2 && !result.switcherPresent && result.themeCardCount === 0) ||
@@ -820,8 +825,7 @@ async function verifySession(session) {
         result.backgroundVideo.readyState >= 3 &&
         Number.parseFloat(result.backgroundVideo.opacity) >= .99 &&
         !result.videoHandoffShieldPresent)) &&
-      (!result.homePresent || (Boolean(result.hero) && result.titlePresent &&
-        result.actionGridPresent && result.iconsPresent && result.cards.length === 4));
+      result.homeReady;
     return result;
   })()`);
 }

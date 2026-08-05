@@ -303,6 +303,13 @@ if ($injectorText -notmatch 'const\s+homeVisualAnchor\s*=\s*home\?\.querySelecto
     $injectorText -match 'hero:\s*box\(home\?\.firstElementChild') {
   throw 'Injection verification must use stable runtime home markers instead of Codex DOM depth.'
 }
+if ($injectorText -notmatch "routeKind:\s*home\s*\?\s*'home'\s*:\s*\(conversation\s*\?\s*'conversation'\s*:\s*'native'\)" -or
+    $injectorText -notmatch "composerRequired\s*=\s*result\.routeKind\s*===\s*'conversation'" -or
+    $injectorText -notmatch 'composerReady\s*=\s*!result\.composerRequired\s*\|\|\s*Boolean\(result\.composer\)' -or
+    $injectorText -notmatch 'Boolean\(result\.shell\)\s*&&\s*result\.composerReady' -or
+    $injectorText -match 'Boolean\(result\.shell\)\s*&&\s*Boolean\(result\.composer\)') {
+  throw 'Injection verification must require the composer only on conversation routes, not during a valid home or native-page mount.'
+}
 if ($runtimeJs -notmatch 'locateNativeShellMain' -or
     $runtimeJs -notmatch 'app-shell-header-context-menu-surface' -or
     $runtimeJs -notmatch 'dreamCompatMainSurface' -or
