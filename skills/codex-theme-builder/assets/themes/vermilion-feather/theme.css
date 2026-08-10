@@ -529,8 +529,6 @@ html.codex-dream-skin main.dream-conversation-shell .sticky.bottom-0 [class~="bg
 :root.codex-dream-skin body:has(main.main-surface.dream-home-shell) header.app-header-tint {
   border-bottom: 0 !important;
   box-shadow: none !important;
-  backdrop-filter: none !important;
-  filter: none !important;
 }
 
 :root.codex-dream-skin main.main-surface.dream-home-shell > header.app-header-tint::before,
@@ -545,6 +543,15 @@ html.codex-dream-skin main.dream-conversation-shell .sticky.bottom-0 [class~="bg
 :root.codex-dream-skin body:has(main.main-surface.dream-home-shell) .app-shell-main-content-top-fade {
   display: none !important;
   opacity: 0 !important;
+}
+
+/* Current Codex builds use a CSS-module class for the native white fade below
+   the content toolbar. Remove only that home-route fade; keep the toolbar's
+   translucent surface and backdrop treatment unchanged. */
+:root.codex-dream-skin body:has(main.main-surface.dream-home-shell) [class*="_MainContentTopFade_"] {
+  display: none !important;
+  opacity: 0 !important;
+  background: none !important;
 }
 
 :root.codex-dream-skin main.main-surface > header.app-header-tint :is(button, span, svg) {
