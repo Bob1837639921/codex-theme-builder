@@ -406,11 +406,13 @@ if ($themeCss -notmatch '(?s):is\(\.dream-selected-thread,\s*\[aria-current="pag
 if ($runtimeJs -notmatch 'dream-native-home-suggestions' -or
     $runtimeJs -notmatch 'dream-plugin-search-shell' -or
     $runtimeJs -notmatch 'dream-home-promo' -or
+    $runtimeJs -notmatch 'closest\("aside, \[role=status\]"\)' -or
+    $runtimeJs -notmatch 'Math\.max\(rect\.height, candidate\.scrollHeight \|\| 0\)' -or
     $baseCss -notmatch '(?s)\.dream-native-home-suggestions.*?visibility:\s*hidden\s*!important' -or
     $baseCss -notmatch '(?s)\.dream-home-promo\s*\{[^}]*position:\s*absolute\s*!important' -or
     $baseCss -notmatch '(?s)\.dream-plugin-search-shell\s*\{[^}]*background:\s*transparent\s*!important' -or
     $baseCss -notmatch '(?s)\.dream-plugin-search\s*\{[^}]*background:\s*var\(--dream-plugin-surface\)\s*!important') {
-  throw 'Home suggestions, promotional banners, and plugin discovery must keep reusable non-invasive theme hooks.'
+  throw 'Home suggestions, clipped promotional banners, and plugin discovery must keep reusable non-invasive theme hooks.'
 }
 if ($sunkenCss -notmatch '(?s)\.dream-file-changes-summary\s*\{[^}]*background:.*?border:' -or
     $sunkenCss -notmatch '(?s)\.dream-file-changes-summary.*?group\\\/turn-diff-header\s*\{[^}]*background:' -or

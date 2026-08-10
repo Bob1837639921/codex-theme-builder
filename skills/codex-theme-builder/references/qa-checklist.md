@@ -33,7 +33,11 @@
   composer must remain active while collapsed; the switcher must return when the
   sidebar expands without resetting the selected theme.
 - On the first home render, only the themed four-action grid is visible; Codex's native suggestion cards never peek out behind it.
-- When the Fast-mode promotion is present, it remains clickable and dismissible without moving the project selector or composer below the viewport.
+- When the Fast-mode promotion is present, it remains fully visible, clickable,
+  and dismissible without collapsing into a white strip or moving the project
+  selector/composer below the viewport. Validate this after a Codex DOM update;
+  discovery must use the semantic `aside`/status card or its natural
+  `scrollHeight`, not require an already-unclipped rendered height.
 - Expand and collapse a long project list; the resulting show-more/show-less control remains readable over the sidebar artwork.
 
 ## Conversation view

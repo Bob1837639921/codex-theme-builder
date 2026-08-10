@@ -172,6 +172,14 @@ marker. Discovery is scoped to the conversation shell and the native
 utility identifies `QueuedMessageList`; do not depend on localized labels such as
 `Steer` or `引导`. Remove the marker immediately when the queue is emptied.
 
+Home Fast-mode promotion discovery uses its semantic `aside`/status-card
+boundary. Theme layout can temporarily flex-shrink the native card before the
+marker is attached, so a positive rendered-height threshold is not a valid
+identity check. When a structural fallback is required, compare the candidate's
+natural `scrollHeight` with its rendered height. The shared absolute-positioned
+`.dream-home-promo` treatment must leave the card fully visible, clickable, and
+dismissible without consuming home-layout height.
+
 ## Verification gate
 
 Every shared-runtime change must pass:

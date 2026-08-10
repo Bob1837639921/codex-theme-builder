@@ -13,7 +13,7 @@
   const STORAGE_KEY = "codex-dream-theme-active";
   const MOTION_STORAGE_KEY = "codex-dream-motion-level";
   const MOTION_LEVELS = ["off", "low", "high"];
-  const RUNTIME_VERSION = "2.2.11-composer-compat";
+  const RUNTIME_VERSION = "2.2.12-home-promo";
   const THEME_SEARCH_THRESHOLD = 6;
   const MUTATION_COALESCE_MS = 96;
   const actions = [
@@ -1070,6 +1070,33 @@
     renderSwitcherSelection();
   };
 
+  const locateHomePromo = (home) => {
+    if (!home) return null;
+    const seeds = [...home.querySelectorAll("div, span, p")].filter((node) => {
+      const value = (node.textContent || "").trim();
+      return /(?:\u542f\u7528\u5feb\u901f\u6a21\u5f0f|Fast could have saved|Increases plan usage)/i.test(value) &&
+        value.length < 360;
+    }).sort((left, right) => (left.textContent || "").length - (right.textContent || "").length);
+
+    for (const seed of seeds) {
+      const semanticCard = seed.closest("aside, [role=status]");
+      if (semanticCard && home.contains(semanticCard) && semanticCard.querySelectorAll("button").length >= 1) {
+        return semanticCard;
+      }
+      let candidate = seed;
+      while (candidate && candidate !== home) {
+        const rect = candidate.getBoundingClientRect();
+        const naturalHeight = Math.max(rect.height, candidate.scrollHeight || 0);
+        if (rect.width > 500 && naturalHeight > 40 && naturalHeight < 160 &&
+            candidate.querySelectorAll("button").length >= 1) {
+          return candidate;
+        }
+        candidate = candidate.parentElement;
+      }
+    }
+    return null;
+  };
+
   const ensure = () => {
     if (window.__CODEX_DREAM_SKIN_DISABLED__) return;
     const root = document.documentElement;
@@ -1126,26 +1153,7 @@
         !home.contains(markerState.promo) ||
         markerState.promo.tagName !== "ASIDE";
       if (promoNeedsRefresh) {
-        const promoText = [...home.querySelectorAll("div, span, p")].filter((node) => {
-          const value = (node.textContent || "").trim();
-          return /(?:\u542f\u7528\u5feb\u901f\u6a21\u5f0f|Fast could have saved|Increases plan usage)/i.test(value) &&
-            value.length < 360;
-        }).sort((left, right) => {
-          const a = left.getBoundingClientRect();
-          const b = right.getBoundingClientRect();
-          return (a.width * a.height) - (b.width * b.height);
-        })[0];
-        let promo = promoText;
-        while (promo && promo !== home) {
-          const rect = promo.getBoundingClientRect();
-          if (rect.width > 500 && rect.height > 40 && rect.height < 130 && promo.querySelectorAll("button").length >= 1) {
-            break;
-          }
-          promo = promo.parentElement;
-        }
-        const promoShell = promo?.closest("aside");
-        if (promoShell && home.contains(promoShell)) promo = promoShell;
-        syncMarker("promo", promo && promo !== home ? promo : null, "dream-home-promo");
+        syncMarker("promo", locateHomePromo(home), "dream-home-promo");
       }
       const promoHost = markerState.promo?.closest(".home-banners") ?? null;
       syncMarker("promoHost", promoHost && home.contains(promoHost) ? promoHost : null, "dream-home-promo-host");
