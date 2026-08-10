@@ -96,7 +96,7 @@ foreach ($selectedThreadContract in @(
   }
 }
 if ($templateText -notmatch '(?s)body\s*\{[^}]*--dream-conversation-art' -or
-    $templateText -notmatch '(?s)body:has\(main\.dream-home-shell\)\s*\{[^}]*--dream-art' -or
+    $templateText -notmatch '(?s)\[data-dream-route="home"\]\s+body\s*\{[^}]*--dream-art' -or
     $templateText -notmatch '(?s)\.composer-surface-chrome::before\s*\{' -or
     $templateText -notmatch '(?s)\.composer-surface-chrome::after\s*\{' -or
     $templateText -notmatch 'button\[class~="bg-token-foreground"\]' -or
