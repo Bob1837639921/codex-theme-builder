@@ -528,11 +528,16 @@ html.codex-dream-skin main.dream-conversation-shell .sticky.bottom-0 [class~="bg
 :root.codex-dream-skin main.main-surface.dream-home-shell > header.app-header-tint,
 :root.codex-dream-skin body:has(main.main-surface.dream-home-shell) header.app-header-tint {
   border-bottom: 0 !important;
-  box-shadow: inset 0 1px rgb(255 255 255 / 20%) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  filter: none !important;
 }
 
+:root.codex-dream-skin main.main-surface.dream-home-shell > header.app-header-tint::before,
+:root.codex-dream-skin body:has(main.main-surface.dream-home-shell) header.app-header-tint::before,
 :root.codex-dream-skin main.main-surface.dream-home-shell > header.app-header-tint::after,
 :root.codex-dream-skin body:has(main.main-surface.dream-home-shell) header.app-header-tint::after {
+  content: none !important;
   display: none !important;
 }
 
