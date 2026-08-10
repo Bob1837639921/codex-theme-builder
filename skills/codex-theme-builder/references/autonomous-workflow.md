@@ -33,10 +33,12 @@ Capture the exact route, viewport, content state, hover/focus state, and any tra
 
 ## 3. Produce an implementable design target
 
+Apply the staged approval gate in `visual-direction-gate.md`. For a new character-led theme, locate and inspect the original character-pool assets, then generate only three conversation-page previews. Do not spend time generating home, usage, selected-thread, composer-edge, motion, or packaging artwork until the user selects a direction. A request for "three versions" means three separate full conversation screenshots, not a contact sheet and not three complete asset packs.
+
 - Before generating a preview, write a provisional `implementation-map.md` for every requested visible change. Mark each row as native surface, scoped decoration, shared runtime augmentation, or forbidden. Do not put forbidden or unmapped elements into the prompt.
 - Use supplied screenshots or mockups directly when selected.
 - For a constrained redesign of an existing screen, use image editing with the baseline as the locked edit target. Preserve its window geometry, panel bounds, native control positions, labels, information architecture, and visible state. Change only mapped visual properties and mapped augmentations.
-- If there is no selected visual target and the direction can branch, generate exactly three distinct previews. Normally wait for the user to select one.
+- If there is no selected visual target and the direction can branch, generate exactly three distinct conversation-page previews. Normally wait for the user to select one before producing any other theme artwork.
 - If the user explicitly requests a fully automatic run or delegates the choice, do not pause. Put the three options into one comparison, score each from 1-5 for requirement fit, native-control compatibility, implementation feasibility, readability/accessibility, and runtime cost, select the highest total, and record the rationale in `design-decision.md`. Break ties in favor of the lower-cost option.
 - Generate real raster artwork when the design needs new imagery. Use an appropriate icon library or supplied icons; do not fake visible assets with text glyphs, emoji, CSS drawings, handcrafted SVGs, or placeholders.
 - Keep native control positions and labels unless the request explicitly changes them and the runtime can preserve their behavior.

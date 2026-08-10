@@ -2,7 +2,7 @@
 
 一个可被 Codex 自动调用的 Codex Desktop 主题设计、开发、预览、验证与打包 Skill。
 
-它不绑定某一种视觉风格。你可以给 Codex 一段文字需求、截图、设计稿或已有主题，Codex 会完成视觉方案、实现映射、主题开发、实时预览、视觉修正和最终打包。仓库内附带七套示例主题，并提供可扩展主题目录的侧栏切换器；新增主题只需遵循统一主题包结构并加入目录。
+它不绑定某一种视觉风格。你可以给 Codex 一段文字需求、截图、设计稿或已有主题，Codex 会完成视觉方案、实现映射、主题开发、实时预览、视觉修正和最终打包。仓库内附带八套示例主题，并提供可扩展主题目录的侧栏切换器；新增主题只需遵循统一主题包结构并加入目录。
 
 <table>
   <tr>
@@ -53,12 +53,22 @@
   </tr>
 </table>
 
-> 七张图均为当前版本的主题视觉，并经过隐私安全裁切与独立 WebP 压缩；不包含账户、项目或真实对话内容，也不会让 README 加载完整运行时原图。
+<table>
+  <tr>
+    <td><img src="docs/images/vermilion-feather-preview.webp" alt="丹曦流羽主题视觉" width="960" height="540" loading="lazy"></td>
+  </tr>
+  <tr>
+    <td align="center"><strong>丹曦流羽</strong> · 朱红鎏金、云海凤仪、透明羽饰输入框与独立用量画面</td>
+  </tr>
+</table>
+
+> 八张图均为当前版本的主题视觉，并经过隐私安全裁切与独立 WebP 压缩；不包含账户、项目或真实对话内容，也不会让 README 加载完整运行时原图。
 
 [查看完整主题与新增功能图鉴](docs/themes-and-features.md)
 
 ## 功能
 
+- 新主题先生成三张独立的对话页方向图，选定后再生成首页、使用量、选中任务、输入框装饰与动效素材，减少无效生成和返工。
 - 根据文字、截图或设计稿生成可实现的主题方案。
 - 自动搭建主题目录、清单、CSS、背景图和图标。
 - 保留 Codex 原生菜单、输入框、项目选择、对话操作和输出面板功能。
@@ -135,7 +145,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\install-skill.ps1
 你自行比较三个方向并选择最适合原生控件的方案，完成开发和视觉验收。
 ```
 
-Skill 会先读取结构化新主题蓝图，把每个设计元素映射到原生 DOM、运行时标记或主题资产，逐项处理侧栏、首页、对话、输入框前景装饰、选中态、输出面板和弹窗对比度；它会拒绝无法安全实现的纯概念元素，并保留 `prefers-reduced-motion` 降级方案。
+Skill 会先经过视觉方向门禁：从角色池原始素材生成三张独立的对话页效果图，选定后才扩展完整资产。随后读取结构化新主题蓝图，把每个设计元素映射到原生 DOM、运行时标记或主题资产，逐项处理侧栏、首页、对话、输入框前景装饰、选中态、输出面板和弹窗对比度；它会拒绝无法安全实现的纯概念元素，并保留 `prefers-reduced-motion` 降级方案。
 
 ## 直接使用多主题运行时
 
@@ -232,7 +242,7 @@ powershell -ExecutionPolicy Bypass -File `
 │  ├─ images/                           # 经过体积约束的隐私安全 WebP 展示图
 │  ├─ theme-development-architecture.md # 新主题的分层、界面契约和交付流程
 │  ├─ runtime-performance.md            # 保留效果前提下的运行时性能策略
-│  └─ themes-and-features.md            # 七套主题与界面能力图鉴
+│  └─ themes-and-features.md            # 八套主题与界面能力图鉴
 ├─ scripts/
 │  ├─ install-skill.ps1
 │  └─ validate-repository.ps1
@@ -271,7 +281,8 @@ powershell -ExecutionPolicy Bypass -File `
          ├─ tidal-hymn/                 # 潮汐圣歌：明亮连续全局画布
          ├─ luminous-spirit-garden/     # 萤梦花庭：月白灵界花庭与紫晶引魂灯
          ├─ frostleaf-illusionist/      # 翡翠寒森：翡翠霜林与晶叶玻璃界面
-         └─ blossom-dancer/             # 绯花舞庭：淡粉花园与舞姬玻璃界面
+         ├─ blossom-dancer/             # 绯花舞庭：淡粉花园与舞姬玻璃界面
+         └─ vermilion-feather/          # 丹曦流羽：朱红鎏金与云海凤仪界面
 ```
 
 Skill 的自动工作流、主题格式和 QA 标准分别位于：

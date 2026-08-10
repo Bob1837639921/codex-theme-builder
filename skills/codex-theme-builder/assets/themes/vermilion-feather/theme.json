@@ -1,0 +1,30 @@
+{
+    "schemaVersion":  1,
+    "id":  "vermilion-feather",
+    "name":  "丹曦流羽",
+    "subtitle":  "VERMILION FEATHER · CODEX",
+    "image":  "home.webp",
+    "conversationImage":  "conversation.webp",
+    "sidebarImage":  "sidebar.webp",
+    "usageImage":  "usage-background.webp",
+    "selectedLeaf":  "selected-thread-background.png",
+    "composerEdge":  {
+                         "image":  "composer-edge.png",
+                         "horizontal":  "center",
+                         "vertical":  "bottom",
+                         "maxHeight":  112,
+                         "opacity":  0.58
+                     },
+    "icons":  {
+                  "build":  "icon-build.svg",
+                  "analyze":  "icon-analyze.svg",
+                  "automate":  "icon-automate.svg",
+                  "debug":  "icon-debug.svg"
+              },
+    "colors":  {
+                   "accent":  "#B9472C",
+                   "accentAlt":  "#C89B46",
+                   "surface":  "#FBF4E7",
+                   "text":  "#4A3028"
+               }
+}
