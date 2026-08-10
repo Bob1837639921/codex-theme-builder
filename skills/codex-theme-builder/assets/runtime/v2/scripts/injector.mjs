@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, "..");
-const SKIN_VERSION = "2.2.12-home-promo";
+const SKIN_VERSION = "2.2.13-performance";
 const MAX_ART_BYTES = 8 * 1024 * 1024;
 const MAX_VIDEO_BYTES = 8 * 1024 * 1024;
 const LOOPBACK_HOSTS = new Set(["127.0.0.1", "localhost", "[::1]", "::1"]);
@@ -485,9 +485,16 @@ async function loadThemePackage(themeDir, baseCss) {
       usageExtension === ".jpg" || usageExtension === ".jpeg" ? "image/jpeg" : "image/png";
     usageArtDataUrl = `data:${usageMime};base64,${usageArt.toString("base64")}`;
   }
+  const performanceGuards = `
+html:root.codex-dream-skin body{background-attachment:scroll!important;}
+html:root.codex-dream-skin .composer-surface-chrome{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;}
+html:root.codex-dream-skin .dream-composer-host::after{filter:none!important;}
+html:root.codex-dream-skin #codex-dream-background-video,
+html:root.codex-dream-skin .codex-dream-background-video-layer{transform:translateZ(0);backface-visibility:hidden;contain:strict;will-change:opacity;}
+`;
   return {
     ...theme,
-    cssText: `${themeVariables}\n${baseCss}\n${themeCss}`,
+    cssText: `${themeVariables}\n${baseCss}\n${themeCss}\n${performanceGuards}`,
     artDataUrl,
     conversationArtDataUrl,
     motionArtDataUrl: motionImageDataUrl,

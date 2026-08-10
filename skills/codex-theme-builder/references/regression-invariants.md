@@ -19,6 +19,19 @@ artwork, motion, or theme identity.
   A fix that hides only the left and right rails is incomplete.
 - Attach ornamental borders to the composer box, never the viewport or a fixed
   ancestor. Preserve native controls and hit targets.
+- Keep the typing path free of theme rescans: character-only mutations inside
+  `.ProseMirror`, `textarea`, or `input` must not schedule the global marker
+  pass. Route and composer-host state belong on stable runtime classes or data
+  attributes; do not use `:has()` selectors that are invalidated by every
+  message or editor mutation.
+- Do not combine `background-attachment: fixed` with a transparent scrolling
+  conversation canvas. Avoid `backdrop-filter` on the composer itself because
+  every caret and glyph update can repaint the pixels behind it; use an
+  optically equivalent translucent solid surface instead.
+- Background video is a high-tier scene asset, not a global effect. Decode it
+  only on the route that declares it, remove its audio track, and isolate the
+  video on a GPU composition layer. Low/off tiers and unrelated routes must not
+  create or keep the video element alive.
 
 ## Selected task and transient controls
 

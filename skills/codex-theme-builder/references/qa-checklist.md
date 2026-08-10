@@ -60,6 +60,8 @@
   never be the top `elementFromPoint` result at a toolbar button center.
 - Every composer control, placeholder, tooltip, disabled state, and filled submit/stop icon has an explicit readable color in both soft and full tiers.
 - Grow the composer to multiple lines and trigger file-change summaries; decorative borders remain attached to the composer box and never depend on a fixed viewport position.
+- Type continuously for at least 15 seconds and scroll a long conversation while the active route is idle. Verify character echo remains immediate, scroll stays smooth, runtime ensure-count does not rise for editor-only mutations, and the composer has no computed backdrop blur.
+- Test every declared video at off, low, and high tiers on both home and conversation routes. A route without a tier-specific video must have zero live background-video elements and must not decode a hidden fallback clip.
 - Running progress uses only small-area motion and stops under reduced-motion preferences.
 - Current thread remains legible when pin/archive controls appear; controls do not shift the title.
 - Start a turn so the selected task shows its loading spinner. The spinner remains overlaid at the right edge and the title stays on the same single-line vertical center before, during, and after loading.

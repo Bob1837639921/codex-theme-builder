@@ -68,7 +68,7 @@
   background-attachment: fixed !important;
 }
 
-:root.codex-dream-skin body:has(main.dream-home-shell) {
+:root.codex-dream-skin[data-dream-route="home"] body {
   background-image: var(--dream-art) !important;
   background-repeat: no-repeat !important;
   background-position: center !important;

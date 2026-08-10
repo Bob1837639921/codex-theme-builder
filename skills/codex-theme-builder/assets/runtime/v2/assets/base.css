@@ -29,7 +29,7 @@ html.codex-dream-skin [role="dialog"] {
 /* Authentication, onboarding, and signed-out windows do not mount the native
    Codex shell header anchor. The sidebar is deliberately not part of this gate:
    Codex removes it from the DOM when the user collapses it. */
-html.codex-dream-skin:not(:has(main > header [data-testid="app-shell-header-context-menu-surface"]))
+html.codex-dream-skin:not(.dream-native-surface)
   :is(
     #codex-dream-skin-chrome,
     #codex-dream-home-overlay,
@@ -135,15 +135,12 @@ html.codex-dream-skin:not(:has(main > header [data-testid="app-shell-header-cont
 }
 
 :root.codex-dream-skin:is([data-dream-motion="low"], [data-dream-motion="high"])
-  main.main-surface:has(> #codex-dream-background-video.is-covering),
+  main.main-surface.dream-video-covering,
 :root.codex-dream-skin:is([data-dream-motion="low"], [data-dream-motion="high"])
-  main.main-surface:has(> #codex-dream-background-video.is-covering)
+  main.main-surface.dream-video-covering
   [role="main"]:is(.dream-home, .dream-conversation),
 :root.codex-dream-skin:is([data-dream-motion="low"], [data-dream-motion="high"])
-  main.main-surface:has(> .codex-dream-background-video-layer.is-outgoing),
-:root.codex-dream-skin:is([data-dream-motion="low"], [data-dream-motion="high"])
-  main.main-surface:has(> .codex-dream-background-video-layer.is-outgoing)
-  [role="main"]:is(.dream-home, .dream-conversation) {
+  main.main-surface.dream-video-covering [role="main"]:is(.dream-home, .dream-conversation) {
   background-color: transparent !important;
   background-image: none !important;
 }
@@ -212,13 +209,13 @@ html.codex-dream-skin main.main-surface.dream-conversation-shell
   opacity: 1 !important;
 }
 
-html.codex-dream-skin div:has(> .composer-surface-chrome) {
+html.codex-dream-skin .dream-composer-host {
   position: relative !important;
   isolation: isolate;
   overflow: visible !important;
 }
 
-html.codex-dream-skin div:has(> .composer-surface-chrome)::after {
+html.codex-dream-skin .dream-composer-host::after {
   content: "" !important;
   display: block !important;
   position: absolute;
@@ -235,7 +232,7 @@ html.codex-dream-skin div:has(> .composer-surface-chrome)::after {
     filter 180ms cubic-bezier(.2, .8, .2, 1);
 }
 
-html.codex-dream-skin div:has(> .composer-surface-chrome):focus-within::after {
+html.codex-dream-skin .dream-composer-host:focus-within::after {
   opacity: 1;
   filter: saturate(1.06) contrast(1.02);
 }

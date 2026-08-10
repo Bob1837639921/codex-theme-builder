@@ -13,9 +13,9 @@
   const STORAGE_KEY = "codex-dream-theme-active";
   const MOTION_STORAGE_KEY = "codex-dream-motion-level";
   const MOTION_LEVELS = ["off", "low", "high"];
-  const RUNTIME_VERSION = "2.2.12-home-promo";
+  const RUNTIME_VERSION = "2.2.13-performance";
   const THEME_SEARCH_THRESHOLD = 6;
-  const MUTATION_COALESCE_MS = 96;
+  const MUTATION_COALESCE_MS = 180;
   const actions = [
     ["build", "构建", "编码实现与应用", "帮我构建一个新的应用"],
     ["analyze", "分析", "数据分析与洞察", "分析这个项目的结构与风险"],
@@ -144,6 +144,7 @@
     projectPicker: document.querySelector(".dream-project-picker"),
     pluginSearch: document.querySelector(".dream-plugin-search"),
     pluginSearchShell: document.querySelector(".dream-plugin-search-shell"),
+    composerHost: document.querySelector(".dream-composer-host"),
   };
   const detailState = {
     selectedThread: document.querySelector(".dream-selected-thread"),
@@ -509,13 +510,16 @@
     }
     activeBackgroundVideoElement = null;
     lastBackgroundVideoShellRect = null;
+    document.querySelectorAll("main.dream-video-covering").forEach((node) =>
+      node.classList.remove("dream-video-covering"));
     document.documentElement?.classList.remove("dream-video-route-pending");
     if (releaseUrl) releaseBackgroundVideoUrls();
   };
 
   const suspendThemeForNativeSurface = () => {
     themeSuspendedForNativeSurface = true;
-    document.documentElement?.classList.remove("codex-dream-skin", "dream-video-route-pending");
+    document.documentElement?.classList.remove("codex-dream-skin", "dream-video-route-pending", "dream-native-surface");
+    document.documentElement?.removeAttribute("data-dream-route");
     document.querySelectorAll(".dream-home").forEach((node) => node.classList.remove("dream-home"));
     document.querySelectorAll(".dream-home-stage").forEach((node) => node.classList.remove("dream-home-stage"));
     document.querySelectorAll(".dream-home-hero").forEach((node) => node.classList.remove("dream-home-hero"));
@@ -593,6 +597,7 @@
         return;
       }
       video.classList.add("is-handoff-swap", "is-ready", "is-covering");
+      shell.classList.add("dream-video-covering");
       removeOutgoingBackgroundVideos();
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
@@ -842,6 +847,7 @@
     style.dataset.dreamVersion = RUNTIME_VERSION;
     style.dataset.dreamThemeId = theme.id;
     root.classList.add("codex-dream-skin");
+    root.classList.add("dream-native-surface");
     root.style.setProperty("--dream-art", `url("${urls.artUrl}")`);
     root.style.setProperty("--dream-conversation-art", `url("${urls.conversationUrl}")`);
     if (urls.motionUrl) root.style.setProperty("--dream-motion-art", `url("${urls.motionUrl}")`);
@@ -1123,7 +1129,8 @@
       style = document.getElementById(STYLE_ID);
     }
 
-    const home = document.querySelector('[role="main"]:has([data-testid="home-icon"])');
+    const homeIcon = document.querySelector('[data-testid="home-icon"]');
+    const home = homeIcon?.closest('[role="main"]') ?? null;
     syncMarker("home", home, "dream-home");
     const homeStage = home?.querySelector(":scope > div:first-child > div:first-child") ?? null;
     const homeHero = homeStage?.querySelector(":scope > div:first-child") ?? null;
@@ -1137,6 +1144,10 @@
     syncMarker("nativeHomeSuggestions", nativeHomeSuggestions, "dream-native-home-suggestions");
     const conversation = !home ? document.querySelector('[role="main"]') : null;
     syncMarker("conversation", conversation, "dream-conversation");
+    root.dataset.dreamRoute = home ? "home" : "conversation";
+
+    const composerSurface = document.querySelector(".composer-surface-chrome");
+    syncMarker("composerHost", composerSurface?.parentElement ?? null, "dream-composer-host");
 
     const pluginSearchInput = [...document.querySelectorAll('input[type="text"], input[type="search"]')]
       .find((input) => /(?:\u641c\u7d22\u63d2\u4ef6|search\s+plugins?)/i.test(input.placeholder || ""));
@@ -1289,6 +1300,8 @@
     window.__CODEX_DREAM_SKIN_DISABLED__ = true;
     document.documentElement?.classList.remove("codex-dream-skin");
     document.documentElement?.removeAttribute("data-dream-motion");
+    document.documentElement?.removeAttribute("data-dream-route");
+    document.documentElement?.classList.remove("dream-native-surface");
     document.documentElement?.style.removeProperty("--dream-art");
     document.documentElement?.style.removeProperty("--dream-conversation-art");
     document.documentElement?.style.removeProperty("--dream-motion-art");
@@ -1345,6 +1358,12 @@
     const changedNodes = [...mutation.addedNodes, ...mutation.removedNodes];
     return changedNodes.length > 0 && changedNodes.every(isRuntimeOwnedNode);
   };
+  const mutationIsComposerTyping = (mutation) => {
+    const element = mutation.target?.nodeType === Node.ELEMENT_NODE
+      ? mutation.target
+      : mutation.target?.parentElement;
+    return Boolean(element?.closest?.('.ProseMirror[contenteditable="true"], textarea, input'));
+  };
   const requestDetailScansFor = (mutations) => {
     for (const mutation of mutations) {
       for (const node of mutation.addedNodes) {
@@ -1380,7 +1399,8 @@
   };
   const observer = new MutationObserver((mutations) => {
     protectDetachedBackgroundVideo();
-    const relevantMutations = mutations.filter((mutation) => !mutationIsRuntimeOwned(mutation));
+    const relevantMutations = mutations.filter((mutation) =>
+      !mutationIsRuntimeOwned(mutation) && !mutationIsComposerTyping(mutation));
     if (relevantMutations.length) scheduleEnsure(relevantMutations);
   });
   observer.observe(document.documentElement, {

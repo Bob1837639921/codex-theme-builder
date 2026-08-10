@@ -114,6 +114,8 @@ $sunkenTheme = Join-Path $Root '..\..\themes\sunken-opera'
 $sunkenManifest = Get-Content -LiteralPath (Join-Path $sunkenTheme 'theme.json') -Raw | ConvertFrom-Json
 $tidalTheme = Join-Path $Root '..\..\themes\tidal-hymn'
 $tidalManifest = Get-Content -LiteralPath (Join-Path $tidalTheme 'theme.json') -Raw | ConvertFrom-Json
+$vermilionTheme = Join-Path $Root '..\..\themes\vermilion-feather'
+$vermilionManifest = Get-Content -LiteralPath (Join-Path $vermilionTheme 'theme.json') -Raw | ConvertFrom-Json
 $catalogPath = Join-Path (Split-Path -Parent $theme) 'theme-catalog.json'
 $catalog = Get-Content -LiteralPath $catalogPath -Raw | ConvertFrom-Json
 $manifest = Get-Content -LiteralPath (Join-Path $theme 'theme.json') -Raw | ConvertFrom-Json
@@ -174,7 +176,7 @@ if ($templateCss -notmatch 'data-dream-motion="low"' -or
   throw 'Motion-enabled themes must use distinct off/low/high effect tiers and a reduced-motion fallback.'
 }
 if ($templateCss -notmatch '(?s)body\s*\{[^}]*--dream-conversation-art' -or
-    $templateCss -notmatch '(?s)body:has\(main\.dream-home-shell\)\s*\{[^}]*--dream-art' -or
+    $templateCss -notmatch '(?s)\[data-dream-route="home"\]\s+body\s*\{[^}]*--dream-art' -or
     $templateCss -notmatch '--theme-toolbar-surface:' -or
     $templateCss -notmatch '(?s)header\.app-header-tint\s*\{[^}]*background:\s*var\(--theme-toolbar-surface\)\s*!important[^}]*backdrop-filter:\s*blur\(' -or
     $templateCss -notmatch '(?s)\.composer-surface-chrome::before\s*\{' -or
@@ -211,6 +213,7 @@ $videoContracts = @(
   @{ Name = 'frost-sword-immortal'; Root = $frostTheme; Manifest = $frostManifest; Fields = @('homeVideo', 'conversationVideo') }
   @{ Name = 'sunken-opera'; Root = $sunkenTheme; Manifest = $sunkenManifest; Fields = @('homeSoftVideo', 'conversationSoftVideo', 'homeVideo', 'conversationVideo') }
   @{ Name = 'luminous-spirit-garden'; Root = $luminousTheme; Manifest = $luminousManifest; Fields = @('homeVideo', 'conversationVideo') }
+  @{ Name = 'vermilion-feather'; Root = $vermilionTheme; Manifest = $vermilionManifest; Fields = @('homeVideo') }
 )
 foreach ($contract in $videoContracts) {
   foreach ($field in $contract.Fields) {
@@ -270,7 +273,7 @@ if ($injectorText -notmatch 'MAX_VIDEO_BYTES\s*=\s*8\s*\*\s*1024\s*\*\s*1024' -o
     $runtimeJs -notmatch 'if\s*\(!isNativeAppSurfaceAvailable\(shell\)\)\s*\{\s*disposeBackgroundVideo\(true\)' -or
     $runtimeJs -notmatch 'if\s*\(!isNativeAppSurfaceAvailable\(shellMain\)\)\s*\{\s*suspendThemeForNativeSurface\(\)' -or
     $runtimeJs -match 'isNativeAppSurfaceAvailable\(shellMain,\s*sidebar\)' -or
-    $baseCss -notmatch '(?s)html\.codex-dream-skin:not\(:has\(main > header \[data-testid="app-shell-header-context-menu-surface"\]\)\).*?#codex-dream-background-video.*?display:\s*none\s*!important' -or
+    $baseCss -notmatch '(?s)html\.codex-dream-skin:not\(\.dream-native-surface\).*?#codex-dream-background-video.*?display:\s*none\s*!important' -or
     $injectorText -notmatch 'markers\.shell\s*&&\s*markers\.header\s*&&' -or
     $injectorText -match 'markers\.shell\s*&&\s*markers\.sidebar\s*&&' -or
     $injectorText -notmatch '!result\.sidebar\s*&&\s*!result\.switcherPresent\s*&&\s*result\.themeCardCount\s*===\s*0' -or
@@ -296,8 +299,8 @@ if ($injectorText -notmatch 'MAX_VIDEO_BYTES\s*=\s*8\s*\*\s*1024\s*\*\s*1024' -o
     $baseCss -notmatch '(?s)dream-video-route-pending main\.main-surface\s*\{[^}]*background-color:\s*transparent\s*!important[^}]*background-image:\s*none\s*!important' -or
     $baseCss -notmatch '(?s)#codex-dream-background-video\.is-handoff-swap\s*\{[^}]*transition:\s*none\s*!important' -or
     $baseCss -match '(?s)main\.main-surface:is\(\.dream-home-shell,\s*\.dream-conversation-shell\)\s*>\s*:not\([^}]*\)\s*\{[^}]*z-index:' -or
-    $baseCss -notmatch '#codex-dream-background-video\.is-covering' -or
-    $baseCss -notmatch 'main\.main-surface:has\(> \.codex-dream-background-video-layer\.is-outgoing\)' -or
+    $baseCss -notmatch 'main\.main-surface\.dream-video-covering' -or
+    $runtimeJs -notmatch 'classList\.add\("dream-video-covering"\)' -or
     $baseCss -notmatch '(?s)\.codex-dream-background-video-layer\.is-outgoing\s*\{[^}]*opacity:\s*1\s*!important') {
   throw 'Scene-specific background videos must stay local, bounded, tier-aware, visibility-aware, reduced-motion safe, authentication-safe, toolbar-safe, and non-interactive.'
 }
@@ -379,9 +382,12 @@ if ($runtimeJs -notmatch 'markDetailSurfaces' -or
   $runtimeJs -match 'taskHeaderText\.includes\(cachedTitle\)' -or
   $runtimeJs -notmatch 'matchingTitleRow' -or
   $runtimeJs -notmatch 'attributeFilter:\s*\["aria-current",\s*"aria-selected"\]' -or
-  $runtimeJs -notmatch 'MUTATION_COALESCE_MS = 96' -or
+  $runtimeJs -notmatch 'MUTATION_COALESCE_MS = 180' -or
   $runtimeJs -notmatch 'setTextIfChanged' -or
   $runtimeJs -notmatch 'mutationIsRuntimeOwned' -or
+  $runtimeJs -notmatch 'mutationIsComposerTyping' -or
+  $runtimeJs -notmatch 'closest\?\.\(''\.ProseMirror\[contenteditable="true"\], textarea, input''\)' -or
+  $runtimeJs -match 'querySelector\(''\[role="main"\]:has\(' -or
   $runtimeJs -notmatch 'outputScanRequested' -or
   $runtimeJs -notmatch 'requestAnimationFrame' -or
   $runtimeJs -match 'setTimeout\(\(\) => \{\s*scheduler\.timeout = null;\s*ensure\(\);\s*\}, 180\)' -or
@@ -404,6 +410,15 @@ if ($frostleafCss -notmatch '(?s)\.dream-queued-message-list\s*\{[^}]*background
 if ($themeCss -notmatch '(?s):is\(\.dream-selected-thread,\s*\[aria-current="page"\]\.sidebar-item\)\s*\{[^}]*border:.*?transition:\s*none\s*!important' -or
     $templateCss -notmatch '(?s):is\(\.dream-selected-thread,\s*\[aria-current="page"\]\.sidebar-item\)\s*\{[^}]*border:.*?transition:\s*none\s*!important') {
   throw 'Selected task styling must use the stable native current-row fallback without a flashing transition.'
+}
+if ($baseCss -match ':has\(' -or
+    $injectorText -notmatch 'performanceGuards' -or
+    $injectorText -notmatch 'background-attachment:scroll!important' -or
+    $injectorText -notmatch '\.composer-surface-chrome\{backdrop-filter:none!important' -or
+    $injectorText -notmatch 'contain:strict;will-change:opacity' -or
+    $runtimeJs -notmatch 'root\.dataset\.dreamRoute\s*=\s*home\s*\?\s*"home"\s*:\s*"conversation"' -or
+    $runtimeJs -notmatch 'dream-composer-host') {
+  throw 'The runtime performance guard must avoid dynamic :has selectors, editor blur repaint, fixed backgrounds, and main-thread video composition.'
 }
 if ($templateCss -match '(?s):is\(\.dream-selected-thread,\s*\[aria-current="page"\]\.sidebar-item\)\s*>\s*\*\s*\{[^}]*position\s*:\s*relative\s*!important' -or
     $templateCss -notmatch '(?s)\[data-codex-window-type\]\s+\.composer-surface-chrome\s*\{[^}]*border-width:\s*2px\s*!important[^}]*border-color:\s*transparent\s*!important' -or
@@ -448,7 +463,7 @@ if ($runtimeJs -notmatch 'codex-dream-home-overlay' -or
     $baseCss -notmatch '#codex-dream-home-overlay') {
   throw 'The reusable home overlay, full-width stage, and project-picker hooks must remain present.'
 }
-if ($templateCss -notmatch '(?s)body:has\(main\.dream-home-shell\)\s*\{[^}]*background-image:\s*var\(--dream-art\)\s*!important' -or
+if ($templateCss -notmatch '(?s)\[data-dream-route="home"\]\s+body\s*\{[^}]*background-image:\s*var\(--dream-art\)\s*!important' -or
     $templateCss -notmatch '(?s)\.dream-home \.dream-home-hero\s*\{[^}]*border-radius:\s*0\s*!important[^}]*background:\s*transparent\s*!important') {
   throw 'New themes must paint home artwork on the full home shell and keep the native hero free of inset photo-frame styling.'
 }
@@ -485,11 +500,11 @@ if ($manifest.composerEdge.image -ne 'composer-edge.png' -or
     $injectorText -notmatch '--dream-composer-edge-position' -or
     $baseCss -notmatch 'background-position:\s*var\(--dream-composer-edge-position' -or
     $baseCss -notmatch 'background-size:\s*auto\s+var\(--dream-composer-edge-max-height' -or
-    $baseCss -notmatch '(?s)div:has\(> \.composer-surface-chrome\)::after\s*\{[^}]*background-image:\s*var\(--dream-composer-edge\)' -or
+    $baseCss -notmatch '(?s)\.dream-composer-host::after\s*\{[^}]*background-image:\s*var\(--dream-composer-edge\)' -or
     $baseCss -notmatch 'inset:\s*-100px\s+-180px\s+-12px\s+-76px' -or
-    $baseCss -notmatch '(?s)div:has\(> \.composer-surface-chrome\)::after\s*\{[^}]*z-index:\s*2' -or
+    $baseCss -notmatch '(?s)\.dream-composer-host::after\s*\{[^}]*z-index:\s*2' -or
     $baseCss -notmatch '(?s)\.composer-surface-chrome\s*>\s*\*\s*\{[^}]*z-index:\s*3' -or
-    $themeCss -match '(?s)div:has\(> \.composer-surface-chrome\)::after\s*,.*?display:\s*none') {
+    $themeCss -match '(?s)\.dream-composer-host::after\s*,.*?display:\s*none') {
   throw 'The theme-specific composer-edge raster contract and shared rendering hook must remain validated and bundled.'
 }
 Write-Host 'PASS: syntax, CDP validation, selected theme payload, composer fade regression, dialog contrast regression, detail polish, reduced motion, Store activation bridge, launch defaults, and zero-config-invasion checks.'
