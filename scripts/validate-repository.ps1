@@ -86,13 +86,24 @@ foreach ($videoField in @(
     throw "The new-theme scaffold is missing the reusable motion field: $videoField"
   }
 }
+foreach ($selectedThreadContract in @(
+  'SelectedThreadBackgroundImage',
+  "Stem 'selected-thread-background'",
+  'manifest.selectedLeaf'
+)) {
+  if ($newThemeText -notmatch [regex]::Escape($selectedThreadContract)) {
+    throw "The new-theme scaffold is missing the required selected-thread background contract: $selectedThreadContract"
+  }
+}
 if ($templateText -notmatch '(?s)body\s*\{[^}]*--dream-conversation-art' -or
     $templateText -notmatch '(?s)body:has\(main\.dream-home-shell\)\s*\{[^}]*--dream-art' -or
     $templateText -notmatch '(?s)\.composer-surface-chrome::before\s*\{' -or
     $templateText -notmatch '(?s)\.composer-surface-chrome::after\s*\{' -or
     $templateText -notmatch 'button\[class~="bg-token-foreground"\]' -or
     $templateText -notmatch 'dream-output-panel' -or
-    $templateText -notmatch 'dream-plugin-search-shell') {
+    $templateText -notmatch 'dream-plugin-search-shell' -or
+    $templateText -notmatch '(?s)\[aria-current="page"\]\.sidebar-item.*?background-image:.*?--dream-selected-leaf' -or
+    $templateText -notmatch 'background-size:\s*100% 100%,\s*100% 100%') {
   throw 'The reusable theme template must keep its shared canvas, scalable composer, control, output-panel, and plugin-search contracts.'
 }
 
@@ -138,6 +149,14 @@ foreach ($themeId in $themeIds) {
   }
   if ([string]::IsNullOrWhiteSpace($themeManifest.usageImage)) {
     throw "Bundled theme must include dedicated usage-panel artwork: $themeId"
+  }
+  if ([string]::IsNullOrWhiteSpace($themeManifest.selectedLeaf)) {
+    throw "Bundled theme must include selected-thread background artwork: $themeId"
+  }
+  $selectedThreadBackground = Join-Path $theme $themeManifest.selectedLeaf
+  if (-not (Test-Path -LiteralPath $selectedThreadBackground -PathType Leaf) -or
+      (Get-Item -LiteralPath $selectedThreadBackground).Length -gt 512KB) {
+    throw "Bundled selected-thread background must exist and remain at or below 512 KB: $themeId"
   }
   $usageImage = Join-Path $theme $themeManifest.usageImage
   if (-not (Test-Path -LiteralPath $usageImage -PathType Leaf) -or

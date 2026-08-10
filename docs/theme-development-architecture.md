@@ -27,7 +27,7 @@ assets/themes/<theme-id>/
 ├─ conversation.webp           # 对话工作区构图
 ├─ usage-background.webp       # 完整使用量面板专用轻量背景
 ├─ sidebar.webp                # 可选侧栏回退纹理
-├─ selected-marker.webp        # 可选当前任务标记
+├─ selected-thread-background.png # 必需；当前任务整行可拉伸背景
 ├─ composer-edge.webp          # 可选输入框前景装饰
 ├─ icon-build.svg
 ├─ icon-analyze.svg

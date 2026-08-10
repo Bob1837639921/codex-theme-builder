@@ -137,7 +137,7 @@ assets/themes/<theme-id>/
 ├─ conversation.webp
 ├─ usage-background.webp        # 必需；完整使用量面板专用且不复用主页图
 ├─ sidebar.webp                 # 可选；连续全局画布可只作为回退资源
-├─ selected-marker.webp         # 可选
+├─ selected-thread-background.png # 必需；当前对话整行主题背景（建议透明 640×72）
 ├─ composer-edge.webp           # 可选
 ├─ icon-build.svg
 ├─ icon-analyze.svg

@@ -18,6 +18,7 @@
 - All four safe SVG icons exist and remain below 64 KB.
 - Runtime payload builds without unresolved placeholders.
 - JavaScript and PowerShell syntax checks pass.
+- A dedicated transparent selected-thread background is declared through `selectedLeaf`, remains at or below 512 KB, and is authored near its rendered aspect ratio (recommended 640×72) rather than derived from a full-canvas image.
 
 ## Home view
 
@@ -56,6 +57,7 @@
 - Running progress uses only small-area motion and stops under reduced-motion preferences.
 - Current thread remains legible when pin/archive controls appear; controls do not shift the title.
 - Selected-state artwork stays attached to the title label, ahead of its text, when thread action controls appear or disappear.
+- The complete selected-row background keeps its center low-detail, does not repeat or distort recognizably, and leaves the unread indicator plus pin/archive actions unobstructed.
 - Trigger conversation mutations while the current thread is selected; its marker must not be removed and re-added or visibly flash.
 - Hover repeatedly between the current task title and its pin/archive actions; the native `[aria-current="page"].sidebar-item` fallback must keep the same border and background on every frame.
 - Navigate from a selected conversation back to New Task; no previous conversation may retain the themed selected-task marker or label artwork.

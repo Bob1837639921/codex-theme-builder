@@ -11,7 +11,10 @@ param(
   [ValidateScript({ -not $_ -or (Test-Path -LiteralPath $_ -PathType Leaf) })][string]$ConversationSoftVideo = '',
   [ValidateScript({ -not $_ -or (Test-Path -LiteralPath $_ -PathType Leaf) })][string]$HomeVideo = '',
   [ValidateScript({ -not $_ -or (Test-Path -LiteralPath $_ -PathType Leaf) })][string]$ConversationVideo = '',
-  [ValidateScript({ -not $_ -or (Test-Path -LiteralPath $_ -PathType Leaf) })][string]$SelectedMarkerImage = '',
+  [Parameter(Mandatory)]
+  [Alias('SelectedMarkerImage')]
+  [ValidateScript({ Test-Path -LiteralPath $_ -PathType Leaf })]
+  [string]$SelectedThreadBackgroundImage,
   [ValidateScript({ -not $_ -or (Test-Path -LiteralPath $_ -PathType Leaf) })][string]$ComposerEdgeImage = '',
   [ValidateSet('left', 'center', 'right')][string]$ComposerEdgeHorizontal = 'left',
   [ValidateSet('top', 'center', 'bottom')][string]$ComposerEdgeVertical = 'bottom',
@@ -83,9 +86,10 @@ $conversationVideoName = if ([string]::IsNullOrWhiteSpace($ConversationVideo)) {
   Copy-ThemeAsset -Source $ConversationVideo -Stem 'conversation-motion' -AllowedExtensions @('.mp4')
 }
 $usageName = Copy-ThemeAsset -Source $UsageImage -Stem 'usage-background' -AllowedExtensions @('.png', '.jpg', '.jpeg', '.webp')
-$selectedMarkerName = if ([string]::IsNullOrWhiteSpace($SelectedMarkerImage)) { '' } else {
-  Copy-ThemeAsset -Source $SelectedMarkerImage -Stem 'selected-marker' -AllowedExtensions @('.png', '.webp')
-}
+$selectedThreadBackgroundName = Copy-ThemeAsset `
+  -Source $SelectedThreadBackgroundImage `
+  -Stem 'selected-thread-background' `
+  -AllowedExtensions @('.png', '.webp')
 $composerEdgeName = if ([string]::IsNullOrWhiteSpace($ComposerEdgeImage)) { '' } else {
   Copy-ThemeAsset -Source $ComposerEdgeImage -Stem 'composer-edge' -AllowedExtensions @('.png', '.webp')
 }
@@ -113,7 +117,7 @@ if ($conversationSoftVideoName) { $manifest.conversationSoftVideo = $conversatio
 if ($homeVideoName) { $manifest.homeVideo = $homeVideoName }
 if ($conversationVideoName) { $manifest.conversationVideo = $conversationVideoName }
 $manifest.usageImage = $usageName
-if ($selectedMarkerName) { $manifest.selectedLeaf = $selectedMarkerName }
+$manifest.selectedLeaf = $selectedThreadBackgroundName
 if ($composerEdgeName) {
   $manifest.composerEdge = [ordered]@{
     image = $composerEdgeName

@@ -23,6 +23,19 @@ if (-not (Test-Path -LiteralPath $usageImage -PathType Leaf)) {
 if ((Get-Item -LiteralPath $usageImage).Length -gt 300KB) {
   throw "Dedicated usage-panel artwork must remain at or below 300 KB: $usageImage"
 }
+if ([string]::IsNullOrWhiteSpace($themeManifest.selectedLeaf)) {
+  throw 'Theme manifest must declare selectedLeaf for the selected-thread background.'
+}
+$selectedThreadBackground = Join-Path $theme $themeManifest.selectedLeaf
+if (-not (Test-Path -LiteralPath $selectedThreadBackground -PathType Leaf)) {
+  throw "Selected-thread background artwork is missing: $selectedThreadBackground"
+}
+if ([System.IO.Path]::GetExtension($selectedThreadBackground).ToLowerInvariant() -notin @('.png', '.webp')) {
+  throw "Selected-thread background must be PNG or WebP: $selectedThreadBackground"
+}
+if ((Get-Item -LiteralPath $selectedThreadBackground).Length -gt 512KB) {
+  throw "Selected-thread background must remain at or below 512 KB: $selectedThreadBackground"
+}
 
 $themeCssPath = Join-Path $theme 'theme.css'
 if (-not (Test-Path -LiteralPath $themeCssPath -PathType Leaf)) {
@@ -39,6 +52,9 @@ foreach ($token in @(
   if ($themeCss -notmatch [regex]::Escape($token)) {
     throw "Theme CSS must define the usage-panel token: $token"
   }
+}
+if ($themeCss -notmatch [regex]::Escape('--dream-selected-leaf')) {
+  throw 'Theme CSS must render the selected-thread background through --dream-selected-leaf.'
 }
 
 . (Join-Path $runtimeRoot 'windows\scripts\common-windows.ps1')

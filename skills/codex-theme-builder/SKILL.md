@@ -44,6 +44,7 @@ powershell -ExecutionPolicy Bypass -File scripts/new-theme.ps1 `
   -HomeImage "C:\path\home.png" `
   -ConversationImage "C:\path\conversation.png" `
   -UsageImage "C:\path\usage-background.webp" `
+  -SelectedThreadBackgroundImage "C:\path\selected-thread-background.png" `
   -HomeSoftVideo "C:\path\home-soft.mp4" `
   -ConversationSoftVideo "C:\path\conversation-soft.mp4" `
   -HomeVideo "C:\path\home-full.mp4" `
@@ -51,7 +52,7 @@ powershell -ExecutionPolicy Bypass -File scripts/new-theme.ps1 `
   -OutputDirectory "C:\path\themes"
 ```
 
-The four video arguments are optional. When motion is approved, keep home and conversation clips independent in both soft and full tiers so route changes and motion-level changes can use the shared atomic handoff without falling back through a mismatched static composition.
+The four video arguments are optional. The selected-thread background is required for every newly generated theme; use a transparent stretch-safe strip with a quiet text center, not a full-scene crop or a late-loading label icon. When motion is approved, keep home and conversation clips independent in both soft and full tiers so route changes and motion-level changes can use the shared atomic handoff without falling back through a mismatched static composition.
 
 5. Tune `theme.css` using theme-scoped selectors under `:root.codex-dream-skin`. Every theme must define its own usage-panel ink, muted, accent, overlay, and border tokens; do not inherit another theme's palette or reuse its home artwork.
 6. Work through every row in `new-theme-blueprint.md`, including both compact and full usage surfaces. Keep generic DOM discovery and safety behavior in the shared runtime; keep palette, imagery, spacing, and theme identity in the theme folder.

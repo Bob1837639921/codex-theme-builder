@@ -25,7 +25,7 @@ to that theme.
 | Usage image | Required usage-details background | Create a lightweight portrait crop at or below 300 KB, with edge decoration and a calm central reading zone. Never reuse the home or conversation artwork. |
 | Sidebar image | Optional sidebar texture | Keep navigation and task labels readable in normal, hover, and selected states. |
 | Four action icons | Home actions | Match the new direction while retaining the four native action meanings. |
-| Selected marker | Optional current-task accent | Either attach a compact motif before the label or use a stretch-safe, low-detail strip as the complete selected-row background. Keep the text center clear, preserve native pin/archive actions, and disable transitions that can flash during row replacement. |
+| Selected-thread background | Required current-task identity | Create a transparent, stretch-safe, low-detail strip (recommended 640×72) as the complete selected-row background. Keep the center 60% clear, preserve native unread/pin/archive actions, and disable transitions that can flash during row replacement. |
 | Composer edge | Optional transparent foreground art | Anchor to a corner, keep its center transparent, and reserve native controls. |
 | `theme.css` | Theme-specific presentation | Scope every rule under the theme root and style only mapped surfaces. |
 | `theme-catalog.json` | In-app availability | Add the new theme ID when it should appear in live switching. Keep every sibling theme self-contained. |
@@ -36,7 +36,7 @@ from those masters, never from an older WebP/JPEG delivery copy. Keep the source
 directory outside `assets/themes/<theme-id>/` so packaging stays lean without
 sacrificing the reusable master.
 
-Use `scripts/new-theme.ps1` to copy the supplied home, conversation, usage, sidebar, selected-marker, and composer-edge assets into the package. Home and usage artwork are mandatory; omit only the genuinely optional inputs.
+Use `scripts/new-theme.ps1` to copy the supplied home, conversation, usage, selected-thread background, sidebar, and composer-edge assets into the package. Home, usage, and selected-thread artwork are mandatory; omit only the genuinely optional inputs. Pass the selected strip through `-SelectedThreadBackgroundImage` (`-SelectedMarkerImage` remains a compatibility alias only).
 
 ## Surface map
 
@@ -133,6 +133,15 @@ marker, apply `var(--dream-selected-leaf)` to the selected row itself with a
 stretch-safe center and keep the label free of a second copy. The strip must be
 close to its rendered size, must leave the central text area low-detail, and
 must not move, pulse, or arrive after the selected border.
+
+For all newly generated themes, the complete ornamental strip is the default
+and required selected-state structure. Use a transparent 640×72 master unless
+the target sidebar requires a measured alternative. Keep visual weight at the
+left and far right, reserve the central 60% for the task title, and leave the
+rightmost action/unread area sufficiently calm. The row background must render
+in the same frame as the native `[aria-current="page"]` state; label-level
+pseudo-elements, animated reveals, repeated textures, and late asset swaps are
+not accepted.
 
 The shared runtime removes `.dream-selected-thread` and
 `.dream-selected-thread-label` whenever the New Task home route is active.

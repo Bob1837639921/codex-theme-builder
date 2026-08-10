@@ -288,10 +288,35 @@
    marker creates a visible one-frame border flash. */
 :root.codex-dream-skin aside.app-shell-left-panel
   :is(.dream-selected-thread, [aria-current="page"].sidebar-item) {
-  background: color-mix(in srgb, var(--dream-accent, #58766c) 22%, transparent) !important;
+  background-color: color-mix(in srgb, var(--dream-accent, #58766c) 22%, transparent) !important;
+  background-image:
+    var(--dream-selected-leaf),
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--dream-accent, #58766c) 22%, transparent),
+      color-mix(in srgb, var(--dream-accent-alt, #8aa69b) 14%, transparent)
+    ) !important;
+  background-position: center, center !important;
+  background-repeat: no-repeat, no-repeat !important;
+  background-size: 100% 100%, 100% 100% !important;
   border: 1px solid color-mix(in srgb, var(--dream-accent, #58766c) 46%, transparent) !important;
   box-shadow: inset 2px 0 0 var(--dream-accent, #58766c) !important;
   transition: none !important;
+}
+
+/* The selected-thread artwork belongs to the complete row. Never draw a
+   second delayed copy beside the label, and always keep native actions above
+   the non-interactive background strip. */
+:root.codex-dream-skin aside.app-shell-left-panel
+  :is(.dream-selected-thread, [aria-current="page"].sidebar-item)
+  :is(.dream-selected-thread-label, [data-dream-selected-label]) {
+  background-image: none !important;
+}
+
+:root.codex-dream-skin aside.app-shell-left-panel
+  :is(.dream-selected-thread, [aria-current="page"].sidebar-item) > * {
+  position: relative !important;
+  z-index: 1 !important;
 }
 
 /* Runtime marks the complete native diff card instead of relying on volatile

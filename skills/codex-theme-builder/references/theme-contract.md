@@ -17,7 +17,7 @@ theme-id/
   conversation-motion-soft.mp4 # optional low-tier conversation video
   home-motion.mp4       # optional home video, high motion tier only
   conversation-motion.mp4 # optional conversation video, high motion tier only
-  selected-leaf.png  # optional selected-state raster marker
+  selected-thread-background.png  # required selected-row background for new themes
   composer-edge.png  # optional transparent composer-edge artwork
   icon-build.svg
   icon-analyze.svg
@@ -44,7 +44,7 @@ The image names are configurable. `theme.css` is optional to the runtime but gen
   "conversationSoftVideo": "conversation-motion-soft.mp4",
   "homeVideo": "home-motion.mp4",
   "conversationVideo": "conversation-motion.mp4",
-  "selectedLeaf": "selected-leaf.png",
+  "selectedLeaf": "selected-thread-background.png",
   "composerEdge": {
     "image": "composer-edge.png",
     "horizontal": "left",
@@ -84,7 +84,7 @@ Rules:
 - Use six-digit hexadecimal colors.
 - `conversationImage` may equal `image`.
 - `usageImage` is required. It must be a local PNG, JPEG, or WebP no larger than 300 KB. The runtime exposes it as `--dream-usage-art`; never reuse the home or conversation image.
-- `selectedLeaf` is optional. When present it must be a local PNG or WebP no larger than 512 KB. The runtime exposes it as `--dream-selected-leaf`; use `none` as the CSS fallback.
+- `selectedLeaf` is required for newly generated themes (the runtime still accepts its absence for legacy external packages). It must be a local transparent PNG or WebP no larger than 512 KB and is exposed as `--dream-selected-leaf`. Author it as a complete selected-row background, preferably near 640×72 px: keep roughly the center 60% low-detail and text-free, place identity artwork toward the ends, and leave the right action zone calm. Render it once on `.dream-selected-thread` and `[aria-current="page"].sidebar-item` with `background-size: 100% 100%`; never add a delayed duplicate to the label.
 - `composerEdge` is optional. It may be a filename for compatibility or an object containing `image`, `horizontal`, `vertical`, `maxHeight`, and `opacity`. The image must be a local transparent PNG or WebP no larger than 2 MB. Horizontal anchors are `left`, `center`, or `right`; vertical anchors are `top`, `center`, or `bottom`; `maxHeight` is 48–384 CSS pixels; opacity is 0.2–1. The runtime exposes image, position, height cap, and opacity as CSS variables. Keep the center and native control zones transparent.
 
 ## CSS scope

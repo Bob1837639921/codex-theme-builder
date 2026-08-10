@@ -449,6 +449,11 @@ if ($runtimeJs -notmatch 'data-dream-sidebar-control' -or
     $runtimeJs -notmatch 'setProperty\("opacity", "\.9", "important"\)') {
   throw 'Sidebar collapse controls must receive reversible inline-important contrast because native important utilities override theme styles.'
 }
+if ($templateCss -notmatch '(?s)\[aria-current="page"\]\.sidebar-item.*?background-image:.*?--dream-selected-leaf' -or
+    $templateCss -notmatch 'background-size:\s*100% 100%,\s*100% 100%' -or
+    $templateCss -notmatch '(?s)dream-selected-thread-label.*?background-image:\s*none') {
+  throw 'New themes must inherit the complete stretch-safe selected-thread background contract.'
+}
 if ($themeCss -notmatch '@keyframes\s+dream-progress-turn' -or
   $themeCss -notmatch '(?s)\.dream-progress-indicator\s*\{[^}]*animation:' -or
   $themeCss -notmatch '(?s)@media\s*\(prefers-reduced-motion:\s*reduce\).*?\.dream-progress-indicator\s*\{[^}]*animation:\s*none' -or
