@@ -326,6 +326,12 @@ if ($runtimeJs -notmatch 'data-codex-composer-root' -or
     $injectorText -notmatch 'data-codex-composer="true"') {
   throw 'Runtime and verification must preserve themed composer styling through the native semantic composer contract.'
 }
+$frostleafCss = Get-Content -Raw (Join-Path $Root '..\..\themes\frostleaf-illusionist\theme.css')
+if ($frostleafCss -notmatch 'height:\s*10px\s*!important' -or
+    $frostleafCss -notmatch 'radial-gradient\(circle at 4px 5px' -or
+    $frostleafCss -notmatch 'z-index:\s*4\s*!important') {
+  throw 'Frostleaf composer pearl markers must stay fully inside their decoration box and above the composer chrome.'
+}
 if ($themeCss -notmatch '(?s)main\.dream-conversation-shell\s+\.sticky\.bottom-0\s+\[class~="bg-gradient-to-t"\]\s*\{[^}]*background-image:\s*none\s*!important') {
   throw 'Conversation composer fades must stay transparent, including the in-progress file-summary state.'
 }

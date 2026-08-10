@@ -2,12 +2,16 @@
 
 ## Static checks
 
+- Untouched source/master artwork exists outside the distributable theme directory, and every changed delivery image was encoded directly from that source or a verified lossless working master.
+- No approved existing theme asset was batch-recompressed without an explicit request or a documented measured defect.
 - Manifest parses and uses schema version 1.
 - Theme ID and filenames are portable.
 - Home and conversation raster images exist, decode, and remain below 8 MB.
 - `scripts/inspect-theme-artwork.ps1` reports the home and conversation dimensions and file sizes.
 - Full-canvas artwork intended for large displays is preferably 3840 px wide and does not fall below the 3200 px warning threshold without a documented reason.
 - Full-canvas WebP files target 1 MB or less when visual comparison shows no meaningful loss.
+- If a soft payload target was exceeded, `design-qa.md` records why the higher-quality under-limit asset was retained. If the target was met, visual inspection still confirms no visible banding, blur, halos, or protected-subject damage.
+- Documentation previews are separate derivatives and have not replaced runtime artwork.
 - No superseded, backup, source-resolution, or unreferenced full-canvas background remains in the theme folder.
 - A distinct usage-details raster exists, is not the home/conversation artwork, and remains at or below 300 KB.
 - Theme CSS explicitly defines all five usage-panel semantic tokens.
@@ -102,4 +106,4 @@
   shell header must pass verification without weakening signed-out cleanup.
 - Restore and confirm the native UI returns.
 - Re-run after a Codex update.
-- Record source and output dimensions, encoded size, normal viewport, largest tested viewport, and any accepted quality exception in `design-qa.md`.
+- Record source path, source and output dimensions, encoder/quality settings, encoded size, normal viewport, largest tested viewport, side-by-side findings, and any accepted quality exception in `design-qa.md`.

@@ -35,7 +35,7 @@ Read [theme-contract.md](references/theme-contract.md) before authoring or modif
 
 1. Inspect the user's reference, target Codex version, viewport, and desired routes.
 2. Decide whether the home and conversation views share artwork. Prefer separate images when composition or contrast differs.
-3. Create or acquire real artwork. Follow `artwork-quality.md`: preserve the selected composition, prepare full-canvas assets for large displays, encode them as quality-controlled WebP, and keep super-resolution work offline rather than in the Codex runtime. Do not approximate supplied artwork with CSS gradients when visual fidelity matters.
+3. Create or acquire real artwork. Follow `artwork-quality.md`: preserve the selected composition, prepare full-canvas assets for large displays, encode them as quality-controlled WebP, and keep super-resolution work offline rather than in the Codex runtime. Keep the untouched source/master outside the distributable theme directory, create runtime assets from that master only, and never overwrite or recompress an approved asset merely to reduce its byte size. Do not approximate supplied artwork with CSS gradients when visual fidelity matters.
 4. Run the scaffold script with a unique lowercase ID:
 
 ```powershell
@@ -121,6 +121,8 @@ Commit the skill, source theme directories, documentation, and intentionally siz
 - Bind debugging only to loopback through the bundled runtime.
 - Never force-close Codex during theme startup.
 - Keep each raster image at or below 8 MB and each SVG icon at or below 64 KB. For full-canvas WebP artwork, target 1 MB or less when visual comparison shows no meaningful loss.
+- Treat 1 MB as a soft delivery target, not permission to damage artwork. Preserve the source/master, encode each delivery asset directly from it, and accept a larger file under the hard limit when a smaller encoding introduces visible banding, blur, haloing, face or line-art damage.
+- Never batch-recompress previously approved themes unless the user explicitly requests it or measured QA identifies a specific asset defect. Documentation previews may use separate smaller copies but must never replace runtime artwork.
 - Preserve native menus, project selection, composer actions, keyboard navigation, and pointer behavior.
 - Keep all selectors scoped to the theme root whenever possible.
 - Animate only small surfaces with `transform` and `opacity` when possible; never use continuous full-screen motion.

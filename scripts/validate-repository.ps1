@@ -12,6 +12,7 @@ $setupScript = Join-Path $PSScriptRoot 'setup-windows.ps1'
 $shortcutInstaller = Join-Path $skill 'scripts\install-desktop-shortcut.ps1'
 $runtimeArchitecture = Join-Path $skill 'references\runtime-architecture.md'
 $conversationQuality = Join-Path $skill 'references\conversation-quality-baseline.md'
+$artworkQuality = Join-Path $skill 'references\artwork-quality.md'
 $newThemeScript = Join-Path $skill 'scripts\new-theme.ps1'
 $themeTemplateCss = Join-Path $skill 'assets\theme-template\theme.css'
 $desktopLauncher = Join-Path $skill 'assets\runtime\v2\desktop-launch.ps1'
@@ -27,6 +28,7 @@ foreach ($required in @(
   $shortcutInstaller,
   $runtimeArchitecture,
   $conversationQuality,
+  $artworkQuality,
   $newThemeScript,
   $themeTemplateCss,
   $desktopLauncher,
@@ -53,10 +55,22 @@ if ($agentText -notmatch [regex]::Escape($key)) {
 $newThemeText = Get-Content -Raw -Encoding UTF8 -LiteralPath $newThemeScript
 $templateText = Get-Content -Raw -Encoding UTF8 -LiteralPath $themeTemplateCss
 $qualityText = Get-Content -Raw -Encoding UTF8 -LiteralPath $conversationQuality
+$artworkQualityText = Get-Content -Raw -Encoding UTF8 -LiteralPath $artworkQuality
 if ($skillText -notmatch 'conversation-quality-baseline\.md' -or
     $qualityText -notmatch '(?i)tidal-hymn|Tidal Hymn' -or
     $qualityText -notmatch '(?i)atomic video handoff') {
   throw 'The reusable Skill must keep the conversation quality baseline and its Tidal Hymn benchmark.'
+}
+foreach ($qualityRule in @(
+  'immutable source master',
+  'Never use an already compressed WebP or JPEG',
+  'Never batch-recompress existing approved theme artwork',
+  'Treat the 1 MB target as soft',
+  'Documentation previews'
+)) {
+  if ($artworkQualityText -notmatch [regex]::Escape($qualityRule)) {
+    throw "The reusable artwork-quality contract is missing: $qualityRule"
+  }
 }
 foreach ($videoField in @(
   'HomeSoftVideo',

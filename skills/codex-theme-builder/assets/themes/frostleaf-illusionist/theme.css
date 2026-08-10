@@ -439,13 +439,14 @@ html.codex-dream-skin div:has(> .composer-surface-chrome)::after {
   position: absolute !important;
   inset: 7px 14px auto auto !important;
   width: 46px !important;
-  height: 7px !important;
+  height: 10px !important;
+  z-index: 4 !important;
   pointer-events: none !important;
   border-radius: 999px !important;
   background:
-    radial-gradient(circle at 4px 3px, #eafffa 0 2px, #68d4c8 2.5px 4px, transparent 4.5px),
-    radial-gradient(circle at 22px 3px, #dffbf5 0 2px, #91dfce 2.5px 4px, transparent 4.5px),
-    radial-gradient(circle at 40px 3px, #f2fffc 0 2px, #72c9bd 2.5px 4px, transparent 4.5px) !important;
+    radial-gradient(circle at 4px 5px, #eafffa 0 2px, #68d4c8 2.5px 4px, transparent 4.5px),
+    radial-gradient(circle at 22px 5px, #dffbf5 0 2px, #91dfce 2.5px 4px, transparent 4.5px),
+    radial-gradient(circle at 40px 5px, #f2fffc 0 2px, #72c9bd 2.5px 4px, transparent 4.5px) !important;
   filter: drop-shadow(0 0 5px rgba(113, 222, 208, .65)) !important;
   transform: none !important;
   transition: none !important;

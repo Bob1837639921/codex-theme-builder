@@ -9,13 +9,21 @@ Read this reference before creating, replacing, enlarging, or compressing home a
 - Do not replace an approved scene with a newly generated look-alike merely to gain pixels.
 - Use separate home and conversation crops when one composition cannot protect both title and working-content zones.
 
+## Keep an immutable source master
+
+- Keep the original or approved generated image unchanged in the theme work area, normally `work/theme-runs/<theme-id>/source/`. The distributable `assets/themes/<theme-id>/` directory contains delivery copies only.
+- Never resize, sharpen, convert, or compress in place over the source master. Write every derived file to a separate output path.
+- Encode each new delivery asset directly from the source master or a verified lossless working master. Never use an already compressed WebP or JPEG as the source for another compression pass.
+- Never batch-recompress existing approved theme artwork merely to make repository totals smaller. Change an approved asset only when the user requests it or measured QA identifies a specific defect; record the reason in `design-qa.md`.
+- Keep source masters out of the packaged Skill and Git payload unless the user explicitly asks to publish them. Retain them in the local work area until the theme is accepted and safely archived.
+
 ## Prepare large-display assets
 
 - Prefer a 3840 px output width for full-canvas desktop artwork. Preserve the source aspect ratio unless the implementation map specifies a deliberate crop.
 - Treat widths below 3200 px as a warning for artwork expected to cover large desktop displays.
 - If enlargement is required, use offline content-preserving super-resolution. A proven workflow is Real-ESRGAN `realesrgan-x4plus`, followed by a high-quality Lanczos resize to the final 3840 px width.
 - Inspect the enlarged result before acceptance. Reject altered faces, hands, weapons, instruments, text, silhouettes, brush strokes, or repeated texture artifacts.
-- Delete lossless intermediate files after the final encoded asset is verified. Do not commit temporary PNGs, model binaries, or generated comparison sheets.
+- Delete disposable lossless intermediates after the final encoded asset is verified, but do not delete or overwrite the immutable source master. Do not commit temporary PNGs, model binaries, or generated comparison sheets.
 - Replace the manifest-referenced asset in place or update the manifest atomically, then delete the superseded background. Do not keep `old`, `backup`, source-resolution, or alternate encoded copies inside the theme folder.
 - Before packaging, search the manifest, theme CSS, catalog, and documentation for every remaining raster filename. Remove any unreferenced full-canvas or preview raster unless it is an intentional documented asset.
 
@@ -24,6 +32,9 @@ Read this reference before creating, replacing, enlarging, or compressing home a
 - Use WebP for opaque full-canvas artwork unless transparency or a supplied lossless source requires PNG.
 - Start around WebP quality 84 and adjust only after side-by-side comparison. Prefer a slower encoder setting during production because encoding is not a runtime cost.
 - Target 1 MB or less per full-canvas WebP when the scene remains visually faithful. The manifest hard limit remains 8 MB.
+- Treat the 1 MB target as soft. If meeting it causes visible blur, banding, ringing, haloing, texture collapse, or damage to faces, hair, hands, fabric, text, line art, weapons, or instruments, keep the higher-quality encoding under the 8 MB hard limit and document the exception.
+- Preserve alpha and clean edges for transparent ornaments. Do not force transparent PNG/WebP assets into an opaque or visibly destructive encoding.
+- Create README and documentation previews as separate derivatives. They may be smaller than runtime artwork, but must never be copied back over a theme's delivery asset.
 - Keep small markers, icons, and corner ornaments close to their maximum rendered dimensions instead of applying the 4K rule to every asset.
 
 ## Keep runtime cost flat
@@ -67,4 +78,5 @@ Read this reference before creating, replacing, enlarging, or compressing home a
 4. Inspect at normal, narrow, and the largest available target viewport at 100% display scaling. Prefer a viewport at least 3200 px wide when the target machine has an ultrawide or 4K display.
 5. Compare facial detail, fine line art, foliage, fabric, hair, weapons, instruments, and low-contrast texture against the approved source.
 6. Confirm that the theme folder contains no superseded or unreferenced background copies.
-7. Record the tested viewports, asset dimensions, sizes, findings, and accepted exceptions in `design-qa.md`.
+7. Compare every changed delivery asset side by side with its source master at 100% and at the largest target viewport. When both images have matching geometry, use PSNR or SSIM as supporting evidence, never as a substitute for visual inspection.
+8. Record the source path, output dimensions, encoded size, encoder/quality settings, tested viewports, comparison findings, and accepted exceptions in `design-qa.md`.

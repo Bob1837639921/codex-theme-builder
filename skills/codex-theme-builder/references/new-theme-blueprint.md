@@ -30,6 +30,12 @@ to that theme.
 | `theme.css` | Theme-specific presentation | Scope every rule under the theme root and style only mapped surfaces. |
 | `theme-catalog.json` | In-app availability | Add the new theme ID when it should appear in live switching. Keep every sibling theme self-contained. |
 
+Before scaffolding, place untouched approved artwork in
+`work/theme-runs/<theme-id>/source/`. Generate the theme package's runtime images
+from those masters, never from an older WebP/JPEG delivery copy. Keep the source
+directory outside `assets/themes/<theme-id>/` so packaging stays lean without
+sacrificing the reusable master.
+
 Use `scripts/new-theme.ps1` to copy the supplied home, conversation, usage, sidebar, selected-marker, and composer-edge assets into the package. Home and usage artwork are mandatory; omit only the genuinely optional inputs.
 
 ## Surface map
@@ -102,6 +108,7 @@ Treat composer art as a foreground accent with a transparent canvas, not as a se
 - Coalesce mutation work to animation frames and retain valid marker nodes.
 - Add `prefers-reduced-motion` behavior for every theme-specific animation.
 - Follow `artwork-quality.md` for full-canvas assets: prefer 3840 px-wide WebP, preserve the approved composition during offline super-resolution, and target 1 MB or less when quality permits.
+- Treat asset-size targets as quality-gated soft limits. Never overwrite source masters or recompress approved sibling themes; create a fresh delivery copy from the master and keep a larger under-limit result when the smaller file visibly degrades.
 - Never run super-resolution, sharpening, blur recovery, or continuous full-screen filters inside Codex. Perform image enhancement once during theme production.
 - Resize tiny transparent markers or corner ornaments close to their maximum rendered dimensions. Do not ship multi-megapixel 20px icons.
 - Re-run payload validation after compression and visually compare the live result at normal and largest available target viewports.
