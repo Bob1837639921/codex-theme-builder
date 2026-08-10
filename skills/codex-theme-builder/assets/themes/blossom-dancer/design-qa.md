@@ -42,4 +42,12 @@
 - The center remains transparent and low-detail; native title, pin, archive, hover, and focus states stay unobstructed.
 - The old single-leaf delivery marker was removed rather than recompressed or retained as an unreferenced runtime asset.
 
+## 2026-08-10 大屏高清化
+
+- 输入母版：`work/theme-runs/new-theme-hd/source/blossom-home.webp` 与 `blossom-conversation.webp`，均为 3840 × 2160。
+- 离线流程：本地 ComfyUI `RealESRGAN_x2plus` 超分到 7680 × 4320，再以 Lanczos 缩回 3840 × 2160；WebP quality 90 / method 6。
+- 交付大小：首页 399,854 bytes；对话 286,386 bytes。
+- 100% 对照检查：人物身份、面部、手部、舞姿、服饰、花朵、亭台和左右安全区保持不变；发丝、花饰、衣料边缘与建筑轮廓更清晰，未发现锐化光环、重复纹理或构图漂移。
+- 运行成本不变：仍为单张 4K 静态 WebP，无运行时滤镜、Canvas 或额外 GPU 效果。
+
 final result: passed

@@ -18,6 +18,8 @@ Resolve the highest-risk design decision with the smallest useful artifact. The 
 - Do not place the three directions in one contact sheet.
 - Make the directions materially distinct in palette, light level, costume treatment, environment, glass/material language, selected-task styling, output panel, and composer edge treatment.
 - Keep the native Codex sidebar, conversation header, long-form thread, output/resources panel, composer controls, model selector, and Windows title/menu areas recognizable and usable.
+- Show the approved full-scene pattern by letting the conversation artwork remain visible through translucent content and conversation-toolbar layers. Keep the native geometry unchanged.
+- Reserve the top chrome safe zone: place the character's head below the upper 12% of the 16:9 frame and the eyes below roughly 18%, then verify the face and head ornament remain unobstructed in the authentic Codex screenshot.
 - Reject any preview with invented navigation, fake editor surfaces, missing native actions, illegible text, extra limbs, broken hands, cropped heads, or decoration that blocks controls.
 - Prefer one luminous direction, one dark or dramatic direction, and one restrained/light alternative unless the brief specifies a different contrast set.
 

@@ -8,6 +8,7 @@
   --theme-border: color-mix(in srgb, var(--dream-ink, #26332f) 14%, transparent);
   --theme-shadow: 0 18px 48px rgb(25 35 32 / 10%);
   --theme-canvas-wash: color-mix(in srgb, var(--dream-surface, #f4f0e6) 16%, transparent);
+  --theme-toolbar-surface: color-mix(in srgb, var(--dream-surface, #f4f0e6) 68%, transparent);
   --theme-composer-surface: color-mix(in srgb, var(--dream-surface, #f4f0e6) 88%, transparent);
   --theme-composer-control: color-mix(in srgb, var(--dream-ink, #26332f) 92%, transparent);
   --theme-composer-placeholder: color-mix(in srgb, var(--dream-ink, #26332f) 54%, transparent);
@@ -98,7 +99,8 @@
    window chrome above it are system-owned and intentionally left native. */
 :root.codex-dream-skin main.main-surface > header.app-header-tint {
   color: var(--dream-ink, #26332f) !important;
-  background: color-mix(in srgb, var(--dream-surface, #f4f0e6) 94%, white) !important;
+  background: var(--theme-toolbar-surface) !important;
+  backdrop-filter: blur(12px) saturate(.96) !important;
   border-bottom: 1px solid var(--theme-border) !important;
   box-shadow: inset 0 -1px rgb(255 255 255 / 54%) !important;
 }
@@ -125,6 +127,14 @@
   box-shadow: var(--theme-shadow) !important;
   backdrop-filter: blur(14px) saturate(0.96);
   transition: box-shadow 180ms cubic-bezier(.2, .8, .2, 1) !important;
+}
+
+/* Current Electron builds force the semantic composer border width to zero.
+   Keep generated themes' padding-box and border-box paints separated. */
+html.codex-dream-skin[data-codex-window-type] .composer-surface-chrome {
+  border-width: 2px !important;
+  border-style: solid !important;
+  border-color: transparent !important;
 }
 
 /* Decoration is attached to the composer's own box, so multiline growth never
@@ -203,6 +213,13 @@
 :root.codex-dream-skin .composer-surface-chrome .ProseMirror p.is-editor-empty:first-child::before {
   color: var(--theme-composer-placeholder) !important;
   -webkit-text-fill-color: var(--theme-composer-placeholder) !important;
+}
+
+/* Conversation pages add a native white bottom fade that otherwise appears as
+   a rectangular frame around the themed composer. Home does not use it. */
+html.codex-dream-skin main.dream-conversation-shell .sticky.bottom-0 [class~="bg-gradient-to-t"] {
+  background-color: transparent !important;
+  background-image: none !important;
 }
 
 /* Native queued follow-ups sit above the composer and may otherwise retain a
@@ -315,7 +332,6 @@
 
 :root.codex-dream-skin aside.app-shell-left-panel
   :is(.dream-selected-thread, [aria-current="page"].sidebar-item) > * {
-  position: relative !important;
   z-index: 1 !important;
 }
 

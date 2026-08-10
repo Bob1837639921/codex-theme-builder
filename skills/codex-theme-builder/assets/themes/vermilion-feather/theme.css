@@ -127,6 +127,17 @@
   transition: box-shadow 180ms cubic-bezier(.2, .8, .2, 1) !important;
 }
 
+/* Current Electron builds apply a window-scoped `border-width: 0 !important`
+   rule to the semantic composer surface. Match that scope with slightly higher
+   specificity so the theme's transparent border keeps the padding-box and
+   border-box paints separated instead of exposing the inner frame at the two
+   vertical edges. */
+html.codex-dream-skin[data-codex-window-type] .composer-surface-chrome {
+  border-width: 2px !important;
+  border-style: solid !important;
+  border-color: transparent !important;
+}
+
 /* Decoration is attached to the composer's own box, so multiline growth never
    detaches the frame from the native controls. */
 :root.codex-dream-skin .composer-surface-chrome::before {
@@ -135,7 +146,7 @@
   position: absolute !important;
   z-index: 1 !important;
   inset: 5px !important;
-  border: 1px solid color-mix(in srgb, white 52%, var(--dream-accent, #58766c) 18%) !important;
+  border: 1px solid color-mix(in srgb, var(--dream-accent, #58766c) 24%, transparent) !important;
   border-radius: 17px !important;
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--dream-accent, #58766c) 8%, transparent) !important;
   pointer-events: none !important;
@@ -203,6 +214,14 @@
 :root.codex-dream-skin .composer-surface-chrome .ProseMirror p.is-editor-empty:first-child::before {
   color: var(--theme-composer-placeholder) !important;
   -webkit-text-fill-color: var(--theme-composer-placeholder) !important;
+}
+
+/* The conversation route adds a native white bottom fade behind the composer.
+   It is absent on Home, so scope the reset to the conversation shell and keep
+   the surrounding artwork visible on all four sides of the themed composer. */
+html.codex-dream-skin main.dream-conversation-shell .sticky.bottom-0 [class~="bg-gradient-to-t"] {
+  background-color: transparent !important;
+  background-image: none !important;
 }
 
 /* Native queued follow-ups sit above the composer and may otherwise retain a
@@ -315,7 +334,6 @@
 
 :root.codex-dream-skin aside.app-shell-left-panel
   :is(.dream-selected-thread, [aria-current="page"].sidebar-item) > * {
-  position: relative !important;
   z-index: 1 !important;
 }
 
@@ -480,14 +498,14 @@
 :root.codex-dream-skin main.main-surface > header.app-header-tint {
   color: #56382e !important;
   background:
-    radial-gradient(circle at 22% 40%, rgb(185 71 44 / 8%), transparent 34%),
-    linear-gradient(100deg, rgb(255 252 246 / 95%), rgb(252 242 224 / 91%) 54%, rgb(246 231 203 / 90%)) !important;
-  border-bottom-color: rgb(177 107 48 / 25%) !important;
+    radial-gradient(circle at 22% 40%, rgb(185 71 44 / 3%), transparent 34%),
+    linear-gradient(100deg, rgb(255 252 246 / 22%), rgb(252 242 224 / 17%) 54%, rgb(246 231 203 / 14%)) !important;
+  border-bottom-color: rgb(177 107 48 / 10%) !important;
   box-shadow:
-    inset 0 1px rgb(255 255 255 / 82%),
-    inset 0 -1px rgb(255 255 255 / 54%),
-    0 5px 18px rgb(96 55 33 / 7%) !important;
-  backdrop-filter: blur(14px) saturate(1.02) !important;
+    inset 0 1px rgb(255 255 255 / 24%),
+    inset 0 -1px rgb(255 255 255 / 13%),
+    0 2px 10px rgb(96 55 33 / 2%) !important;
+  backdrop-filter: blur(3px) saturate(.94) !important;
 }
 
 :root.codex-dream-skin main.main-surface > header.app-header-tint::after {
@@ -499,9 +517,29 @@
   bottom: -1px !important;
   height: 2px !important;
   border-radius: 999px !important;
-  background: linear-gradient(90deg, transparent, rgb(185 71 44 / 42%) 22%, rgb(200 155 70 / 58%) 52%, rgb(185 71 44 / 38%) 80%, transparent) !important;
-  box-shadow: 0 0 9px rgb(200 155 70 / 18%) !important;
+  background: linear-gradient(90deg, transparent, rgb(185 71 44 / 14%) 22%, rgb(200 155 70 / 20%) 52%, rgb(185 71 44 / 12%) 80%, transparent) !important;
+  box-shadow: 0 0 5px rgb(200 155 70 / 6%) !important;
   pointer-events: none !important;
+}
+
+/* The home artwork already carries its own luminous horizon. Keep the
+   translucent toolbar, but remove the added lower glow so the scene remains
+   visually continuous beneath it. Conversation retains the subtle divider. */
+:root.codex-dream-skin main.main-surface.dream-home-shell > header.app-header-tint,
+:root.codex-dream-skin body:has(main.main-surface.dream-home-shell) header.app-header-tint {
+  border-bottom: 0 !important;
+  box-shadow: inset 0 1px rgb(255 255 255 / 20%) !important;
+}
+
+:root.codex-dream-skin main.main-surface.dream-home-shell > header.app-header-tint::after,
+:root.codex-dream-skin body:has(main.main-surface.dream-home-shell) header.app-header-tint::after {
+  display: none !important;
+}
+
+:root.codex-dream-skin main.main-surface.dream-home-shell .app-shell-main-content-top-fade,
+:root.codex-dream-skin body:has(main.main-surface.dream-home-shell) .app-shell-main-content-top-fade {
+  display: none !important;
+  opacity: 0 !important;
 }
 
 :root.codex-dream-skin main.main-surface > header.app-header-tint :is(button, span, svg) {

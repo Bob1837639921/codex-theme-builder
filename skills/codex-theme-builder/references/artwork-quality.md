@@ -9,6 +9,23 @@ Read this reference before creating, replacing, enlarging, or compressing home a
 - Do not replace an approved scene with a newly generated look-alike merely to gain pixels.
 - Use separate home and conversation crops when one composition cannot protect both title and working-content zones.
 
+## Compose for the full conversation canvas
+
+- Default to one continuous conversation scene beneath the content, toolbar,
+  output, and composer layers. Author the image for the full window crop rather
+  than for only the scrollable message rectangle.
+- Reserve the upper 12% of a 16:9 conversation master for low-detail scenery and
+  translucent chrome. Keep the protected character's head top at or below that
+  boundary and the eyes at or below roughly 18% of image height. This is the
+  default overscan-safe target, not permission to crop the body or defining prop.
+- For a right-side character, retain calm reading space through the center and
+  left. Keep the face, crown, ears, hair silhouette, and signature ornament fully
+  visible below the combined Windows menu and Codex conversation toolbar at
+  normal, narrow, and largest target viewports.
+- Generate or recompose from the source master when the protected head zone is
+  wrong. Do not repeatedly blur, stretch, or inpaint an already compressed
+  delivery image to force it downward.
+
 ## Keep an immutable source master
 
 - Keep the original or approved generated image unchanged in the theme work area, normally `work/theme-runs/<theme-id>/source/`. The distributable `assets/themes/<theme-id>/` directory contains delivery copies only.

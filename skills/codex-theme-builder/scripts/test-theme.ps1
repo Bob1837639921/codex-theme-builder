@@ -56,6 +56,12 @@ foreach ($token in @(
 if ($themeCss -notmatch [regex]::Escape('--dream-selected-leaf')) {
   throw 'Theme CSS must render the selected-thread background through --dream-selected-leaf.'
 }
+if ($themeCss -notmatch '(?s)dream-conversation-shell.{0,220}bg-gradient-to-t.{0,220}background-image:\s*none\s*!important') {
+  throw 'Theme CSS must remove the native conversation composer fade so it cannot appear as a white rectangular frame.'
+}
+if ($themeCss -match '(?s):is\(\.dream-selected-thread,\s*\[aria-current="page"\]\.sidebar-item\)\s*>\s*\*\s*\{[^}]*position\s*:\s*relative\s*!important') {
+  throw 'Theme CSS must preserve the native absolute positioning of selected-thread status and action layers.'
+}
 
 . (Join-Path $runtimeRoot 'windows\scripts\common-windows.ps1')
 $node = Get-DreamSkinNodeRuntime

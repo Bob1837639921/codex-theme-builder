@@ -10,6 +10,8 @@ palette, pearls, character art, or theme-local selectors into another theme.
 1. Mount one conversation scene on the global canvas. Main content, sidebar,
    toolbar, output panel, and composer are coordinated translucent layers, not
    independent copies of the same raster with different `cover` crops.
+   Keep the content toolbar translucent so the scene remains continuous through
+   the task-title and operation area without changing native geometry.
 2. Provide separate `homeSoftVideo` / `conversationSoftVideo` and
    `homeVideo` / `conversationVideo` whenever both soft and full are approved as
    video treatments. Never reuse a home crop in conversation.
@@ -34,6 +36,10 @@ palette, pearls, character art, or theme-local selectors into another theme.
 8. Validate a populated conversation, long scroll, multiline composer,
    file-change summary, output panel, plugin search, compact quota warning, full
    usage details, normal viewport, and narrow viewport.
+9. Validate character composition against the top chrome safe zone. The upper
+   12% of a 16:9 master remains low-detail, the head begins below it, the eyes sit
+   below roughly 18%, and no face, crown, ear, or hair silhouette is hidden by
+   the Windows menu or Codex conversation toolbar.
 
 ## Acceptance evidence
 

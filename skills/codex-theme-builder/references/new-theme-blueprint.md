@@ -21,7 +21,7 @@ to that theme.
 |---|---|---|
 | `theme.json` | Identity, asset names, colors | Set a unique ID, name, subtitle, four colors, and local filenames. |
 | Home image | Landing artwork | Compose a wide crop with a calm title and four-action safe zone. When a character has meaningful outfit variants, choose a home-specific costume and pose instead of reusing the conversation figure. |
-| Conversation image | Task background | Compose a tall crop with low contrast behind text, diffs, code, and composer. Use an independently authored pose/costume when the direction calls for visible page-to-page differentiation. |
+| Conversation image | Full task-scene background | Compose for the entire conversation canvas, including the translucent content toolbar and operation surfaces, with low contrast behind text, diffs, code, and composer. Keep the protected head below the top chrome safe zone. Use an independently authored pose/costume when the direction calls for visible page-to-page differentiation. |
 | Usage image | Required usage-details background | Create a lightweight portrait crop at or below 300 KB, with edge decoration and a calm central reading zone. Never reuse the home or conversation artwork. |
 | Sidebar image | Optional sidebar texture | Keep navigation and task labels readable in normal, hover, and selected states. |
 | Four action icons | Home actions | Match the new direction while retaining the four native action meanings. |
@@ -42,7 +42,7 @@ Use `scripts/new-theme.ps1` to copy the supplied home, conversation, usage, sele
 
 Review each surface instead of treating a theme as a background replacement:
 
-1. **Global canvas and content toolbar:** main paper/surface color, full-height artwork coverage, scrollbar edge, and title-bar transition. Explicitly theme `main.main-surface > header.app-header-tint` with a matching surface, divider, readable task title, icons, and hover state while preserving its native height and controls. Treat the Windows/Electron menu and window buttons above the web content as system-owned chrome; do not claim full support for styling them through the injected theme.
+1. **Global canvas and content toolbar:** main paper/surface color, full-height artwork coverage, scrollbar edge, and title-bar transition. Default to the conversation scene showing continuously beneath the content and operation layers. Explicitly theme `main.main-surface > header.app-header-tint` as a translucent, backdrop-filtered surface with a subtle divider, readable task title, icons, and hover state while preserving its native height and controls. Do not replace the artwork above or below the header with a solid strip. Treat the Windows/Electron menu and window buttons above the web content as system-owned chrome; do not claim full support for styling them through the injected theme.
 2. **Sidebar:** background or texture, logo/header contrast, navigation, pinned tasks, projects, project expand/collapse controls, account area, hover, focus, and current-task state. Define `--dream-sidebar-control-text` with sufficient contrast against the sidebar artwork.
 3. **Home:** full-canvas scene crop, title/subtitle safe area, all four action blocks, project selector, and initial composer. Paint the artwork on `.dream-home-shell` / `.dream-home`, use the shared `#codex-dream-home-overlay`, keep `.dream-home-hero` transparent with square corners, and leave the native project-selector/composer layout untouched. `.dream-project-picker` is an inspection hook, not permission to recreate its geometry or styling. Inset photo-frame artwork and reconstructed compound-input layouts are not accepted default structures.
 4. **Conversation:** prose, links, code, diffs, tool rows, image previews, timestamps, feedback buttons, and long-scroll readability.
@@ -65,6 +65,19 @@ viewport.
 ### Continuous-art direction
 
 When the selected design is one continuous scene across sidebar and conversation, mount the conversation artwork once on the global `body` canvas. Treat the sidebar, title bar, main shell, output panel, and composer as translucent overlays. Do not apply the same raster independently with `background-size: cover` to sidebar and main: each container would calculate a different crop and split characters, instruments, architecture, or horizon lines. Keep `sidebarImage` only as a packaged fallback when the manifest contract requires it.
+
+Use this continuous-art treatment as the default for new character themes unless
+the user approves a deliberately opaque application-shell direction. Let the
+single scene continue behind the message area, operation surfaces, and Codex
+content toolbar; use transparency, local contrast masks, and backdrop blur for
+readability rather than replacing those regions with unrelated solid panels.
+
+Compose the character with chrome overscan before implementation. On a 16:9
+master, keep the upper 12% low-detail, keep the top of the protected head at or
+below that line, and place the eyes at or below roughly 18% of frame height.
+Verify at narrow and wide crops because `cover` can move the visible top edge.
+The face, crown, ears, hair silhouette, and defining prop must remain visible
+below the Windows menu and the Codex conversation title toolbar.
 
 For dark directions, opening a panel is part of implementation, not optional QA. Explicitly verify the product-mode menu, profile/usage menu, message-actions menu, output panel, dialogs, popovers, listboxes, disabled rows, and nested sticky rows. Utility-token colors may bypass inherited `color`, so theme rules must also set `-webkit-text-fill-color` on relevant descendants.
 

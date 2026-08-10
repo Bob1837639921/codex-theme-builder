@@ -44,11 +44,13 @@
 
 - Treat Tidal Hymn's conversation treatment as the completeness benchmark, not as an art-direction dependency: every theme must provide an equally coherent canvas, readable mask, composer hierarchy, and control treatment in its own visual language.
 - Background covers the full task surface, including the right side and lower area.
+- Conversation artwork remains continuous behind the content and operation areas; the task-title toolbar is translucent, readable, and does not introduce an opaque band or change native geometry.
+- At normal, narrow, and largest target viewports, the protected character's complete head, face, crown/ears, hair silhouette, and defining ornament remain below the Windows menu and Codex content toolbar. Confirm the source master reserved the upper chrome safe zone instead of compensating with runtime offsets.
 - Sidebar and conversation content read as one coordinated full-window scene; the content column must not restart, tile, or crop a second copy of the same raster.
 - Background detail remains crisp at the largest available target viewport without runtime sharpening or full-screen filters.
 - Text, code, diffs, tool output, links, and image previews remain legible.
 - Composer aligns with the content column.
-- No opaque white side rails appear beside or behind the composer.
+- No opaque white frame or side rail appears on any of the composer's four edges. Verify the top and bottom as well as the left and right in the conversation route.
 - Trigger a file change and verify no white strip appears behind the file-changes summary pill.
 - Inspect a populated file-change summary card: header, file paths, added/deleted counts, undo/review controls, hover state, and expanded rows must remain readable on one coherent themed surface.
 - Model, microphone, access mode, attachment, and submit/stop controls remain usable.
@@ -60,6 +62,7 @@
 - Grow the composer to multiple lines and trigger file-change summaries; decorative borders remain attached to the composer box and never depend on a fixed viewport position.
 - Running progress uses only small-area motion and stops under reduced-motion preferences.
 - Current thread remains legible when pin/archive controls appear; controls do not shift the title.
+- Start a turn so the selected task shows its loading spinner. The spinner remains overlaid at the right edge and the title stays on the same single-line vertical center before, during, and after loading.
 - Selected-state artwork stays attached to the title label, ahead of its text, when thread action controls appear or disappear.
 - The complete selected-row background keeps its center low-detail, does not repeat or distort recognizably, and leaves the unread indicator plus pin/archive actions unobstructed.
 - Trigger conversation mutations while the current thread is selected; its marker must not be removed and re-added or visibly flash.

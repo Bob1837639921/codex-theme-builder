@@ -175,6 +175,8 @@ if ($templateCss -notmatch 'data-dream-motion="low"' -or
 }
 if ($templateCss -notmatch '(?s)body\s*\{[^}]*--dream-conversation-art' -or
     $templateCss -notmatch '(?s)body:has\(main\.dream-home-shell\)\s*\{[^}]*--dream-art' -or
+    $templateCss -notmatch '--theme-toolbar-surface:' -or
+    $templateCss -notmatch '(?s)header\.app-header-tint\s*\{[^}]*background:\s*var\(--theme-toolbar-surface\)\s*!important[^}]*backdrop-filter:\s*blur\(' -or
     $templateCss -notmatch '(?s)\.composer-surface-chrome::before\s*\{' -or
     $templateCss -notmatch '(?s)\.composer-surface-chrome::after\s*\{' -or
     $templateCss -notmatch 'button\[class~="bg-token-foreground"\]' -or
@@ -402,6 +404,11 @@ if ($frostleafCss -notmatch '(?s)\.dream-queued-message-list\s*\{[^}]*background
 if ($themeCss -notmatch '(?s):is\(\.dream-selected-thread,\s*\[aria-current="page"\]\.sidebar-item\)\s*\{[^}]*border:.*?transition:\s*none\s*!important' -or
     $templateCss -notmatch '(?s):is\(\.dream-selected-thread,\s*\[aria-current="page"\]\.sidebar-item\)\s*\{[^}]*border:.*?transition:\s*none\s*!important') {
   throw 'Selected task styling must use the stable native current-row fallback without a flashing transition.'
+}
+if ($templateCss -match '(?s):is\(\.dream-selected-thread,\s*\[aria-current="page"\]\.sidebar-item\)\s*>\s*\*\s*\{[^}]*position\s*:\s*relative\s*!important' -or
+    $templateCss -notmatch '(?s)\[data-codex-window-type\]\s+\.composer-surface-chrome\s*\{[^}]*border-width:\s*2px\s*!important[^}]*border-color:\s*transparent\s*!important' -or
+    $templateCss -notmatch '(?s)main\.dream-conversation-shell\s+\.sticky\.bottom-0\s+\[class~="bg-gradient-to-t"\]\s*\{[^}]*background-image:\s*none\s*!important') {
+  throw 'The shared template must preserve native selected-row overlays and prevent the four-sided conversation composer frame.'
 }
 if ($runtimeJs -notmatch 'dream-native-home-suggestions' -or
     $runtimeJs -notmatch 'dream-plugin-search-shell' -or
