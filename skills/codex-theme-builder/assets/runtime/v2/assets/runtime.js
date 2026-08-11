@@ -13,7 +13,7 @@
   const STORAGE_KEY = "codex-dream-theme-active";
   const MOTION_STORAGE_KEY = "codex-dream-motion-level";
   const MOTION_LEVELS = ["off", "low", "high"];
-  const RUNTIME_VERSION = "2.2.15-chunked-payload";
+  const RUNTIME_VERSION = "2.2.17-scoped-window-video";
   const THEME_SEARCH_THRESHOLD = 6;
   const MUTATION_COALESCE_MS = 180;
   const actions = [
@@ -52,8 +52,8 @@
   if (!themeMap.size || !themeMap.has(initialThemeId)) throw new Error("Theme catalog is empty or missing the initial theme");
   const objectUrls = new Map();
   let activeBackgroundVideoElement = null;
-  let lastBackgroundVideoShellRect = null;
   let themeSuspendedForNativeSurface = false;
+  const usesWindowVideoCanvas = () => activeTheme?.windowVideoCanvas === true;
   const hasNativeShellHeader = (candidate) => Boolean(candidate?.querySelector(
     ':scope > header [data-testid="app-shell-header-context-menu-surface"]',
   ));
@@ -483,8 +483,9 @@
   };
 
   const ensureVideoHandoffShield = (shell, loading = false) => {
+    const parent = usesWindowVideoCanvas() ? document.body : shell;
     let shield = document.getElementById(VIDEO_HANDOFF_SHIELD_ID);
-    if (shield && shield.parentElement !== shell) {
+    if (shield && shield.parentElement !== parent) {
       disposeVideoHandoffShield();
       shield = null;
     }
@@ -492,7 +493,7 @@
       shield = document.createElement("div");
       shield.id = VIDEO_HANDOFF_SHIELD_ID;
       shield.setAttribute("aria-hidden", "true");
-      shell.appendChild(shield);
+      parent.prepend(shield);
     }
     shield.classList.toggle("is-loading", loading);
     if (loading) shield.classList.add("is-opaque");
@@ -510,16 +511,15 @@
       video.remove();
     }
     activeBackgroundVideoElement = null;
-    lastBackgroundVideoShellRect = null;
     document.querySelectorAll("main.dream-video-covering").forEach((node) =>
       node.classList.remove("dream-video-covering"));
-    document.documentElement?.classList.remove("dream-video-route-pending");
+    document.documentElement?.classList.remove("dream-video-covering");
     if (releaseUrl) releaseBackgroundVideoUrls();
   };
 
   const suspendThemeForNativeSurface = () => {
     themeSuspendedForNativeSurface = true;
-    document.documentElement?.classList.remove("codex-dream-skin", "dream-video-route-pending", "dream-native-surface");
+    document.documentElement?.classList.remove("codex-dream-skin", "dream-video-covering", "dream-video-window-canvas", "dream-native-surface");
     document.documentElement?.removeAttribute("data-dream-route");
     document.querySelectorAll(".dream-home").forEach((node) => node.classList.remove("dream-home"));
     document.querySelectorAll(".dream-home-stage").forEach((node) => node.classList.remove("dream-home-stage"));
@@ -546,33 +546,6 @@
     disposeBackgroundVideo(true);
   };
 
-  const clearRoutePendingVideo = (video, shell = null) => {
-    if (!video) return;
-    video.classList.remove("is-route-pending");
-    for (const property of ["left", "top", "width", "height"]) {
-      video.style.removeProperty(property);
-    }
-    document.documentElement?.classList.remove("dream-video-route-pending");
-    if (shell && video.parentElement !== shell) shell.prepend(video);
-  };
-
-  const protectDetachedBackgroundVideo = () => {
-    const video = activeBackgroundVideoElement;
-    const rect = lastBackgroundVideoShellRect;
-    if (!isNativeAppSurfaceAvailable() || !video || video.isConnected || !rect || !document.body ||
-        !video.classList.contains("is-covering")) {
-      return false;
-    }
-    video.classList.add("is-route-pending");
-    video.style.setProperty("left", `${Math.round(rect.left)}px`, "important");
-    video.style.setProperty("top", `${Math.round(rect.top)}px`, "important");
-    video.style.setProperty("width", `${Math.round(rect.width)}px`, "important");
-    video.style.setProperty("height", `${Math.round(rect.height)}px`, "important");
-    document.documentElement?.classList.add("dream-video-route-pending");
-    document.body.appendChild(video);
-    return true;
-  };
-
   const removeOutgoingBackgroundVideos = (except = null) => {
     document.querySelectorAll(`.${BACKGROUND_VIDEO_LAYER_CLASS}.is-outgoing`).forEach((video) => {
       if (video === except) return;
@@ -586,8 +559,8 @@
 
   const revealBackgroundVideo = (video) => {
     if (document.getElementById(BACKGROUND_VIDEO_ID) !== video) return;
-    const shell = video.parentElement;
-    if (!shell) return;
+    const shell = document.querySelector("main.main-surface.dream-home-shell, main.main-surface.dream-conversation-shell");
+    if (!shell || !isNativeAppSurfaceAvailable(shell)) return;
     const wasLoading = document.getElementById(VIDEO_HANDOFF_SHIELD_ID)?.classList.contains("is-loading") || false;
     const shield = ensureVideoHandoffShield(shell);
     shield.classList.remove("is-loading");
@@ -599,23 +572,25 @@
       }
       video.classList.add("is-handoff-swap", "is-ready", "is-covering");
       shell.classList.add("dream-video-covering");
+      document.documentElement?.classList.add("dream-video-covering");
       removeOutgoingBackgroundVideos();
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          if (document.getElementById(BACKGROUND_VIDEO_ID) !== video) {
-            if (shield.isConnected) shield.remove();
-            return;
-          }
-          if (!document.hidden && video.paused) video.play().catch(() => {});
-          shield.classList.add("is-leaving");
-          shield.classList.remove("is-opaque");
-          shield._dreamRemoveTimer = setTimeout(() => {
-            if (shield.isConnected) shield.remove();
-            video.classList.remove("is-handoff-swap");
-            if (document.hidden) video.pause();
-          }, 360);
-        });
-      });
+      /* requestAnimationFrame is suspended when Codex loses foreground focus.
+         Finish the atomic shield lifecycle on a timer so CLI verification or
+         an Alt-Tab during theme switching cannot strand an opaque shield. */
+      shield._dreamSwapTimer = setTimeout(() => {
+        if (document.getElementById(BACKGROUND_VIDEO_ID) !== video) {
+          if (shield.isConnected) shield.remove();
+          return;
+        }
+        if (!document.hidden && video.paused) video.play().catch(() => {});
+        shield.classList.add("is-leaving");
+        shield.classList.remove("is-opaque");
+        shield._dreamRemoveTimer = setTimeout(() => {
+          if (shield.isConnected) shield.remove();
+          video.classList.remove("is-handoff-swap");
+          if (document.hidden) video.pause();
+        }, 360);
+      }, 34);
     };
 
     requestAnimationFrame(() => {
@@ -635,15 +610,6 @@
     const sceneIsKnown = shell?.classList.contains("dream-home-shell") ||
       shell?.classList.contains("dream-conversation-shell");
     if (!sceneIsKnown) return null;
-    const shellRect = shell.getBoundingClientRect();
-    if (shellRect.width > 0 && shellRect.height > 0) {
-      lastBackgroundVideoShellRect = {
-        left: shellRect.left,
-        top: shellRect.top,
-        width: shellRect.width,
-        height: shellRect.height,
-      };
-    }
     const scene = shell?.classList.contains("dream-home-shell") ? "home" : "conversation";
     const videoTier = activeMotionLevel === "high" ? "high" :
       activeMotionLevel === "low" ? "soft" : null;
@@ -669,9 +635,7 @@
       urls[urlKey] = dataUrlToObjectUrl(videoDataUrl);
     }
     let video = document.getElementById(BACKGROUND_VIDEO_ID);
-    if (video?.classList.contains("is-route-pending")) {
-      clearRoutePendingVideo(video, shell);
-    }
+    const videoParent = usesWindowVideoCanvas() ? document.body : shell;
     if (!video || video.dataset.dreamThemeId !== activeTheme.id ||
         video.dataset.dreamScene !== scene || video.dataset.dreamMotionTier !== videoTier) {
       disposeVideoHandoffShield();
@@ -692,7 +656,7 @@
         video.removeAttribute("id");
         video.classList.remove("is-ready", "is-covering", "is-handoff-swap");
         video.classList.add(BACKGROUND_VIDEO_LAYER_CLASS, "is-outgoing");
-        if (video.parentElement !== shell) shell.prepend(video);
+        if (video.parentElement !== videoParent) videoParent.prepend(video);
       }
       video = document.createElement("video");
       activeBackgroundVideoElement = video;
@@ -719,7 +683,7 @@
       }
       video.src = urls[urlKey];
     }
-    clearRoutePendingVideo(video, shell);
+    if (video.parentElement !== videoParent) videoParent.prepend(video);
     activeBackgroundVideoElement = video;
     if (document.hidden) {
       video.pause();
@@ -849,6 +813,7 @@
     style.dataset.dreamThemeId = theme.id;
     root.classList.add("codex-dream-skin");
     root.classList.add("dream-native-surface");
+    root.classList.toggle("dream-video-window-canvas", theme.windowVideoCanvas === true);
     root.style.setProperty("--dream-art", `url("${urls.artUrl}")`);
     root.style.setProperty("--dream-conversation-art", `url("${urls.conversationUrl}")`);
     if (urls.motionUrl) root.style.setProperty("--dream-motion-art", `url("${urls.motionUrl}")`);
@@ -1311,6 +1276,7 @@
     document.documentElement?.removeAttribute("data-dream-motion");
     document.documentElement?.removeAttribute("data-dream-route");
     document.documentElement?.classList.remove("dream-native-surface");
+    document.documentElement?.classList.remove("dream-video-window-canvas", "dream-video-covering");
     document.documentElement?.style.removeProperty("--dream-art");
     document.documentElement?.style.removeProperty("--dream-conversation-art");
     document.documentElement?.style.removeProperty("--dream-motion-art");
@@ -1407,7 +1373,6 @@
     else queueFrame();
   };
   const observer = new MutationObserver((mutations) => {
-    protectDetachedBackgroundVideo();
     const relevantMutations = mutations.filter((mutation) =>
       !mutationIsRuntimeOwned(mutation) && !mutationIsComposerTyping(mutation));
     if (relevantMutations.length) scheduleEnsure(relevantMutations);

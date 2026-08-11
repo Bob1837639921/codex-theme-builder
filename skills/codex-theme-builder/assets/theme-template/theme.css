@@ -99,10 +99,16 @@
    window chrome above it are system-owned and intentionally left native. */
 :root.codex-dream-skin main.main-surface > header.app-header-tint {
   color: var(--dream-ink, #26332f) !important;
-  background: var(--theme-toolbar-surface) !important;
-  backdrop-filter: blur(12px) saturate(.96) !important;
+  background:
+    linear-gradient(
+      100deg,
+      color-mix(in srgb, var(--theme-toolbar-surface) 34%, transparent),
+      color-mix(in srgb, var(--theme-toolbar-surface) 22%, transparent)
+    ) !important;
+  backdrop-filter: blur(4px) saturate(.96) !important;
+  -webkit-backdrop-filter: blur(4px) saturate(.96) !important;
   border-bottom: 1px solid var(--theme-border) !important;
-  box-shadow: inset 0 -1px rgb(255 255 255 / 54%) !important;
+  box-shadow: inset 0 -1px rgb(255 255 255 / 12%) !important;
 }
 
 :root.codex-dream-skin main.main-surface > header.app-header-tint :is(button, span, svg) {

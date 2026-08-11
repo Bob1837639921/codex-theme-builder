@@ -45,6 +45,7 @@
 - Treat Tidal Hymn's conversation treatment as the completeness benchmark, not as an art-direction dependency: every theme must provide an equally coherent canvas, readable mask, composer hierarchy, and control treatment in its own visual language.
 - Background covers the full task surface, including the right side and lower area.
 - Conversation artwork remains continuous behind the content and operation areas; the task-title toolbar is translucent, readable, and does not introduce an opaque band or change native geometry.
+- Switch through every bundled theme on both home and conversation routes and confirm the direct content toolbar continues to reveal the active scene. No theme-local late rule may repaint it as an opaque white, cream, colored, or dark band.
 - At normal, narrow, and largest target viewports, the protected character's complete head, face, crown/ears, hair silhouette, and defining ornament remain below the Windows menu and Codex content toolbar. Confirm the source master reserved the upper chrome safe zone instead of compensating with runtime offsets.
 - Sidebar and conversation content read as one coordinated full-window scene; the content column must not restart, tile, or crop a second copy of the same raster.
 - Background detail remains crisp at the largest available target viewport without runtime sharpening or full-screen filters.
@@ -62,6 +63,11 @@
 - Grow the composer to multiple lines and trigger file-change summaries; decorative borders remain attached to the composer box and never depend on a fixed viewport position.
 - Type continuously for at least 15 seconds and scroll a long conversation while the active route is idle. Verify character echo remains immediate, scroll stays smooth, runtime ensure-count does not rise for editor-only mutations, and the composer has no computed backdrop blur.
 - Test every declared video at off, low, and high tiers on both home and conversation routes. A route without a tier-specific video must have zero live background-video elements and must not decode a hidden fallback clip.
+- When a theme declares `windowVideoCanvas`, verify its active video is a direct
+  child of `body`, covers the viewport, and continues behind menu strip, toolbar,
+  content, and composer without a static duplicate. For themes without the flag,
+  verify the video remains a child of and exactly bounded to the active scene
+  shell. Switch between both modes and confirm neither geometry leaks.
 - Running progress uses only small-area motion and stops under reduced-motion preferences.
 - Current thread remains legible when pin/archive controls appear; controls do not shift the title.
 - On long conversations, the native quick-jump rail is visible without hover on

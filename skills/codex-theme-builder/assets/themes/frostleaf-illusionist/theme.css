@@ -23,6 +23,44 @@
   --dream-ease: cubic-bezier(.2, .8, .2, 1);
 }
 
+:root.codex-dream-skin [class*="_ApplicationMenuTopBar_"] {
+  color: #edf9f5 !important;
+  background: linear-gradient(100deg, rgb(4 35 35 / 97%), rgb(7 61 59 / 95%) 56%, rgb(11 75 69 / 96%)) !important;
+  border-bottom: 1px solid rgb(87 199 190 / 30%) !important;
+}
+
+:root.codex-dream-skin [class*="_ApplicationMenuTopBar_"] :is(button, span, svg) {
+  color: #edf9f5 !important;
+  -webkit-text-fill-color: #edf9f5 !important;
+}
+
+:root.codex-dream-skin [class*="_ApplicationMenuTopBar_"] button:hover {
+  background-color: rgb(87 199 190 / 18%) !important;
+}
+
+/* Deep-jade glass toolbar; explicit descendant colors prevent native light
+   utility classes from washing out controls on the dark scene. */
+:root.codex-dream-skin main.main-surface > header.app-header-tint {
+  color: #edf9f5 !important;
+  background: linear-gradient(100deg, rgb(4 42 42 / 88%), rgb(8 67 64 / 82%) 56%, rgb(12 79 72 / 84%)) !important;
+  border-bottom: 1px solid rgb(87 199 190 / 32%) !important;
+  box-shadow: none !important;
+  backdrop-filter: blur(14px) saturate(1.12) !important;
+}
+
+:root.codex-dream-skin main.main-surface > header.app-header-tint :is(button, span, svg) {
+  color: #edf9f5 !important;
+  -webkit-text-fill-color: #edf9f5 !important;
+}
+
+:root.codex-dream-skin main.main-surface > header.app-header-tint button:hover {
+  background-color: rgb(87 199 190 / 16%) !important;
+}
+
+:root.codex-dream-skin[data-dream-route="home"] :is(.app-shell-main-content-top-fade, [class*="_MainContentTopFade_"]) {
+  background: linear-gradient(180deg, rgb(5 61 58 / 52%), transparent) !important;
+}
+
 html.codex-dream-skin body {
   color: #163f45 !important;
   background-color: #062e2d !important;

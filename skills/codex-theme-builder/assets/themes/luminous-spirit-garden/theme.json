@@ -6,12 +6,11 @@
     "image":  "home.webp",
     "conversationImage":  "conversation.webp",
     "sidebarImage":  "sidebar.webp",
-    "motionImage":  "jellyfish-motion.webp",
     "homeVideo":  "home-motion.mp4",
     "conversationSoftVideo":  "conversation-motion-soft.mp4",
     "conversationVideo":  "conversation-motion.mp4",
     "usageImage":  "usage-background.webp",
-    "selectedLeaf":  "selected-jellyfish.webp",
+    "selectedLeaf":  "selected-crystal-leaves.webp",
     "icons":  {
                   "build":  "icon-build.svg",
                   "analyze":  "icon-analyze.svg",

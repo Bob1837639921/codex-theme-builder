@@ -40,6 +40,43 @@
   --tidal-spark-rotation: 3deg;
 }
 
+:root.codex-dream-skin [class*="_ApplicationMenuTopBar_"] {
+  color: #17394b !important;
+  background: linear-gradient(100deg, rgb(232 246 251 / 96%), rgb(188 222 235 / 94%) 55%, rgb(204 218 238 / 95%)) !important;
+  border-bottom: 1px solid rgb(52 127 152 / 25%) !important;
+}
+
+:root.codex-dream-skin [class*="_ApplicationMenuTopBar_"] :is(button, span, svg) {
+  color: #17394b !important;
+  -webkit-text-fill-color: #17394b !important;
+}
+
+:root.codex-dream-skin [class*="_ApplicationMenuTopBar_"] button:hover {
+  background-color: rgb(52 127 152 / 15%) !important;
+}
+
+/* Sea-mist toolbar: blue-green glass with enough local contrast for controls. */
+:root.codex-dream-skin main.main-surface > header.app-header-tint {
+  color: #17394b !important;
+  background: linear-gradient(100deg, rgb(230 245 250 / 88%), rgb(193 226 237 / 82%) 55%, rgb(209 221 239 / 84%)) !important;
+  border-bottom: 1px solid rgb(52 127 152 / 30%) !important;
+  box-shadow: none !important;
+  backdrop-filter: blur(13px) saturate(1.08) !important;
+}
+
+:root.codex-dream-skin main.main-surface > header.app-header-tint :is(button, span, svg) {
+  color: #17394b !important;
+  -webkit-text-fill-color: #17394b !important;
+}
+
+:root.codex-dream-skin main.main-surface > header.app-header-tint button:hover {
+  background-color: rgb(52 127 152 / 14%) !important;
+}
+
+:root.codex-dream-skin[data-dream-route="home"] :is(.app-shell-main-content-top-fade, [class*="_MainContentTopFade_"]) {
+  background: linear-gradient(180deg, rgb(162 209 224 / 42%), transparent) !important;
+}
+
 :root.codex-dream-skin[data-dream-motion="low"] {
   --tidal-drift-duration: 18s;
   --tidal-drift-opacity-start: .26;

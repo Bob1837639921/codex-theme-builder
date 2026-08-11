@@ -45,6 +45,45 @@
   --blossom-flow-display: none;
 }
 
+/* The application menu is a separate native surface above the task toolbar. */
+:root.codex-dream-skin [class*="_ApplicationMenuTopBar_"] {
+  color: #49363e !important;
+  background: linear-gradient(100deg, rgb(252 241 244 / 96%), rgb(242 222 231 / 94%) 56%, rgb(235 226 241 / 95%)) !important;
+  border-bottom: 1px solid rgb(196 113 137 / 22%) !important;
+}
+
+:root.codex-dream-skin [class*="_ApplicationMenuTopBar_"] :is(button, span, svg) {
+  color: #49363e !important;
+  -webkit-text-fill-color: #49363e !important;
+}
+
+:root.codex-dream-skin [class*="_ApplicationMenuTopBar_"] button:hover {
+  background-color: rgb(217 137 155 / 14%) !important;
+}
+
+/* Rose-quartz toolbar: warm enough to belong to the blossom artwork while
+   staying quiet behind native task controls. */
+:root.codex-dream-skin main.main-surface > header.app-header-tint {
+  color: #49363e !important;
+  background: linear-gradient(100deg, rgb(252 240 242 / 88%), rgb(244 225 234 / 82%) 54%, rgb(239 232 244 / 86%)) !important;
+  border-bottom: 1px solid rgb(196 113 137 / 28%) !important;
+  box-shadow: none !important;
+  backdrop-filter: blur(13px) saturate(1.08) !important;
+}
+
+:root.codex-dream-skin main.main-surface > header.app-header-tint :is(button, span, svg) {
+  color: #49363e !important;
+  -webkit-text-fill-color: #49363e !important;
+}
+
+:root.codex-dream-skin main.main-surface > header.app-header-tint button:hover {
+  background-color: rgb(217 137 155 / 13%) !important;
+}
+
+:root.codex-dream-skin[data-dream-route="home"] :is(.app-shell-main-content-top-fade, [class*="_MainContentTopFade_"]) {
+  background: linear-gradient(180deg, rgb(241 221 232 / 42%), transparent) !important;
+}
+
 :root.codex-dream-skin[data-dream-motion="high"] {
   --blossom-jelly-duration: 13s;
   --blossom-jelly-opacity-start: .50;

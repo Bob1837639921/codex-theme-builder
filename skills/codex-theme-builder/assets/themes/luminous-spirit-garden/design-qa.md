@@ -23,17 +23,12 @@
 - 4K 对话画面保留中央低对比阅读区，人物仍位于右侧安全区。
 - 主题切换器、输入框、侧栏和内容头部在现场截图中均未发生位置漂移。
 
-## Random jellyfish motion QA
+## Creature-overlay removal QA
 
-- `jellyfish-motion.webp` is a transparent 24-frame, 256 x 384 animated WebP (630,776 bytes) with an 8.64-second body-motion cycle.
-- The soft motion tier reveals only the first pointer-free wanderer on a full-window fixed layer.
-- The full motion tier hides the runtime jellyfish layer. On conversations it uses the enhanced background video plus its localized iridescent veil; on the home route it preserves the approved static artwork.
-- Each wanderer has an independent size, duration, start point, two bends, endpoint, rotation, and opacity.
-- The visible soft-tier wanderer uses `luminous-random-wander`; the remaining runtime wanderers stay hidden.
-- Dispatching `animationiteration` changed the motion seed and route coordinates; the keyframes reach zero opacity before reseeding.
-- Each wanderer keeps its initial 60-90 second timeline while routes reseed, preventing delay/duration changes from restarting the animation and producing a visible flash.
-- Routes begin near the lower viewport edge and finish above the top edge; two monotonic vertical waypoints add only restrained lateral sway, so the jellyfish always reads as rising rather than sliding sideways.
-- System reduced-motion hides the entire runtime motion layer.
+- The user rejected the floating creature motif, so the optional animated motion asset and its full-window wanderer CSS were removed.
+- The selected-task creature icon was replaced by a stretch-safe crystal-leaf strip with a quiet center and protected native action zone.
+- Soft motion retains only lightweight light motes; full motion retains the approved scene video and localized iridescent veil.
+- No creature-named asset, manifest field, CSS variable, keyframe, or runtime motion-art reference remains in this theme.
 
 ## Home background video QA
 

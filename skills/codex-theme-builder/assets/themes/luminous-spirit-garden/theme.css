@@ -23,12 +23,12 @@
   --dream-motion-fast: 180ms;
   --dream-motion-panel: 220ms;
   --dream-ease: cubic-bezier(.2, .8, .2, 1);
-  --luminous-jelly-duration: 19s;
-  --luminous-jelly-opacity-start: .36;
-  --luminous-jelly-opacity-peak: .48;
-  --luminous-jelly-opacity-end: .40;
-  --luminous-jelly-travel-x: -24px;
-  --luminous-jelly-travel-y: -58px;
+  --luminous-mote-duration: 19s;
+  --luminous-mote-opacity-start: .36;
+  --luminous-mote-opacity-peak: .48;
+  --luminous-mote-opacity-end: .40;
+  --luminous-mote-travel-x: -24px;
+  --luminous-mote-travel-y: -58px;
   --luminous-flow-display: block;
   --luminous-flow-opacity-start: .24;
   --luminous-flow-opacity-peak: .34;
@@ -36,22 +36,59 @@
 }
 
 :root.codex-dream-skin[data-dream-motion="low"] {
-  --luminous-jelly-duration: 26s;
-  --luminous-jelly-opacity-start: .22;
-  --luminous-jelly-opacity-peak: .32;
-  --luminous-jelly-opacity-end: .26;
-  --luminous-jelly-travel-x: -12px;
-  --luminous-jelly-travel-y: -34px;
+  --luminous-mote-duration: 26s;
+  --luminous-mote-opacity-start: .22;
+  --luminous-mote-opacity-peak: .32;
+  --luminous-mote-opacity-end: .26;
+  --luminous-mote-travel-x: -12px;
+  --luminous-mote-travel-y: -34px;
   --luminous-flow-display: none;
 }
 
+:root.codex-dream-skin [class*="_ApplicationMenuTopBar_"] {
+  color: #34364c !important;
+  background: linear-gradient(100deg, rgb(242 242 249 / 96%), rgb(217 215 237 / 94%) 54%, rgb(211 227 225 / 95%)) !important;
+  border-bottom: 1px solid rgb(120 111 168 / 24%) !important;
+}
+
+:root.codex-dream-skin [class*="_ApplicationMenuTopBar_"] :is(button, span, svg) {
+  color: #34364c !important;
+  -webkit-text-fill-color: #34364c !important;
+}
+
+:root.codex-dream-skin [class*="_ApplicationMenuTopBar_"] button:hover {
+  background-color: rgb(120 111 168 / 14%) !important;
+}
+
+/* Moon-lavender toolbar for the luminous garden artwork. */
+:root.codex-dream-skin main.main-surface > header.app-header-tint {
+  color: #34364c !important;
+  background: linear-gradient(100deg, rgb(241 241 249 / 88%), rgb(221 220 239 / 82%) 54%, rgb(216 229 228 / 84%)) !important;
+  border-bottom: 1px solid rgb(120 111 168 / 28%) !important;
+  box-shadow: none !important;
+  backdrop-filter: blur(13px) saturate(1.06) !important;
+}
+
+:root.codex-dream-skin main.main-surface > header.app-header-tint :is(button, span, svg) {
+  color: #34364c !important;
+  -webkit-text-fill-color: #34364c !important;
+}
+
+:root.codex-dream-skin main.main-surface > header.app-header-tint button:hover {
+  background-color: rgb(120 111 168 / 13%) !important;
+}
+
+:root.codex-dream-skin[data-dream-route="home"] :is(.app-shell-main-content-top-fade, [class*="_MainContentTopFade_"]) {
+  background: linear-gradient(180deg, rgb(202 201 228 / 40%), transparent) !important;
+}
+
 :root.codex-dream-skin[data-dream-motion="high"] {
-  --luminous-jelly-duration: 13s;
-  --luminous-jelly-opacity-start: .50;
-  --luminous-jelly-opacity-peak: .66;
-  --luminous-jelly-opacity-end: .54;
-  --luminous-jelly-travel-x: -38px;
-  --luminous-jelly-travel-y: -82px;
+  --luminous-mote-duration: 13s;
+  --luminous-mote-opacity-start: .50;
+  --luminous-mote-opacity-peak: .66;
+  --luminous-mote-opacity-end: .54;
+  --luminous-mote-travel-x: -38px;
+  --luminous-mote-travel-y: -82px;
   --luminous-flow-opacity-start: .38;
   --luminous-flow-opacity-peak: .52;
   --luminous-flow-opacity-end: .42;
@@ -288,9 +325,8 @@ html.codex-dream-skin main.main-surface.dream-conversation-shell::before {
   content: none !important;
 }
 
-/* Localized atmosphere. Soft keeps quiet motes plus one clearly visible
-   jellyfish. Full relies on the enhanced background video and iridescent veil,
-   without adding runtime jellyfish over the scene. */
+/* Localized atmosphere. Soft keeps only quiet light motes. Full relies on the
+   enhanced background video and iridescent veil; no creature overlay is added. */
 html.codex-dream-skin main.main-surface.dream-home-shell::after,
 html.codex-dream-skin main.main-surface.dream-conversation-shell::after {
   content: "" !important;
@@ -306,7 +342,7 @@ html.codex-dream-skin main.main-surface.dream-conversation-shell::after {
     radial-gradient(circle at 72% 72%, rgb(237 232 255 / 86%) 0 2px, rgb(167 147 225 / 34%) 3px, transparent 8px),
     radial-gradient(circle at 18% 30%, rgb(213 248 240 / 72%) 0 1.5px, rgb(118 183 164 / 26%) 3px, transparent 7px),
     radial-gradient(circle at 78% 12%, rgb(245 240 255 / 68%) 0 1px, transparent 6px) !important;
-  opacity: var(--luminous-jelly-opacity-peak) !important;
+  opacity: var(--luminous-mote-opacity-peak) !important;
   filter:
     drop-shadow(0 0 7px rgb(222 214 255 / 72%))
     drop-shadow(0 0 18px rgb(150 132 218 / 38%)) !important;
@@ -314,7 +350,7 @@ html.codex-dream-skin main.main-surface.dream-conversation-shell::after {
   transform: translate3d(0, 0, 0) rotate(2deg);
   transform-origin: 58% 64%;
   will-change: transform, opacity;
-  animation: luminous-jelly-swim var(--luminous-jelly-duration) ease-in-out infinite alternate !important;
+  animation: luminous-mote-drift var(--luminous-mote-duration) ease-in-out infinite alternate !important;
 }
 
 :root.codex-dream-skin[data-dream-motion="low"]
@@ -371,24 +407,24 @@ html.codex-dream-skin main.main-surface.dream-conversation-shell::after {
   will-change: auto !important;
 }
 
-@keyframes luminous-jelly-swim {
+@keyframes luminous-mote-drift {
   0% {
-    opacity: var(--luminous-jelly-opacity-start);
+    opacity: var(--luminous-mote-opacity-start);
     transform: translate3d(0, 0, 0) rotate(2deg) scale(.97);
   }
   44% {
-    opacity: var(--luminous-jelly-opacity-peak);
+    opacity: var(--luminous-mote-opacity-peak);
     transform: translate3d(
-      calc(var(--luminous-jelly-travel-x) * .42),
-      calc(var(--luminous-jelly-travel-y) * .52),
+      calc(var(--luminous-mote-travel-x) * .42),
+      calc(var(--luminous-mote-travel-y) * .52),
       0
     ) rotate(-3deg) scale(1.02);
   }
   100% {
-    opacity: var(--luminous-jelly-opacity-end);
+    opacity: var(--luminous-mote-opacity-end);
     transform: translate3d(
-      var(--luminous-jelly-travel-x),
-      var(--luminous-jelly-travel-y),
+      var(--luminous-mote-travel-x),
+      var(--luminous-mote-travel-y),
       0
     ) rotate(4deg) scale(.99);
   }
@@ -406,94 +442,6 @@ html.codex-dream-skin main.main-surface.dream-conversation-shell::after {
   100% {
     opacity: var(--luminous-flow-opacity-end);
     transform: translate3d(-26px, -20px, 0) rotate(2deg) scale(.99);
-  }
-}
-
-:root.codex-dream-skin[data-dream-motion="low"] #codex-dream-motion-layer {
-  display: block !important;
-  position: fixed !important;
-  inset: 0 !important;
-  z-index: 5 !important;
-  overflow: hidden !important;
-  pointer-events: none !important;
-  contain: strict;
-}
-
-:root.codex-dream-skin[data-dream-motion="high"]
-  #codex-dream-motion-layer {
-  display: none !important;
-}
-
-:root.codex-dream-skin[data-dream-motion="low"]
-  #codex-dream-motion-layer .dream-motion-wanderer {
-  position: absolute !important;
-  inset: 0 auto auto 0 !important;
-  display: block !important;
-  width: var(--dream-wander-size) !important;
-  height: var(--dream-wander-height) !important;
-  background: var(--dream-motion-art, none) center / contain no-repeat !important;
-  opacity: 0;
-  filter:
-    drop-shadow(0 0 7px rgb(231 223 255 / 70%))
-    drop-shadow(0 0 19px rgb(151 132 218 / 38%)) !important;
-  transform-origin: 50% 38%;
-  pointer-events: none !important;
-  will-change: transform, opacity;
-  animation:
-    luminous-random-wander var(--dream-wander-duration) cubic-bezier(.34, .08, .24, 1)
-    var(--dream-wander-delay) infinite !important;
-}
-
-:root.codex-dream-skin[data-dream-motion="low"]
-  #codex-dream-motion-layer .dream-motion-wanderer:first-child {
-  --dream-wander-opacity: .48 !important;
-  filter:
-    drop-shadow(0 0 6px rgb(231 223 255 / 62%))
-    drop-shadow(0 0 15px rgb(151 132 218 / 30%)) !important;
-}
-
-:root.codex-dream-skin[data-dream-motion="low"]
-  #codex-dream-motion-layer .dream-motion-wanderer:nth-child(n + 2) {
-  display: none !important;
-}
-
-@keyframes luminous-random-wander {
-  0%,
-  10% {
-    opacity: 0;
-    transform:
-      translate3d(var(--dream-wander-x0), var(--dream-wander-y0), 0)
-      rotate(var(--dream-wander-r0))
-      scale(.94);
-  }
-  26% {
-    opacity: var(--dream-wander-opacity);
-    transform:
-      translate3d(var(--dream-wander-x1), var(--dream-wander-y1), 0)
-      rotate(var(--dream-wander-r1))
-      scale(1.01);
-  }
-  50% {
-    opacity: var(--dream-wander-opacity);
-    transform:
-      translate3d(var(--dream-wander-x2), var(--dream-wander-y2), 0)
-      rotate(var(--dream-wander-r2))
-      scale(.98);
-  }
-  74% {
-    opacity: var(--dream-wander-opacity);
-    transform:
-      translate3d(var(--dream-wander-x3), var(--dream-wander-y3), 0)
-      rotate(var(--dream-wander-r3))
-      scale(1.02);
-  }
-  90%,
-  100% {
-    opacity: 0;
-    transform:
-      translate3d(var(--dream-wander-x3), var(--dream-wander-y3), 0)
-      rotate(var(--dream-wander-r3))
-      scale(.96);
   }
 }
 
@@ -904,12 +852,6 @@ html.codex-dream-skin [role="option"]:is(:hover, :focus, [data-highlighted]) {
 @media (prefers-reduced-motion: reduce) {
   html.codex-dream-skin main.main-surface:is(.dream-home-shell, .dream-conversation-shell)::before,
   html.codex-dream-skin main.main-surface:is(.dream-home-shell, .dream-conversation-shell)::after {
-    display: none !important;
-    animation: none !important;
-    will-change: auto !important;
-  }
-
-  html.codex-dream-skin #codex-dream-motion-layer {
     display: none !important;
     animation: none !important;
     will-change: auto !important;

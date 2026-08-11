@@ -34,12 +34,27 @@ html.codex-dream-skin main.main-surface {
   box-shadow: none !important;
 }
 
+:root.codex-dream-skin [class*="_ApplicationMenuTopBar_"] {
+  color: #34423b !important;
+  background: linear-gradient(100deg, rgb(247 244 234 / 96%), rgb(218 229 220 / 94%) 58%, rgb(235 236 226 / 95%)) !important;
+  border-bottom: 1px solid rgb(95 124 114 / 22%) !important;
+}
+
+:root.codex-dream-skin [class*="_ApplicationMenuTopBar_"] :is(button, span, svg) {
+  color: #34423b !important;
+  -webkit-text-fill-color: #34423b !important;
+}
+
+:root.codex-dream-skin [class*="_ApplicationMenuTopBar_"] button:hover {
+  background-color: rgb(95 124 114 / 13%) !important;
+}
+
 html.codex-dream-skin main.main-surface > header.app-header-tint {
   color: #34423b !important;
-  background: linear-gradient(100deg, rgba(248, 245, 235, .98), rgba(230, 237, 229, .96) 58%, rgba(247, 244, 235, .98)) !important;
+  background: linear-gradient(100deg, rgb(248 245 235 / 88%), rgb(222 232 224 / 82%) 58%, rgb(239 239 230 / 86%)) !important;
   border-bottom: 1px solid rgba(95, 124, 114, .24) !important;
-  box-shadow: inset 0 -1px rgba(255, 255, 255, .58) !important;
-  backdrop-filter: blur(10px) saturate(.94) !important;
+  box-shadow: none !important;
+  backdrop-filter: blur(13px) saturate(.94) !important;
 }
 
 html.codex-dream-skin main.main-surface > header.app-header-tint :is(button, span, svg) {
@@ -49,6 +64,10 @@ html.codex-dream-skin main.main-surface > header.app-header-tint :is(button, spa
 
 html.codex-dream-skin main.main-surface > header.app-header-tint button:hover {
   background-color: rgba(95, 124, 114, .09) !important;
+}
+
+:root.codex-dream-skin[data-dream-route="home"] :is(.app-shell-main-content-top-fade, [class*="_MainContentTopFade_"]) {
+  background: linear-gradient(180deg, rgb(205 218 207 / 38%), transparent) !important;
 }
 
 html.codex-dream-skin aside.app-shell-left-panel {

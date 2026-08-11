@@ -28,10 +28,12 @@ artwork, motion, or theme identity.
   conversation canvas. Avoid `backdrop-filter` on the composer itself because
   every caret and glyph update can repaint the pixels behind it; use an
   optically equivalent translucent solid surface instead.
-- Background video is a high-tier scene asset, not a global effect. Decode it
-  only on the route that declares it, remove its audio track, and isolate the
-  video on a GPU composition layer. Low/off tiers and unrelated routes must not
-  create or keep the video element alive.
+- Background video is a route-scoped scene asset. Keep the route-local main
+  surface as the default; only a theme that explicitly declares
+  `windowVideoCanvas` may mount its video on the stable window canvas to prevent
+  translucent native chrome from exposing a second static crop. Decode only the
+  active route, remove audio, and isolate the video on a GPU layer. Low/off tiers
+  and unrelated routes must not create or keep the video element alive.
 - Discover the native conversation quick-jump rail through
   `data-thread-user-message-navigation-rail-list`, not localized `aria-label`
   text. Preserve Codex's buttons and scrolling behavior, but give every theme a
@@ -53,6 +55,17 @@ artwork, motion, or theme identity.
   not flash or briefly lose its border.
 
 ## Shell, sidebar, and canvas continuity
+
+- Keep the direct Codex content toolbar translucent on every themed home and
+  conversation route. The shared runtime owns its low-opacity glass paint so a
+  theme cannot accidentally restore a solid white, cream, or dark strip.
+  Theme CSS owns only readable text/icon, divider, and hover colors. Preserve
+  native height, drag behavior, buttons, pointer targets, and the system-owned
+  Windows/Electron menu above it.
+- Verify that the same scene artwork or active video remains visually
+  continuous beneath the content toolbar. Do not add a second header crop or
+  compensate for an opaque toolbar by shifting protected characters downward
+  at runtime; reserve the chrome safe zone in the source artwork instead.
 
 - Keep long native task lists cheap to scroll without removing theme detail.
   Apply `content-visibility: auto` and a 30 px intrinsic block size to the
@@ -104,6 +117,11 @@ artwork, motion, or theme identity.
 - Use the shared atomic handoff for static, soft, and full tiers. Do not stack two
   character compositions, flash a poster during decoding, or keep both soft and
   full videos alive.
+- For an explicit `windowVideoCanvas` theme, mount active and outgoing videos on
+  the stable document canvas and remove the body poster only at the handoff's
+  opaque swap point. Keep sidebar and controls above the pointer-free video and
+  verify full-viewport coverage. For every other theme, keep both layers bounded
+  to the active scene shell and do not silently change its approved crop.
 - Preserve approved static masters and large-display clarity. Optimize delivery
   assets offline; do not add runtime sharpening or full-screen blur filters.
 

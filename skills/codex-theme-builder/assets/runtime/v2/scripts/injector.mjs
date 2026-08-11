@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, "..");
-const SKIN_VERSION = "2.2.15-chunked-payload";
+const SKIN_VERSION = "2.2.17-scoped-window-video";
 const MAX_ART_BYTES = 8 * 1024 * 1024;
 const MAX_VIDEO_BYTES = 8 * 1024 * 1024;
 const DIRECT_EVALUATE_LIMIT = 8 * 1024 * 1024;
@@ -497,6 +497,7 @@ html:root.codex-dream-skin .codex-dream-background-video-layer{transform:transla
 `;
   return {
     ...theme,
+    windowVideoCanvas: raw.windowVideoCanvas === true,
     cssText: `${themeVariables}\n${baseCss}\n${themeCss}\n${performanceGuards}`,
     artDataUrl,
     conversationArtDataUrl,
@@ -679,6 +680,8 @@ async function verifySession(session) {
     const themeCards = switcher ? [...switcher.querySelectorAll('[data-dream-theme-id]')] : [];
     const conversation = document.querySelector('[role="main"].dream-conversation');
     const backgroundVideo = document.getElementById('codex-dream-background-video');
+    const backgroundVideoRect = backgroundVideo?.getBoundingClientRect() ?? null;
+    const backgroundVideoParentRect = backgroundVideo?.parentElement?.getBoundingClientRect() ?? null;
     const outputPanel = document.querySelector('.dream-output-panel');
     const composerNode = document.querySelector('.composer-surface-chrome') ??
       document.querySelector('[data-codex-composer-root] [data-composer-surface-variant]') ??
@@ -768,6 +771,7 @@ async function verifySession(session) {
       themeCount: window.__CODEX_DREAM_SKIN_STATE__?.themeCount ?? 0,
       activeThemeId: window.__CODEX_DREAM_SKIN_STATE__?.activeThemeId ?? null,
       motionLevel: window.__CODEX_DREAM_SKIN_STATE__?.activeMotionLevel ?? null,
+      windowVideoCanvas: document.documentElement.classList.contains('dream-video-window-canvas'),
       backgroundVideo: backgroundVideo ? {
         scene: backgroundVideo.dataset.dreamScene ?? null,
         ready: backgroundVideo.classList.contains('is-ready'),
@@ -778,6 +782,18 @@ async function verifySession(session) {
         display: getComputedStyle(backgroundVideo).display,
         opacity: getComputedStyle(backgroundVideo).opacity,
         box: box(backgroundVideo),
+        parentIsBody: backgroundVideo.parentElement === document.body,
+        parentIsSceneShell: backgroundVideo.parentElement?.matches(
+          'main.main-surface.dream-home-shell, main.main-surface.dream-conversation-shell',
+        ) ?? false,
+        coversWindowCanvas: Boolean(backgroundVideoRect &&
+          backgroundVideoRect.left <= 1 && backgroundVideoRect.top <= 1 &&
+          backgroundVideoRect.right >= innerWidth - 1 && backgroundVideoRect.bottom >= innerHeight - 1),
+        coversSceneCanvas: Boolean(backgroundVideoRect && backgroundVideoParentRect &&
+          Math.abs(backgroundVideoRect.left - backgroundVideoParentRect.left) <= 1 &&
+          Math.abs(backgroundVideoRect.top - backgroundVideoParentRect.top) <= 1 &&
+          Math.abs(backgroundVideoRect.right - backgroundVideoParentRect.right) <= 1 &&
+          Math.abs(backgroundVideoRect.bottom - backgroundVideoParentRect.bottom) <= 1),
       } : null,
       videoHandoffShieldPresent: Boolean(document.getElementById('codex-dream-video-handoff-shield')),
       conversation: conversation ? {
@@ -857,6 +873,10 @@ async function verifySession(session) {
       (!result.backgroundVideo || (result.backgroundVideo.ready &&
         result.backgroundVideo.readyState >= 3 &&
         Number.parseFloat(result.backgroundVideo.opacity) >= .99 &&
+        ((result.windowVideoCanvas && result.backgroundVideo.parentIsBody &&
+          result.backgroundVideo.coversWindowCanvas) ||
+          (!result.windowVideoCanvas && result.backgroundVideo.parentIsSceneShell &&
+            result.backgroundVideo.coversSceneCanvas)) &&
         !result.videoHandoffShieldPresent)) &&
       result.homeReady;
     return result;

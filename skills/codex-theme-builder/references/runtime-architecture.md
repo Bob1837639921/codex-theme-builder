@@ -97,18 +97,18 @@ asynchronous:
    differently aligned protected subjects.
 6. Clear both shield timers whenever a video is replaced so rapid theme, route,
    or motion-tier changes cannot let an obsolete handoff alter the new scene.
-7. If Codex replaces the entire main-surface node during navigation, preserve the
-   playing video element before the browser paints: temporarily mount it on the
-   stable document canvas with its last shell rectangle, keep the replacement
-   main surface transparent, then attach it to the new shell. Do not fall back to
-   the route's static raster merely because the React-owned shell was replaced.
-8. After the preserved video is attached to the replacement shell, keep both the
-   shell and its route content transparent while that video is marked outgoing.
-   The outgoing video, not the static raster, remains the painted fallback until
-   the incoming scene is decoded and covering. Removing the active video ID must
-   never make the route artwork opaque during this interval.
+7. Keep route-local video mounting as the default. When the active theme declares
+   `windowVideoCanvas`, mount its active video, outgoing video, and shield on the
+   stable document canvas instead. Those opted-in layers are fixed to the
+   viewport, pointer-free, and ordered behind native Codex UI so one crop spans
+   the menu strip, task toolbar, workspace, and composer.
+8. For an opted-in window canvas, keep the body poster painted until the shield
+   reaches its opaque swap point, then add the window covering state and remove
+   the poster. For a normal theme, perform the same atomic handoff inside the
+   scene shell. Switching themes must move the outgoing layer to the new mode's
+   owner without leaking the previous theme's geometry.
 
-The active and single outgoing handoff video remain route-local, muted,
+The active and single outgoing handoff video remain route-scoped, muted,
 pointer-free, visibility-aware and reduced-motion safe. The shield is transient,
 does not blur or filter the viewport, and has no steady-state rendering cost.
 Do not solve handoff flashes by decoding every theme video in the background.

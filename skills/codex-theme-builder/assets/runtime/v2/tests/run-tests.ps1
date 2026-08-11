@@ -187,7 +187,8 @@ if ($templateCss -notmatch 'data-dream-motion="low"' -or
 if ($templateCss -notmatch '(?s)body\s*\{[^}]*--dream-conversation-art' -or
     $templateCss -notmatch '(?s)\[data-dream-route="home"\]\s+body\s*\{[^}]*--dream-art' -or
     $templateCss -notmatch '--theme-toolbar-surface:' -or
-    $templateCss -notmatch '(?s)header\.app-header-tint\s*\{[^}]*background:\s*var\(--theme-toolbar-surface\)\s*!important[^}]*backdrop-filter:\s*blur\(' -or
+    $templateCss -notmatch '(?s)header\.app-header-tint\s*\{[^}]*background:.*?color-mix\(in srgb,\s*var\(--theme-toolbar-surface\)\s*34%,\s*transparent\).*?color-mix\(in srgb,\s*var\(--theme-toolbar-surface\)\s*22%,\s*transparent\).*?backdrop-filter:\s*blur\(4px\)' -or
+    $baseCss -notmatch '(?s)html:root\.codex-dream-skin\[data-dream-route\].*?main\.main-surface:is\(\.dream-home-shell, \.dream-conversation-shell\).*?>\s*header\.app-header-tint\s*\{[^}]*background:.*?color-mix\(in srgb,\s*var\(--theme-toolbar-surface.*?34%,\s*transparent\).*?color-mix\(in srgb,\s*var\(--theme-toolbar-surface.*?22%,\s*transparent\).*?backdrop-filter:\s*blur\(4px\)' -or
     $templateCss -notmatch '(?s)\.composer-surface-chrome::before\s*\{' -or
     $templateCss -notmatch '(?s)\.composer-surface-chrome::after\s*\{' -or
     $templateCss -notmatch 'button\[class~="bg-token-foreground"\]' -or
@@ -210,13 +211,12 @@ if ($runtimeJs -notmatch 'MOTION_LAYER_ID\s*=\s*"codex-dream-motion-layer"' -or
     $runtimeJs -notmatch 'const\s+verticalTravel\s*=\s*start\.y\s*-\s*end\.y' -or
     $runtimeJs -notmatch 'duration\s*=\s*randomBetween\(60,\s*90\)' -or
     $baseCss -notmatch '(?s)#codex-dream-motion-layer\s*\{[^}]*display:\s*none' -or
-    $luminousCss -notmatch '(?s)data-dream-motion="low".*?#codex-dream-motion-layer\s*\{[^}]*display:\s*block\s*!important' -or
-    $luminousCss -notmatch '(?s)data-dream-motion="low".*?dream-motion-wanderer:nth-child\(n \+ 2\)\s*\{[^}]*display:\s*none\s*!important' -or
-    $luminousCss -notmatch '(?s)data-dream-motion="high".*?#codex-dream-motion-layer\s*\{[^}]*display:\s*none\s*!important' -or
-    $luminousCss -notmatch '@keyframes\s+luminous-random-wander' -or
-    $luminousCss -notmatch '(?s)90%,\s*100%\s*\{[^}]*opacity:\s*0' -or
     $runtimeJs -notmatch '(?s)if\s*\(initial\)\s*\{.*?values\["--dream-wander-duration"\].*?values\["--dream-wander-delay"\]') {
   throw 'Runtime motion art must support pointer-free full-window wanderers that fade before randomized reseeding.'
+}
+if ($null -ne $luminousManifest.motionImage -or
+    $luminousCss -match 'jellyfish|luminous-jelly|luminous-random-wander|--dream-motion-art') {
+  throw 'Luminous Spirit Garden must not restore the removed jellyfish creature overlay.'
 }
 $videoContracts = @(
   @{ Name = 'frost-sword-immortal'; Root = $frostTheme; Manifest = $frostManifest; Fields = @('homeVideo', 'conversationVideo') }
@@ -270,10 +270,10 @@ if ($injectorText -notmatch 'MAX_VIDEO_BYTES\s*=\s*8\s*\*\s*1024\s*\*\s*1024' -o
     $runtimeJs -notmatch 'classList\.add\(BACKGROUND_VIDEO_LAYER_CLASS,\s*"is-outgoing"\)' -or
     $runtimeJs -notmatch 'VIDEO_HANDOFF_SHIELD_ID\s*=\s*"codex-dream-video-handoff-shield"' -or
     $runtimeJs -notmatch 'ensureVideoHandoffShield' -or
-    $runtimeJs -notmatch 'protectDetachedBackgroundVideo' -or
-    $runtimeJs -notmatch 'clearRoutePendingVideo' -or
     $runtimeJs -notmatch 'activeBackgroundVideoElement' -or
-    $runtimeJs -notmatch 'lastBackgroundVideoShellRect' -or
+    $runtimeJs -notmatch 'usesWindowVideoCanvas\s*=\s*\(\)\s*=>\s*activeTheme\?\.windowVideoCanvas\s*===\s*true' -or
+    $runtimeJs -notmatch 'videoParent\s*=\s*usesWindowVideoCanvas\(\)\s*\?\s*document\.body\s*:\s*shell' -or
+    $runtimeJs -notmatch 'parent\s*=\s*usesWindowVideoCanvas\(\)\s*\?\s*document\.body\s*:\s*shell' -or
     $runtimeJs -notmatch 'isNativeAppSurfaceAvailable' -or
     $runtimeJs -notmatch 'suspendThemeForNativeSurface' -or
     $runtimeJs -notmatch 'themeSuspendedForNativeSurface' -or
@@ -287,8 +287,6 @@ if ($injectorText -notmatch 'MAX_VIDEO_BYTES\s*=\s*8\s*\*\s*1024\s*\*\s*1024' -o
     $injectorText -match 'markers\.shell\s*&&\s*markers\.sidebar\s*&&' -or
     $injectorText -notmatch '!result\.sidebar\s*&&\s*!result\.switcherPresent\s*&&\s*result\.themeCardCount\s*===\s*0' -or
     $injectorText -match 'Boolean\(result\.composer\)\s*&&\s*Boolean\(result\.sidebar\)' -or
-    $runtimeJs -notmatch 'classList\.add\("is-route-pending"\)' -or
-    $runtimeJs -notmatch 'classList\.add\("dream-video-route-pending"\)' -or
     $runtimeJs -notmatch 'sceneIsKnown' -or
     $runtimeJs -notmatch 'if\s*\(!sceneIsKnown\)\s*return\s+null' -or
     $runtimeJs -notmatch 'shield\.classList\.add\("is-opaque"\)' -or
@@ -301,17 +299,25 @@ if ($injectorText -notmatch 'MAX_VIDEO_BYTES\s*=\s*8\s*\*\s*1024\s*\*\s*1024' -o
     $baseCss -notmatch '(?s)data-dream-motion="low".*?data-dream-motion="high".*?#codex-dream-background-video' -or
     $baseCss -notmatch '(?s)#codex-dream-background-video,\s*\.codex-dream-background-video-layer\s*\{[^}]*pointer-events:\s*none\s*!important' -or
     $baseCss -notmatch '(?s)#codex-dream-background-video\.is-ready\s*\{[^}]*opacity:\s*1' -or
-    $baseCss -notmatch '(?s)#codex-dream-video-handoff-shield\s*\{[^}]*z-index:\s*0\s*!important[^}]*pointer-events:\s*none\s*!important' -or
     $baseCss -notmatch '(?s)#codex-dream-video-handoff-shield\.is-opaque\s*\{[^}]*opacity:\s*1' -or
     $baseCss -notmatch '(?s)#codex-dream-video-handoff-shield\.is-loading\s*\{[^}]*opacity:\s*1[^}]*transition:\s*none\s*!important' -or
-    $baseCss -notmatch '(?s)dream-video-route-pending #codex-dream-background-video\.is-route-pending\s*\{[^}]*position:\s*fixed\s*!important[^}]*opacity:\s*1\s*!important' -or
-    $baseCss -notmatch '(?s)dream-video-route-pending main\.main-surface\s*\{[^}]*background-color:\s*transparent\s*!important[^}]*background-image:\s*none\s*!important' -or
+    $baseCss -notmatch '(?s)#codex-dream-background-video,\s*\.codex-dream-background-video-layer\s*\{[^}]*position:\s*absolute\s*!important[^}]*width:\s*100%\s*!important[^}]*height:\s*100%\s*!important' -or
+    $baseCss -notmatch '(?s)dream-video-window-canvas\s+:is\(#codex-dream-background-video,\s*\.codex-dream-background-video-layer\)\s*\{[^}]*position:\s*fixed\s*!important[^}]*width:\s*100vw\s*!important[^}]*height:\s*100vh\s*!important' -or
+    $baseCss -notmatch '(?s)dream-video-window-canvas\s+#codex-dream-video-handoff-shield\s*\{[^}]*position:\s*fixed\s*!important[^}]*z-index:\s*-1\s*!important' -or
+    $baseCss -notmatch '(?s)dream-video-window-canvas\.dream-video-covering body\s*\{[^}]*background-color:\s*transparent\s*!important[^}]*background-image:\s*none\s*!important' -or
+    $injectorText -notmatch 'windowVideoCanvas:\s*raw\.windowVideoCanvas\s*===\s*true' -or
+    $injectorText -notmatch 'parentIsBody:\s*backgroundVideo\.parentElement\s*===\s*document\.body' -or
+    $injectorText -notmatch 'parentIsSceneShell:' -or
+    $injectorText -notmatch 'coversWindowCanvas:\s*Boolean\(backgroundVideoRect' -or
+    $injectorText -notmatch 'coversSceneCanvas:\s*Boolean\(backgroundVideoRect' -or
+    $injectorText -notmatch 'result\.windowVideoCanvas\s*&&\s*result\.backgroundVideo\.parentIsBody' -or
+    $injectorText -notmatch '!result\.windowVideoCanvas\s*&&\s*result\.backgroundVideo\.parentIsSceneShell' -or
     $baseCss -notmatch '(?s)#codex-dream-background-video\.is-handoff-swap\s*\{[^}]*transition:\s*none\s*!important' -or
     $baseCss -match '(?s)main\.main-surface:is\(\.dream-home-shell,\s*\.dream-conversation-shell\)\s*>\s*:not\([^}]*\)\s*\{[^}]*z-index:' -or
     $baseCss -notmatch 'main\.main-surface\.dream-video-covering' -or
     $runtimeJs -notmatch 'classList\.add\("dream-video-covering"\)' -or
     $baseCss -notmatch '(?s)\.codex-dream-background-video-layer\.is-outgoing\s*\{[^}]*opacity:\s*1\s*!important') {
-  throw 'Scene-specific background videos must stay local, bounded, tier-aware, visibility-aware, reduced-motion safe, authentication-safe, toolbar-safe, and non-interactive.'
+  throw 'Scene-specific videos must preserve route-local defaults, support explicit theme-level window canvases, and remain tier-aware, visibility-aware, reduced-motion safe, authentication-safe, toolbar-safe, and non-interactive.'
 }
 if ($injectorText -notmatch 'const\s+homeVisualAnchor\s*=\s*home\?\.querySelector\(''\.dream-home-hero''\)' -or
     $injectorText -match 'hero:\s*box\(home\?\.firstElementChild') {
@@ -358,9 +364,9 @@ if ($frostleafCss -notmatch 'height:\s*10px\s*!important' -or
 if ($themeCss -notmatch '(?s)main\.dream-conversation-shell\s+\.sticky\.bottom-0\s+\[class~="bg-gradient-to-t"\]\s*\{[^}]*background-image:\s*none\s*!important') {
   throw 'Conversation composer fades must stay transparent, including the in-progress file-summary state.'
 }
-if ($themeCss -notmatch '(?s)main\.main-surface\s*>\s*header\.app-header-tint\s*\{[^}]*color:\s*[^;]+\s*!important[^}]*background:\s*[^;]+\s*!important[^}]*border-bottom:' -or
+if ($themeCss -notmatch '(?s)main\.main-surface\s*>\s*header\.app-header-tint\s*\{[^}]*color:\s*[^;]+\s*!important[^}]*background:\s*.+?\s*!important[^}]*border-bottom:' -or
     $themeCss -notmatch '(?s)header\.app-header-tint\s+:is\(button,\s*span,\s*svg\)\s*\{[^}]*color:\s*[^;]+\s*!important') {
-  throw 'Every theme must adapt the Codex content toolbar surface, divider, text, and icons.'
+  throw 'Every theme must adapt the Codex content toolbar divider, text, and icons while the shared glass rule preserves scene continuity.'
 }
 if ($themeCss -match 'group\\/project-selector' -or
     $baseCss -notmatch '(?s)main\.dream-home-shell \.dream-project-picker\s*\{[^}]*overflow:\s*hidden\s*!important' -or
@@ -524,5 +530,15 @@ if ($manifest.composerEdge.image -ne 'composer-edge.png' -or
     $baseCss -notmatch '(?s)\.composer-surface-chrome\s*>\s*\*\s*\{[^}]*z-index:\s*3' -or
     $themeCss -match '(?s)\.dream-composer-host::after\s*,.*?display:\s*none') {
   throw 'The theme-specific composer-edge raster contract and shared rendering hook must remain validated and bundled.'
+}
+$themesRoot = [System.IO.Path]::GetFullPath((Join-Path $Root '..\..\themes'))
+$windowCanvasThemes = @(Get-ChildItem -LiteralPath $themesRoot -Directory | Where-Object {
+  $candidateManifest = Join-Path $_.FullName 'theme.json'
+  if (-not (Test-Path -LiteralPath $candidateManifest -PathType Leaf)) { return $false }
+  $candidate = Get-Content -LiteralPath $candidateManifest -Raw -Encoding UTF8 | ConvertFrom-Json
+  return $candidate.windowVideoCanvas -eq $true
+} | ForEach-Object Name)
+if ($windowCanvasThemes.Count -ne 1 -or $windowCanvasThemes[0] -ne 'vermilion-feather') {
+  throw 'Only vermilion-feather may opt into the full-window video canvas in the current catalog.'
 }
 Write-Host 'PASS: syntax, CDP validation, selected theme payload, composer fade regression, dialog contrast regression, detail polish, reduced motion, Store activation bridge, launch defaults, and zero-config-invasion checks.'

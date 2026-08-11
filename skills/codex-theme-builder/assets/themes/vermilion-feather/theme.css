@@ -561,9 +561,9 @@ html.codex-dream-skin main.dream-conversation-shell .sticky.bottom-0 [class~="bg
 
 :root.codex-dream-skin aside.app-shell-left-panel {
   color: #fff8e9 !important;
-  background-color: rgb(95 31 25 / 84%) !important;
+  background-color: rgb(95 31 25 / 28%) !important;
   background-image:
-    linear-gradient(180deg, rgb(83 23 20 / 70%), rgb(112 38 28 / 78%)),
+    linear-gradient(180deg, rgb(83 23 20 / 38%), rgb(112 38 28 / 46%)),
     var(--dream-sidebar-art) !important;
   background-position: center, center !important;
   background-repeat: no-repeat, no-repeat !important;
@@ -614,7 +614,7 @@ html.codex-dream-skin main.dream-conversation-shell .sticky.bottom-0 [class~="bg
 
 :root.codex-dream-skin aside.app-shell-left-panel .dream-selected-thread-label {
   min-width: 0 !important;
-  padding-left: 66px !important;
+  padding-left: 52px !important;
 }
 
 :root.codex-dream-skin aside.app-shell-left-panel

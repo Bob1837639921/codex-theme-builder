@@ -8,6 +8,7 @@
     "conversationImage":  "conversation.webp",
     "conversationSoftVideo":  "conversation-motion-soft.mp4",
     "conversationVideo":  "conversation-motion.mp4",
+    "windowVideoCanvas":  true,
     "sidebarImage":  "sidebar.webp",
     "usageImage":  "usage-background.webp",
     "selectedLeaf":  "selected-thread-background.png",
