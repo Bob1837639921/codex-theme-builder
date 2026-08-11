@@ -1,12 +1,15 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import { randomUUID } from "node:crypto";
 import { fileURLToPath } from "node:url";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, "..");
-const SKIN_VERSION = "2.2.13-performance";
+const SKIN_VERSION = "2.2.15-chunked-payload";
 const MAX_ART_BYTES = 8 * 1024 * 1024;
 const MAX_VIDEO_BYTES = 8 * 1024 * 1024;
+const DIRECT_EVALUATE_LIMIT = 8 * 1024 * 1024;
+const EVALUATE_CHUNK_SIZE = 4 * 1024 * 1024;
 const LOOPBACK_HOSTS = new Set(["127.0.0.1", "localhost", "[::1]", "::1"]);
 const BROWSER_ID_PATTERN = /^[A-Za-z0-9._-]{1,200}$/;
 
@@ -599,7 +602,25 @@ async function connectCodexTargets(port, timeoutMs) {
 }
 
 async function applyToSession(session, payload) {
-  return session.evaluate(payload);
+  if (payload.length <= DIRECT_EVALUATE_LIMIT) return session.evaluate(payload);
+
+  const stageKey = `__CODEX_DREAM_SKIN_PAYLOAD_${randomUUID().replaceAll("-", "")}__`;
+  const encodedKey = JSON.stringify(stageKey);
+  await session.evaluate(`globalThis[${encodedKey}] = []; true`);
+  try {
+    for (let offset = 0; offset < payload.length; offset += EVALUATE_CHUNK_SIZE) {
+      const chunk = payload.slice(offset, offset + EVALUATE_CHUNK_SIZE);
+      await session.evaluate(`globalThis[${encodedKey}].push(${JSON.stringify(chunk)}); true`);
+    }
+    return await session.evaluate(`(() => {
+      const source = globalThis[${encodedKey}].join("");
+      delete globalThis[${encodedKey}];
+      return (0, eval)(source);
+    })()`);
+  } catch (error) {
+    await session.evaluate(`delete globalThis[${encodedKey}]; true`).catch(() => {});
+    throw error;
+  }
 }
 
 async function removeFromSession(session) {

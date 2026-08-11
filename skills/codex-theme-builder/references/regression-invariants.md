@@ -32,6 +32,10 @@ artwork, motion, or theme identity.
   only on the route that declares it, remove its audio track, and isolate the
   video on a GPU composition layer. Low/off tiers and unrelated routes must not
   create or keep the video element alive.
+- Discover the native conversation quick-jump rail through
+  `data-thread-user-message-navigation-rail-list`, not localized `aria-label`
+  text. Preserve Codex's buttons and scrolling behavior, but give every theme a
+  two-tone marker treatment that remains visible on both pale and dark artwork.
 
 ## Selected task and transient controls
 
@@ -50,6 +54,12 @@ artwork, motion, or theme identity.
 
 ## Shell, sidebar, and canvas continuity
 
+- Keep long native task lists cheap to scroll without removing theme detail.
+  Apply `content-visibility: auto` and a 30 px intrinsic block size to the
+  language-independent `data-app-action-sidebar-thread-row` boundary. Scope
+  sidebar text shadows to actual text-bearing elements instead of the complete
+  SVG/div subtree; preserve the same visible shadow, selected-row artwork,
+  unread glow, hover actions, and native scroll container.
 - Keep the active theme on the semantic shell when the native sidebar is
   collapsed. The sidebar switcher may disappear with its anchor, but background,
   motion tier, composer, and content styling must remain active and be restored
@@ -81,6 +91,12 @@ artwork, motion, or theme identity.
   translucent carrier from bleeding, but must not reconstruct the control.
 
 ## Static and video backgrounds
+
+- A catalog containing large raster or video assets must still inject reliably.
+  Keep each CDP `Runtime.evaluate` message below the shared transport threshold,
+  stage oversized payloads in uniquely named chunks, assemble them in the renderer,
+  and always remove the staging buffer. Do not reduce source-media quality merely
+  to fit the single-message limit.
 
 - Treat home and conversation as independent scenes. Route changes must select
   matching posters and videos; never leave a previous poster visible beneath an

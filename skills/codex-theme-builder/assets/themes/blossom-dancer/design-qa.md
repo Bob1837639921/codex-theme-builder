@@ -51,3 +51,12 @@
 - 运行成本不变：仍为单张 4K 静态 WebP，无运行时滤镜、Canvas 或额外 GPU 效果。
 
 final result: passed
+
+## 2026-08-11 motion video delivery
+
+- `home-motion.mp4`: approved home/full clip, 2,558,690 bytes.
+- `conversation-motion-soft.mp4`: approved conversation/soft clip, 2,527,004 bytes.
+- `conversation-motion.mp4`: approved conversation/full clip, 2,429,600 bytes.
+- Each clip was copied from the user-approved source without recompression.
+- The manifest keeps home soft on the static/CSS path and declares independent conversation soft/full sources for route-correct atomic handoff.
+- Both theme validation and installed-copy hash verification passed.

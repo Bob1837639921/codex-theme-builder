@@ -39,6 +39,15 @@
 
 final result: passed
 
+## 2026-08-11 conversation motion video delivery
+
+- Existing `home-motion.mp4` remains the approved home/full source.
+- `conversation-motion-soft.mp4`: approved conversation/soft clip, 2,462,283 bytes.
+- `conversation-motion.mp4`: approved conversation/full clip, 2,446,049 bytes.
+- Both new clips were copied from the user-approved sources without recompression.
+- The manifest now declares independent home/full and conversation soft/full sources; home soft remains on the static/CSS path.
+- Theme validation and installed-copy hash verification passed.
+
 ## 2026-08-11 首页完整动效与交互性能
 
 - Gemini 原片采用前向播放闭环：截取 1.333s–8.583s 的稳定区间，将末段与首段做 0.5s 交叉溶解；未使用倒放或乒乓循环。

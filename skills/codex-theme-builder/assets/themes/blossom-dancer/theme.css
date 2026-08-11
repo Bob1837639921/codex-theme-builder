@@ -153,6 +153,10 @@ html.codex-dream-skin aside.app-shell-left-panel,
 html.codex-dream-skin aside.app-shell-left-panel * {
   color: #fff8f8 !important;
   -webkit-text-fill-color: #fff8f8 !important;
+}
+
+html.codex-dream-skin aside.app-shell-left-panel
+  :is(span, button, strong, p) {
   text-shadow: 0 1px 2px rgb(33 31 57 / 48%) !important;
 }
 

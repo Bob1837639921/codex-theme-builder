@@ -64,6 +64,14 @@
 - Test every declared video at off, low, and high tiers on both home and conversation routes. A route without a tier-specific video must have zero live background-video elements and must not decode a hidden fallback clip.
 - Running progress uses only small-area motion and stops under reduced-motion preferences.
 - Current thread remains legible when pin/archive controls appear; controls do not shift the title.
+- On long conversations, the native quick-jump rail is visible without hover on
+  both the brightest and darkest parts of the theme artwork; hover and keyboard
+  focus enlarge the active marker without changing native scroll behavior.
+- Populate enough sidebar tasks to require scrolling. Verify that wheel and
+  trackpad scrolling remain smooth while the selected-row artwork, text shadow,
+  unread glow, loading state, pin/archive actions, and hover styling remain
+  visually unchanged. Off-screen rows must retain their native 30 px height
+  when scrolled into view.
 - Start a turn so the selected task shows its loading spinner. The spinner remains overlaid at the right edge and the title stays on the same single-line vertical center before, during, and after loading.
 - Selected-state artwork stays attached to the title label, ahead of its text, when thread action controls appear or disappear.
 - The complete selected-row background keeps its center low-detail, does not repeat or distort recognizably, and leaves the unread indicator plus pin/archive actions unobstructed.

@@ -13,7 +13,7 @@
   const STORAGE_KEY = "codex-dream-theme-active";
   const MOTION_STORAGE_KEY = "codex-dream-motion-level";
   const MOTION_LEVELS = ["off", "low", "high"];
-  const RUNTIME_VERSION = "2.2.13-performance";
+  const RUNTIME_VERSION = "2.2.15-chunked-payload";
   const THEME_SEARCH_THRESHOLD = 6;
   const MUTATION_COALESCE_MS = 180;
   const actions = [
@@ -145,6 +145,7 @@
     pluginSearch: document.querySelector(".dream-plugin-search"),
     pluginSearchShell: document.querySelector(".dream-plugin-search-shell"),
     composerHost: document.querySelector(".dream-composer-host"),
+    quickJumpRail: document.querySelector(".dream-quick-jump-rail"),
   };
   const detailState = {
     selectedThread: document.querySelector(".dream-selected-thread"),
@@ -1145,6 +1146,14 @@
     const conversation = !home ? document.querySelector('[role="main"]') : null;
     syncMarker("conversation", conversation, "dream-conversation");
     root.dataset.dreamRoute = home ? "home" : "conversation";
+
+    /* Codex owns the quick-jump navigation and its scroll behavior. Discover it
+       through the language-independent native list marker so localized aria
+       labels and future copy changes cannot disable theme contrast fixes. */
+    const quickJumpRail = !home ? document
+      .querySelector('[data-thread-user-message-navigation-rail-list="true"]')
+      ?.closest("nav") ?? null : null;
+    syncMarker("quickJumpRail", quickJumpRail, "dream-quick-jump-rail");
 
     const composerSurface = document.querySelector(".composer-surface-chrome");
     syncMarker("composerHost", composerSurface?.parentElement ?? null, "dream-composer-host");

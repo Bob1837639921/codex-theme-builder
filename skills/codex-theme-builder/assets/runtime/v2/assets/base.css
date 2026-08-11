@@ -182,30 +182,48 @@ html.codex-dream-skin main.main-surface > header.app-header-tint
    This is a paint-only treatment: the native nav, buttons, focus handling,
    and scroll-to-message behavior remain untouched. */
 html.codex-dream-skin main.main-surface.dream-conversation-shell
-  nav[aria-label="用户消息"] {
+  :is(.dream-quick-jump-rail, nav[aria-label="用户消息"]) {
   position: absolute !important;
   z-index: 28 !important;
-  color: color-mix(in srgb, var(--dream-ink, #252a27) 72%, var(--dream-accent, #5f7c72) 28%) !important;
+  color: color-mix(in srgb, var(--dream-ink, #252a27) 78%, var(--dream-accent, #5f7c72) 22%) !important;
+  visibility: visible !important;
+  opacity: 1 !important;
   isolation: isolate;
 }
 
 html.codex-dream-skin main.main-surface.dream-conversation-shell
-  nav[aria-label="用户消息"] button {
+  :is(.dream-quick-jump-rail, nav[aria-label="用户消息"]) button {
   color: inherit !important;
   opacity: 1 !important;
+  visibility: visible !important;
 }
 
 html.codex-dream-skin main.main-surface.dream-conversation-shell
-  nav[aria-label="用户消息"] button > span > span {
-  background-color: var(--dream-quick-jump-marker, var(--dream-accent, #5f7c72)) !important;
-  opacity: .64 !important;
+  :is(.dream-quick-jump-rail, nav[aria-label="用户消息"]) button > span > span {
+  border-radius: 999px !important;
+  background-color: color-mix(
+    in srgb,
+    var(--dream-quick-jump-marker, var(--dream-accent, #5f7c72)) 72%,
+    var(--dream-ink, #252a27) 28%
+  ) !important;
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--dream-surface, #f6f1e7) 82%, transparent),
+    0 1px 3px color-mix(in srgb, var(--dream-ink, #252a27) 42%, transparent) !important;
+  opacity: .9 !important;
   transition: width 160ms ease, opacity 160ms ease, background-color 160ms ease !important;
 }
 
 html.codex-dream-skin main.main-surface.dream-conversation-shell
-  nav[aria-label="用户消息"] button:is(:hover, :focus-visible) > span > span {
-  width: 12px !important;
-  background-color: var(--dream-quick-jump-active, var(--dream-accent-alt, #7895aa)) !important;
+  :is(.dream-quick-jump-rail, nav[aria-label="用户消息"])
+  button:is(:hover, :focus-visible) > span > span {
+  width: 14px !important;
+  min-width: 14px !important;
+  transform: none !important;
+  background-color: color-mix(
+    in srgb,
+    var(--dream-quick-jump-active, var(--dream-accent-alt, #7895aa)) 82%,
+    var(--dream-ink, #252a27) 18%
+  ) !important;
   opacity: 1 !important;
 }
 
@@ -410,6 +428,15 @@ html.codex-dream-skin main.dream-home-shell .dream-project-picker {
 
 html.codex-dream-skin aside.app-shell-left-panel {
   position: relative !important;
+}
+
+/* Long sidebars contain hundreds of native descendants even when only a few
+   task rows are visible. Let Chromium skip off-screen row paint/style work
+   while preserving the native 30px geometry, hover actions and row artwork. */
+html.codex-dream-skin aside.app-shell-left-panel
+  [data-app-action-sidebar-thread-row] {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 30px;
 }
 
 /* Recent Codex builds paint a light-mode secondary wash inside the sidebar.

@@ -68,6 +68,13 @@ Rules:
 
 ## Video handoff contract
 
+Large theme catalogs must not be sent as one `Runtime.evaluate` expression. Once
+embedded artwork and videos push the serialized payload beyond the direct-evaluate
+threshold, `injector.mjs` stages it under a unique renderer key in bounded chunks,
+joins and evaluates it in the page, then removes the staging key on both success
+and failure. This transport rule preserves the original media files; never work
+around the CDP message limit by silently recompressing or deleting theme assets.
+
 Scene video changes are atomic from the user's perspective even though decoding is
 asynchronous:
 

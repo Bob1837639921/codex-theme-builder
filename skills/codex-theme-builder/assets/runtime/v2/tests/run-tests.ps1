@@ -22,6 +22,15 @@ if ($LASTEXITCODE -ne 0) { throw 'CDP validation self-test failed.' }
 & $node.Path $injector --check-payload --theme-dir $theme
 if ($LASTEXITCODE -ne 0) { throw 'Theme payload check failed.' }
 
+$injectorText = Get-Content -LiteralPath $injector -Raw -Encoding UTF8
+if ($injectorText -notmatch 'DIRECT_EVALUATE_LIMIT' -or
+    $injectorText -notmatch 'EVALUATE_CHUNK_SIZE' -or
+    $injectorText -notmatch 'PAYLOAD_.+randomUUID' -or
+    $injectorText -notmatch '\.push\(\$\{JSON\.stringify\(chunk\)\}\)' -or
+    $injectorText -notmatch '\.join\(""\)') {
+  throw 'Large theme payloads must be staged through bounded CDP evaluate chunks.'
+}
+
 $runtimeText = @('launch.ps1', 'restore.ps1') | ForEach-Object {
   Get-Content -LiteralPath (Join-Path $Root $_) -Raw
 }
@@ -330,6 +339,15 @@ if ($runtimeJs -notmatch 'data-codex-composer-root' -or
     $injectorText -notmatch 'data-codex-composer-root' -or
     $injectorText -notmatch 'data-codex-composer="true"') {
   throw 'Runtime and verification must preserve themed composer styling through the native semantic composer contract.'
+}
+if ($runtimeJs -notmatch 'data-thread-user-message-navigation-rail-list' -or
+    $runtimeJs -notmatch 'dream-quick-jump-rail' -or
+    $baseCss -notmatch '(?s)dream-quick-jump-rail.*?box-shadow:.*?opacity:\s*\.9\s*!important' -or
+    $baseCss -notmatch '(?s)dream-quick-jump-rail.*?button:is\(:hover,\s*:focus-visible\).*?width:\s*14px\s*!important') {
+  throw 'The native quick-jump rail must use structural discovery and a theme-aware high-contrast marker treatment.'
+}
+if ($baseCss -notmatch '(?s)data-app-action-sidebar-thread-row.*?content-visibility:\s*auto.*?contain-intrinsic-size:\s*auto\s+30px') {
+  throw 'Long native sidebar task lists must skip off-screen row painting without changing their 30px geometry.'
 }
 $frostleafCss = Get-Content -Raw (Join-Path $Root '..\..\themes\frostleaf-illusionist\theme.css')
 if ($frostleafCss -notmatch 'height:\s*10px\s*!important' -or

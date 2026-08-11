@@ -125,6 +125,10 @@ html.codex-dream-skin main.main-surface.dream-conversation-shell > div:nth-child
 html.codex-dream-skin aside.app-shell-left-panel,
 html.codex-dream-skin aside.app-shell-left-panel * {
   color: #dce9f6 !important;
+}
+
+html.codex-dream-skin aside.app-shell-left-panel
+  :is(span, button, strong, p) {
   text-shadow: 0 1px 2px rgba(0, 0, 0, .78), 0 0 8px rgba(0, 0, 0, .34) !important;
 }
 
