@@ -68,12 +68,27 @@ Rules:
 
 ## Video handoff contract
 
-Large theme catalogs must not be sent as one `Runtime.evaluate` expression. Once
-embedded artwork and videos push the serialized payload beyond the direct-evaluate
-threshold, `injector.mjs` stages it under a unique renderer key in bounded chunks,
-joins and evaluates it in the page, then removes the staging key on both success
-and failure. This transport rule preserves the original media files; never work
-around the CDP message limit by silently recompressing or deleting theme assets.
+Theme catalogs are metadata-first. `injector.mjs` validates every manifest and
+asset path, injects only metadata, theme CSS, and one shared copy of `base.css`,
+then services allowlisted synthetic HTTPS image requests through the existing
+verified CDP session. MP4 uses a runtime binding because Codex rejects synthetic
+network media URLs before Chromium's request interception; the binding transfers
+only the active scene video in bounded CDP chunks, resolves it to a temporary Blob
+URL, and discards the Base64 transport string. Assets are read only when the
+active scene requests them; no full-canvas raster or video may be serialized into the normal
+catalog payload. The switcher uses dedicated 320x180 previews and an
+`IntersectionObserver`, so hidden cards do not request artwork. Keep the normal
+payload below 1 MiB, with zero Base64 raster/video entries and exactly one copy
+of shared CSS. The bounded chunk transport remains a defensive fallback for
+development-only embedded previews and future large metadata payloads.
+
+Synthetic asset URLs use the reserved `https://codex-dream-skin.invalid` host,
+a per-process random token, and a registry of manifest-validated files. The CDP
+`Fetch` domain fulfills only exact registered image URLs and aborts unknown
+requests. The separately allowlisted video binding accepts the same exact
+registry URLs and rejects every non-MP4 path. Do not weaken CSP, expose a network
+listener, serve directories, or accept traversal. Closing the verified CDP
+session ends access to both channels.
 
 Scene video changes are atomic from the user's perspective even though decoding is
 asynchronous:

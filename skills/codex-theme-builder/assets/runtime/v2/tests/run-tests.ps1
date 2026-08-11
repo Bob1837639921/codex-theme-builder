@@ -19,8 +19,16 @@ $theme = if ($ThemePath) {
 if ($LASTEXITCODE -ne 0) { throw 'Injector syntax check failed.' }
 & $node.Path $injector --self-test
 if ($LASTEXITCODE -ne 0) { throw 'CDP validation self-test failed.' }
-& $node.Path $injector --check-payload --theme-dir $theme
+$payloadCheckText = & $node.Path $injector --check-payload --theme-dir $theme
 if ($LASTEXITCODE -ne 0) { throw 'Theme payload check failed.' }
+$payloadCheckText | Write-Host
+$payloadCheck = $payloadCheckText | Select-Object -Last 1 | ConvertFrom-Json
+if ($payloadCheck.assetMode -ne 'lazy-cdp' -or
+    $payloadCheck.payloadBytes -gt 1MB -or
+    $payloadCheck.embeddedMediaCount -ne 0 -or
+    $payloadCheck.sharedCssCopies -ne 1) {
+  throw "Theme catalog performance gate failed: $($payloadCheck | ConvertTo-Json -Compress)"
+}
 
 $injectorText = Get-Content -LiteralPath $injector -Raw -Encoding UTF8
 if ($injectorText -notmatch 'DIRECT_EVALUATE_LIMIT' -or
@@ -213,6 +221,34 @@ if ($runtimeJs -notmatch 'MOTION_LAYER_ID\s*=\s*"codex-dream-motion-layer"' -or
     $baseCss -notmatch '(?s)#codex-dream-motion-layer\s*\{[^}]*display:\s*none' -or
     $runtimeJs -notmatch '(?s)if\s*\(initial\)\s*\{.*?values\["--dream-wander-duration"\].*?values\["--dream-wander-delay"\]') {
   throw 'Runtime motion art must support pointer-free full-window wanderers that fade before randomized reseeding.'
+}
+$themesRootForPreviews = Split-Path -Parent $theme
+foreach ($catalogThemeId in $catalogThemeIds) {
+  $catalogThemePath = Join-Path $themesRootForPreviews $catalogThemeId
+  $catalogManifest = Get-Content -LiteralPath (Join-Path $catalogThemePath 'theme.json') -Raw | ConvertFrom-Json
+  if (-not $catalogManifest.previewImage) {
+    throw "Theme $catalogThemeId must declare a dedicated previewImage."
+  }
+  $previewPath = Join-Path $catalogThemePath $catalogManifest.previewImage
+  if (-not (Test-Path -LiteralPath $previewPath -PathType Leaf) -or (Get-Item -LiteralPath $previewPath).Length -gt 256KB) {
+    throw "Theme $catalogThemeId previewImage is missing or exceeds 256 KB."
+  }
+  $artworkReportText = & (Join-Path $RepoRoot '..\..\scripts\inspect-theme-artwork.ps1') -ThemePath $catalogThemePath
+  $artworkReport = $artworkReportText | Select-Object -Last 1 | ConvertFrom-Json
+  $previewReport = @(@($artworkReport) | Where-Object role -eq 'preview')
+  if ($previewReport.Count -ne 1 -or $previewReport[0].width -ne 320 -or $previewReport[0].height -ne 180) {
+    throw "Theme $catalogThemeId previewImage must be exactly 320x180."
+  }
+}
+if ($runtimeJs -notmatch 'IntersectionObserver' -or
+    $runtimeJs -notmatch 'previewArtDataUrl' -or
+    $runtimeJs -notmatch 'BASE_STYLE_ID' -or
+    $injectorText -notmatch 'Fetch\.requestPaused' -or
+    $injectorText -notmatch 'Runtime\.bindingCalled' -or
+    $injectorText -notmatch '__CODEX_DREAM_SKIN_VIDEO__' -or
+    $injectorText -notmatch 'Content-Range' -or
+    $injectorText -notmatch 'assetMode:\s*"lazy-cdp"') {
+  throw 'Lazy catalog assets, visible-card previews, shared CSS, and bounded active-video delivery must remain enabled.'
 }
 if ($null -ne $luminousManifest.motionImage -or
     $luminousCss -match 'jellyfish|luminous-jelly|luminous-random-wander|--dream-motion-art') {

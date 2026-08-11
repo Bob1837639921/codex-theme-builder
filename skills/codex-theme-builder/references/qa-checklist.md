@@ -12,6 +12,8 @@
 - Full-canvas WebP files target 1 MB or less when visual comparison shows no meaningful loss.
 - If a soft payload target was exceeded, `design-qa.md` records why the higher-quality under-limit asset was retained. If the target was met, visual inspection still confirms no visible banding, blur, halos, or protected-subject damage.
 - Documentation previews are separate derivatives and have not replaced runtime artwork.
+- Every catalog theme declares a dedicated 320x180 `previewImage` at or below 256 KB; opening the switcher requests only visible/near-visible previews and never downloads full-canvas art for hidden cards.
+- `--check-payload` reports `assetMode: lazy-cdp`, a payload at or below 1 MiB, zero embedded raster/video entries, and one shared CSS copy.
 - No superseded, backup, source-resolution, or unreferenced full-canvas background remains in the theme folder.
 - A distinct usage-details raster exists, is not the home/conversation artwork, and remains at or below 300 KB.
 - Theme CSS explicitly defines all five usage-panel semantic tokens.

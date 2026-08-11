@@ -36,7 +36,7 @@ from those masters, never from an older WebP/JPEG delivery copy. Keep the source
 directory outside `assets/themes/<theme-id>/` so packaging stays lean without
 sacrificing the reusable master.
 
-Use `scripts/new-theme.ps1` to copy the supplied home, conversation, usage, selected-thread background, sidebar, and composer-edge assets into the package. Home, usage, and selected-thread artwork are mandatory; omit only the genuinely optional inputs. Pass the selected strip through `-SelectedThreadBackgroundImage` (`-SelectedMarkerImage` remains a compatibility alias only).
+Use `scripts/new-theme.ps1` to copy the supplied home, 320x180 switcher preview, conversation, usage, selected-thread background, sidebar, and composer-edge assets into the package. Home, preview, usage, and selected-thread artwork are mandatory; omit only the genuinely optional inputs. Pass the preview through `-PreviewImage` and the selected strip through `-SelectedThreadBackgroundImage` (`-SelectedMarkerImage` remains a compatibility alias only).
 
 ## Surface map
 

@@ -9,6 +9,7 @@ theme-id/
   theme.json
   theme.css
   home.png
+  preview.webp      # required 320x180 switcher thumbnail
   conversation.png
   usage-background.webp  # required dedicated usage-details artwork
   sidebar.png       # optional sidebar texture
@@ -36,6 +37,7 @@ The image names are configurable. `theme.css` is optional to the runtime but gen
   "name": "Theme name",
   "subtitle": "CODEX THEME",
   "image": "home.png",
+  "previewImage": "preview.webp",
   "conversationImage": "conversation.png",
   "usageImage": "usage-background.webp",
   "sidebarImage": "sidebar.png",
@@ -73,6 +75,7 @@ Rules:
 - Use `schemaVersion: 1`.
 - Keep every asset filename local: no directories, URLs, data URLs, or traversal.
 - Use PNG, JPEG, or WebP raster images no larger than 8 MB each.
+- `previewImage` is required for bundled and newly generated themes. It must be a dedicated 320x180 PNG, JPEG, or WebP derivative no larger than 256 KB. Never point it at the full-canvas home artwork: the switcher loads previews only when their cards enter its scroll viewport.
 - `sidebarImage` is optional. When present it must be a local PNG, JPEG, or WebP image no larger than 8 MB; the runtime exposes it as `--dream-sidebar-art`.
 - `motionImage` is optional. It must be a local animated or static WebP no larger than 2 MB; the runtime exposes it as `--dream-motion-art`. Keep it localized and masked instead of stretching it over the full workspace.
 - `homeVideo` and `conversationVideo` are optional and independent. Each must be a local MP4 no larger than 8 MB and may run only under `data-dream-motion="high"`. Generate each video from its matching `image` or `conversationImage`; never reuse an unrelated scene or allow the static poster to remain visible beneath an opaque ready video. The shared runtime switches sources with the route, creates only the active video lazily, pauses it while the document is hidden, removes it when leaving the high tier or switching themes, and always falls back to the declared static artwork under reduced motion. Legacy `backgroundVideo` is accepted only as an alias for `conversationVideo`.

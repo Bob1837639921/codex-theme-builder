@@ -1,5 +1,6 @@
-((themeCatalog, initialThemeId) => {
+((baseCss, themeCatalog, initialThemeId) => {
   const STATE_KEY = "__CODEX_DREAM_SKIN_STATE__";
+  const BASE_STYLE_ID = "codex-dream-skin-base-style";
   const STYLE_ID = "codex-dream-skin-style";
   const CHROME_ID = "codex-dream-skin-chrome";
   const ACTIONS_ID = "codex-dream-skin-actions";
@@ -13,9 +14,10 @@
   const STORAGE_KEY = "codex-dream-theme-active";
   const MOTION_STORAGE_KEY = "codex-dream-motion-level";
   const MOTION_LEVELS = ["off", "low", "high"];
-  const RUNTIME_VERSION = "2.2.17-scoped-window-video";
+  const RUNTIME_VERSION = "2.3.0-lazy-theme-assets";
   const THEME_SEARCH_THRESHOLD = 6;
   const MUTATION_COALESCE_MS = 180;
+  const VIDEO_BINDING_NAME = "__CODEX_DREAM_SKIN_VIDEO__";
   const actions = [
     ["build", "构建", "编码实现与应用", "帮我构建一个新的应用"],
     ["analyze", "分析", "数据分析与洞察", "分析这个项目的结构与风险"],
@@ -34,23 +36,21 @@
   previous?.disposeVideoHandoffShield?.();
   previous?.restoreSidebarControls?.();
   previous?.restoreCompatibilityMarkers?.();
+  for (const pending of previous?.pendingVideoAssets?.values?.() || []) {
+    pending.reject?.(new Error("Theme runtime replaced"));
+  }
   document.getElementById(SWITCHER_ID)?.remove();
   document.getElementById(MOTION_LAYER_ID)?.remove();
   document.getElementById(VIDEO_HANDOFF_SHIELD_ID)?.remove();
   document.querySelectorAll(`#${BACKGROUND_VIDEO_ID}, .${BACKGROUND_VIDEO_LAYER_CLASS}`).forEach((video) => video.remove());
   for (const urls of previous?.objectUrls?.values?.() || []) {
-    URL.revokeObjectURL(urls.artUrl);
-    URL.revokeObjectURL(urls.conversationUrl);
-    if (urls.motionUrl) URL.revokeObjectURL(urls.motionUrl);
-    if (urls.usageUrl) URL.revokeObjectURL(urls.usageUrl);
-    if (urls.homeSoftVideoUrl) URL.revokeObjectURL(urls.homeSoftVideoUrl);
-    if (urls.conversationSoftVideoUrl) URL.revokeObjectURL(urls.conversationSoftVideoUrl);
-    if (urls.homeVideoUrl) URL.revokeObjectURL(urls.homeVideoUrl);
-    if (urls.conversationVideoUrl) URL.revokeObjectURL(urls.conversationVideoUrl);
+    for (const url of urls.ownedUrls || []) URL.revokeObjectURL(url);
   }
   const themeMap = new Map(themeCatalog.map((item) => [item.id, item]));
   if (!themeMap.size || !themeMap.has(initialThemeId)) throw new Error("Theme catalog is empty or missing the initial theme");
   const objectUrls = new Map();
+  const pendingVideoAssets = new Map();
+  let nextVideoAssetRequest = 0;
   let activeBackgroundVideoElement = null;
   let themeSuspendedForNativeSurface = false;
   const usesWindowVideoCanvas = () => activeTheme?.windowVideoCanvas === true;
@@ -108,18 +108,53 @@
     const mime = dataUrl.slice(5, dataUrl.indexOf(";")) || "image/png";
     return URL.createObjectURL(new Blob([bytes], { type: mime }));
   };
+  const mediaUrl = (value, ownedUrls) => {
+    if (!value) return null;
+    if (!value.startsWith("data:")) return value;
+    const url = dataUrlToObjectUrl(value);
+    ownedUrls.add(url);
+    return url;
+  };
   const urlsFor = (theme) => {
-    if (!objectUrls.has(theme.id)) objectUrls.set(theme.id, {
-      artUrl: dataUrlToObjectUrl(theme.artDataUrl),
-      conversationUrl: dataUrlToObjectUrl(theme.conversationArtDataUrl),
-      motionUrl: theme.motionArtDataUrl ? dataUrlToObjectUrl(theme.motionArtDataUrl) : null,
-      usageUrl: theme.usageArtDataUrl ? dataUrlToObjectUrl(theme.usageArtDataUrl) : null,
-      homeSoftVideoUrl: null,
-      conversationSoftVideoUrl: null,
-      homeVideoUrl: null,
-      conversationVideoUrl: null,
-    });
+    if (!objectUrls.has(theme.id)) {
+      const ownedUrls = new Set();
+      objectUrls.set(theme.id, {
+        ownedUrls,
+        artUrl: mediaUrl(theme.artDataUrl, ownedUrls),
+        conversationUrl: mediaUrl(theme.conversationArtDataUrl, ownedUrls),
+        motionUrl: mediaUrl(theme.motionArtDataUrl, ownedUrls),
+        usageUrl: mediaUrl(theme.usageArtDataUrl, ownedUrls),
+        homeSoftVideoUrl: null,
+        conversationSoftVideoUrl: null,
+        homeVideoUrl: null,
+        conversationVideoUrl: null,
+      });
+    }
     return objectUrls.get(theme.id);
+  };
+  const releaseThemeUrls = (themeId) => {
+    const urls = objectUrls.get(themeId);
+    if (!urls) return;
+    for (const url of urls.ownedUrls || []) URL.revokeObjectURL(url);
+    objectUrls.delete(themeId);
+  };
+  window.__CODEX_DREAM_SKIN_VIDEO_RESOLVE__ = (id, dataUrl, error) => {
+    const pending = pendingVideoAssets.get(id);
+    if (!pending) return;
+    pendingVideoAssets.delete(id);
+    if (error || !dataUrl) pending.reject(new Error(error || "Video asset was empty"));
+    else pending.resolve(dataUrl);
+  };
+  const requestVideoDataUrl = (url) => {
+    if (!url || url.startsWith("data:")) return Promise.resolve(url);
+    const binding = window[VIDEO_BINDING_NAME];
+    if (typeof binding !== "function") return Promise.reject(new Error("Video asset bridge is unavailable"));
+    const id = `${Date.now().toString(36)}-${(++nextVideoAssetRequest).toString(36)}`;
+    return new Promise((resolve, reject) => {
+      pendingVideoAssets.set(id, { resolve, reject });
+      try { binding(JSON.stringify({ id, url })); }
+      catch (error) { pendingVideoAssets.delete(id); reject(error); }
+    });
   };
   const storedThemeId = (() => { try { return localStorage.getItem(STORAGE_KEY); } catch { return null; } })();
   const storedMotionLevel = (() => { try { return localStorage.getItem(MOTION_STORAGE_KEY); } catch { return null; } })();
@@ -463,10 +498,13 @@
 
   const releaseBackgroundVideoUrls = () => {
     for (const urls of objectUrls.values()) {
-      if (urls.homeSoftVideoUrl) URL.revokeObjectURL(urls.homeSoftVideoUrl);
-      if (urls.conversationSoftVideoUrl) URL.revokeObjectURL(urls.conversationSoftVideoUrl);
-      if (urls.homeVideoUrl) URL.revokeObjectURL(urls.homeVideoUrl);
-      if (urls.conversationVideoUrl) URL.revokeObjectURL(urls.conversationVideoUrl);
+      for (const key of ["homeSoftVideoUrl", "conversationSoftVideoUrl", "homeVideoUrl", "conversationVideoUrl"]) {
+        const url = urls[key];
+        if (url?.startsWith("blob:")) {
+          URL.revokeObjectURL(url);
+          urls.ownedUrls?.delete(url);
+        }
+      }
       urls.homeSoftVideoUrl = null;
       urls.conversationSoftVideoUrl = null;
       urls.homeVideoUrl = null;
@@ -613,14 +651,14 @@
     const scene = shell?.classList.contains("dream-home-shell") ? "home" : "conversation";
     const videoTier = activeMotionLevel === "high" ? "high" :
       activeMotionLevel === "low" ? "soft" : null;
-    const videoDataUrl = videoTier === "high"
+    const videoSourceUrl = videoTier === "high"
       ? (scene === "home" ? activeTheme?.homeVideoDataUrl : activeTheme?.conversationVideoDataUrl)
       : videoTier === "soft"
         ? (scene === "home" ? activeTheme?.homeSoftVideoDataUrl : activeTheme?.conversationSoftVideoDataUrl)
         : null;
     const shouldExist = Boolean(videoTier) &&
       !reducedMotionQuery?.matches &&
-      Boolean(videoDataUrl) &&
+      Boolean(videoSourceUrl) &&
       Boolean(shell);
     if (!shouldExist) {
       disposeBackgroundVideo(true);
@@ -632,7 +670,25 @@
       ? (scene === "home" ? "homeSoftVideoUrl" : "conversationSoftVideoUrl")
       : (scene === "home" ? "homeVideoUrl" : "conversationVideoUrl");
     if (!urls[urlKey]) {
-      urls[urlKey] = dataUrlToObjectUrl(videoDataUrl);
+      const requestKey = `${urlKey}Request`;
+      if (!urls[requestKey]) {
+        ensureVideoHandoffShield(shell, true);
+        const requestedThemeId = activeTheme.id;
+        const requestedSource = videoSourceUrl;
+        urls[requestKey] = requestVideoDataUrl(requestedSource).then((dataUrl) => {
+          if (!objectUrls.has(requestedThemeId)) return null;
+          urls[urlKey] = mediaUrl(dataUrl, urls.ownedUrls);
+          urls[requestKey] = null;
+          if (activeTheme.id === requestedThemeId) syncBackgroundVideo();
+          return urls[urlKey];
+        }).catch((error) => {
+          urls[requestKey] = null;
+          if (activeTheme.id === requestedThemeId) disposeVideoHandoffShield();
+          console.error("Codex theme video asset request failed", error);
+          return null;
+        });
+      }
+      return null;
     }
     let video = document.getElementById(BACKGROUND_VIDEO_ID);
     const videoParent = usesWindowVideoCanvas() ? document.body : shell;
@@ -802,6 +858,16 @@
     const root = document.documentElement;
     if (!root) throw new Error("Document root is unavailable");
     const urls = urlsFor(theme);
+    let baseStyle = document.getElementById(BASE_STYLE_ID);
+    if (!baseStyle) {
+      baseStyle = document.createElement("style");
+      baseStyle.id = BASE_STYLE_ID;
+      (document.head || root).appendChild(baseStyle);
+    }
+    if (baseStyle.dataset.dreamVersion !== RUNTIME_VERSION) {
+      baseStyle.textContent = baseCss;
+      baseStyle.dataset.dreamVersion = RUNTIME_VERSION;
+    }
     let style = document.getElementById(STYLE_ID);
     if (!style) {
       style = document.createElement("style");
@@ -844,6 +910,9 @@
     const previousTheme = activeTheme;
     try {
       applyTheme(next, true);
+      setTimeout(() => {
+        if (activeTheme.id !== previousTheme.id) releaseThemeUrls(previousTheme.id);
+      }, 1800);
       return true;
     } catch (error) {
       try { applyTheme(previousTheme, false); } catch {}
@@ -912,6 +981,19 @@
     empty.className = "dream-theme-empty";
     empty.textContent = "没有匹配的主题";
     empty.hidden = true;
+    const previewObserver = typeof IntersectionObserver === "function"
+      ? new IntersectionObserver((entries) => {
+          for (const entry of entries) {
+            if (!entry.isIntersecting) continue;
+            const preview = entry.target;
+            if (preview.dataset.dreamPreviewUrl) {
+              preview.style.backgroundImage = `url("${preview.dataset.dreamPreviewUrl}")`;
+              delete preview.dataset.dreamPreviewUrl;
+            }
+            previewObserver.unobserve(preview);
+          }
+        }, { root: grid, rootMargin: "80px 0px" })
+      : null;
     for (const item of themeCatalog) {
       const card = document.createElement("button");
       card.type = "button";
@@ -920,7 +1002,9 @@
       card.dataset.dreamThemeSearch = `${item.name} ${item.subtitle || ""} ${item.id}`.toLocaleLowerCase();
       const preview = document.createElement("span");
       preview.className = "dream-theme-preview";
-      preview.style.backgroundImage = `url("${item.artDataUrl}")`;
+      preview.dataset.dreamPreviewUrl = item.previewArtDataUrl || item.artDataUrl;
+      if (previewObserver) previewObserver.observe(preview);
+      else preview.style.backgroundImage = `url("${preview.dataset.dreamPreviewUrl}")`;
       const current = document.createElement("span");
       current.className = "dream-theme-current";
       current.textContent = "✓";
@@ -1033,6 +1117,7 @@
     window.addEventListener("resize", onViewportChange);
     window.addEventListener("scroll", onViewportChange, true);
     removeSwitcherListeners = () => {
+      previewObserver?.disconnect();
       document.removeEventListener("pointerdown", onDocumentPointer, true);
       document.removeEventListener("keydown", onDocumentKey, true);
       window.removeEventListener("resize", onViewportChange);
@@ -1289,6 +1374,7 @@
     document.querySelectorAll(".dream-conversation-shell").forEach((node) => node.classList.remove("dream-conversation-shell"));
     restoreCompatibilityMarkers();
     document.getElementById(STYLE_ID)?.remove();
+    document.getElementById(BASE_STYLE_ID)?.remove();
     document.getElementById(CHROME_ID)?.remove();
     document.getElementById(ACTIONS_ID)?.remove();
     document.getElementById(TITLE_ID)?.remove();
@@ -1309,21 +1395,19 @@
     if (state?.scheduler?.timeout) clearTimeout(state.scheduler.timeout);
     if (state?.scheduler?.frame) cancelAnimationFrame(state.scheduler.frame);
     for (const urls of state?.objectUrls?.values?.() || []) {
-      URL.revokeObjectURL(urls.artUrl);
-      URL.revokeObjectURL(urls.conversationUrl);
-      if (urls.motionUrl) URL.revokeObjectURL(urls.motionUrl);
-      if (urls.usageUrl) URL.revokeObjectURL(urls.usageUrl);
-      if (urls.homeSoftVideoUrl) URL.revokeObjectURL(urls.homeSoftVideoUrl);
-      if (urls.conversationSoftVideoUrl) URL.revokeObjectURL(urls.conversationSoftVideoUrl);
-      if (urls.homeVideoUrl) URL.revokeObjectURL(urls.homeVideoUrl);
-      if (urls.conversationVideoUrl) URL.revokeObjectURL(urls.conversationVideoUrl);
+      for (const url of urls.ownedUrls || []) URL.revokeObjectURL(url);
     }
+    for (const pending of state?.pendingVideoAssets?.values?.() || []) {
+      pending.reject?.(new Error("Theme runtime removed"));
+    }
+    pendingVideoAssets.clear();
+    delete window.__CODEX_DREAM_SKIN_VIDEO_RESOLVE__;
     delete window[STATE_KEY];
     return true;
   };
 
   const scheduler = { frame: null, timeout: null, lastRun: 0, pending: false, runCount: 0 };
-  const runtimeOwnerSelector = `#${STYLE_ID}, #${CHROME_ID}, #${HOME_OVERLAY_ID}, #${SWITCHER_ID}, #${MOTION_LAYER_ID}, #${BACKGROUND_VIDEO_ID}, #${VIDEO_HANDOFF_SHIELD_ID}, .${BACKGROUND_VIDEO_LAYER_CLASS}`;
+  const runtimeOwnerSelector = `#${BASE_STYLE_ID}, #${STYLE_ID}, #${CHROME_ID}, #${HOME_OVERLAY_ID}, #${SWITCHER_ID}, #${MOTION_LAYER_ID}, #${BACKGROUND_VIDEO_ID}, #${VIDEO_HANDOFF_SHIELD_ID}, .${BACKGROUND_VIDEO_LAYER_CLASS}`;
   const isRuntimeOwnedNode = (node) => {
     const element = node?.nodeType === Node.ELEMENT_NODE ? node : node?.parentElement;
     return Boolean(element?.matches?.(runtimeOwnerSelector) || element?.closest?.(runtimeOwnerSelector));
@@ -1396,6 +1480,7 @@
     scheduler,
     detailState,
     objectUrls,
+    pendingVideoAssets,
     activateTheme,
     applyMotionLevel,
     removeSwitcherListeners,
@@ -1414,4 +1499,4 @@
   scheduler.lastRun = performance.now();
   scheduler.runCount = 1;
   return { installed: true, version: RUNTIME_VERSION, activeThemeId: activeTheme.id, themeCount: themeCatalog.length };
-})(__DREAM_THEME_CATALOG_JSON__, __DREAM_INITIAL_THEME_ID_JSON__)
+})(__DREAM_BASE_CSS_JSON__, __DREAM_THEME_CATALOG_JSON__, __DREAM_INITIAL_THEME_ID_JSON__)

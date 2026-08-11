@@ -3,6 +3,7 @@ param(
   [Parameter(Mandatory)][ValidatePattern('^[a-z0-9]+(?:-[a-z0-9]+)*$')][string]$Id,
   [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$Name,
   [Parameter(Mandatory)][ValidateScript({ Test-Path -LiteralPath $_ -PathType Leaf })][string]$HomeImage,
+  [Parameter(Mandatory)][ValidateScript({ Test-Path -LiteralPath $_ -PathType Leaf })][string]$PreviewImage,
   [ValidateScript({ -not $_ -or (Test-Path -LiteralPath $_ -PathType Leaf) })][string]$ConversationImage = '',
   [Parameter(Mandatory)][ValidateScript({ Test-Path -LiteralPath $_ -PathType Leaf })][string]$UsageImage,
   [ValidateScript({ -not $_ -or (Test-Path -LiteralPath $_ -PathType Leaf) })][string]$SidebarImage = '',
@@ -61,6 +62,7 @@ function Copy-ThemeAsset([string]$Source, [string]$Stem, [string[]]$AllowedExten
 }
 
 $homeName = Copy-ThemeImage -Source $HomeImage -Stem 'home'
+$previewName = Copy-ThemeImage -Source $PreviewImage -Stem 'preview'
 $conversationSource = if ([string]::IsNullOrWhiteSpace($ConversationImage)) { $HomeImage } else { $ConversationImage }
 $conversationName = if ([System.IO.Path]::GetFullPath($conversationSource) -eq [System.IO.Path]::GetFullPath($HomeImage)) {
   $homeName
@@ -108,6 +110,7 @@ $manifest = [ordered]@{
   name = $Name
   subtitle = $Subtitle
   image = $homeName
+  previewImage = $previewName
   conversationImage = $conversationName
 }
 if ($sidebarName) { $manifest.sidebarImage = $sidebarName }

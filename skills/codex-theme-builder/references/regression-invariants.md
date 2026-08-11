@@ -105,6 +105,18 @@ artwork, motion, or theme identity.
 
 ## Static and video backgrounds
 
+- Keep catalogs metadata-first: one shared `base.css`, theme-local CSS only once,
+  zero Base64 raster/video payloads, and a normal injection payload below 1 MiB.
+  Serve only manifest-validated images through the verified CDP request
+  interceptor, and transfer only the active MP4 through the bounded runtime
+  binding. Do not open a localhost HTTP port or weaken the app CSP.
+- Every bundled theme must provide a dedicated 320x180 `previewImage` no larger
+  than 256 KB. Load switcher previews only as cards enter its scroll viewport;
+  never use a 4K home image as a thumbnail.
+- Keep media references only for the active theme. After the atomic handoff,
+  release any Blob URLs owned by the previous theme. Do not preload or decode
+  inactive theme video.
+
 - A catalog containing large raster or video assets must still inject reliably.
   Keep each CDP `Runtime.evaluate` message below the shared transport threshold,
   stage oversized payloads in uniquely named chunks, assemble them in the renderer,

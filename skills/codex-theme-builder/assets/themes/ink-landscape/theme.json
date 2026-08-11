@@ -4,6 +4,7 @@
   "name": "墨境",
   "subtitle": "INK LANDSCAPE · CODEX",
   "image": "background.webp",
+  "previewImage": "preview.webp",
   "conversationImage": "conversation-background.webp",
   "usageImage": "usage-background.webp",
   "sidebarImage": "sidebar-background.webp",

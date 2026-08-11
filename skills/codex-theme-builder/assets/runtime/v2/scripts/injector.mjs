@@ -5,15 +5,136 @@ import { fileURLToPath } from "node:url";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, "..");
-const SKIN_VERSION = "2.2.17-scoped-window-video";
+const SKIN_VERSION = "2.3.0-lazy-theme-assets";
 const MAX_ART_BYTES = 8 * 1024 * 1024;
 const MAX_VIDEO_BYTES = 8 * 1024 * 1024;
 const DIRECT_EVALUATE_LIMIT = 8 * 1024 * 1024;
 const EVALUATE_CHUNK_SIZE = 4 * 1024 * 1024;
 const LOOPBACK_HOSTS = new Set(["127.0.0.1", "localhost", "[::1]", "::1"]);
 const BROWSER_ID_PATTERN = /^[A-Za-z0-9._-]{1,200}$/;
+const ASSET_ORIGIN = "https://codex-dream-skin.invalid";
+const VIDEO_BINDING_NAME = "__CODEX_DREAM_SKIN_VIDEO__";
 
 class CdpIdentityMismatchError extends Error {}
+
+function createAssetRegistry() {
+  const token = randomUUID().replaceAll("-", "");
+  const prefix = `${ASSET_ORIGIN}/${token}/`;
+  const entries = new Map();
+  return {
+    prefix,
+    register(themeId, filename, filePath, mime) {
+      const url = `${prefix}${encodeURIComponent(themeId)}/${encodeURIComponent(filename)}`;
+      entries.set(url, { filePath, mime });
+      return url;
+    },
+    resolve(url) { return entries.get(url) ?? null; },
+    get size() { return entries.size; },
+  };
+}
+
+function requestHeader(headers, name) {
+  if (Array.isArray(headers)) {
+    return headers.find((header) => header.name.toLowerCase() === name.toLowerCase())?.value ?? null;
+  }
+  if (headers && typeof headers === "object") {
+    const key = Object.keys(headers).find((candidate) => candidate.toLowerCase() === name.toLowerCase());
+    return key ? headers[key] : null;
+  }
+  return null;
+}
+
+async function fulfillAssetRequest(session, registry, event) {
+  const entry = registry.resolve(event.request?.url);
+  if (!entry || entry.mime === "video/mp4") {
+    await session.send("Fetch.failRequest", { requestId: event.requestId, errorReason: "Aborted" });
+    return;
+  }
+  try {
+    const stat = await fs.stat(entry.filePath);
+    const range = requestHeader(event.request.headers, "range")?.match(/^bytes=(\d*)-(\d*)$/i);
+    let start = 0;
+    let end = stat.size - 1;
+    let responseCode = 200;
+    if (range) {
+      start = range[1] ? Number(range[1]) : 0;
+      end = range[2] ? Math.min(Number(range[2]), stat.size - 1) : stat.size - 1;
+      if (!Number.isSafeInteger(start) || !Number.isSafeInteger(end) || start < 0 || end < start || start >= stat.size) {
+        await session.send("Fetch.fulfillRequest", {
+          requestId: event.requestId,
+          responseCode: 416,
+          responseHeaders: [{ name: "Content-Range", value: `bytes */${stat.size}` }],
+        });
+        return;
+      }
+      responseCode = 206;
+    }
+    const length = end - start + 1;
+    let body = Buffer.alloc(0);
+    if (event.request.method !== "HEAD") {
+      const fileBytes = await fs.readFile(entry.filePath);
+      body = fileBytes.subarray(start, end + 1);
+    }
+    const responseHeaders = [
+      { name: "Content-Type", value: entry.mime },
+      { name: "Content-Length", value: String(length) },
+      { name: "Accept-Ranges", value: "bytes" },
+      { name: "Cache-Control", value: entry.mime.startsWith("video/") ? "no-store" : "private, max-age=3600" },
+    ];
+    if (responseCode === 206) {
+      responseHeaders.push({ name: "Content-Range", value: `bytes ${start}-${end}/${stat.size}` });
+    }
+    await session.send("Fetch.fulfillRequest", {
+      requestId: event.requestId,
+      responseCode,
+      responseHeaders,
+      body: body.toString("base64"),
+    });
+  } catch (error) {
+    console.error(`[dream-skin] asset request failed: ${error.message}`);
+    await session.send("Fetch.failRequest", { requestId: event.requestId, errorReason: "Failed" }).catch(() => {});
+  }
+}
+
+async function enableAssetInterception(session, registry) {
+  session.on("Fetch.requestPaused", (event) => {
+    fulfillAssetRequest(session, registry, event).catch((error) => {
+      console.error(`[dream-skin] asset interception failed: ${error.message}`);
+    });
+  });
+  session.on("Runtime.bindingCalled", (event) => {
+    if (event.name !== VIDEO_BINDING_NAME) return;
+    serveVideoBinding(session, registry, event.payload).catch((error) => {
+      console.error(`[dream-skin] video binding failed: ${error.message}`);
+    });
+  });
+  await session.send("Runtime.addBinding", { name: VIDEO_BINDING_NAME });
+  await session.send("Fetch.enable", {
+    patterns: [{ urlPattern: `${registry.prefix}*`, requestStage: "Request" }],
+  });
+}
+
+async function serveVideoBinding(session, registry, payload) {
+  let request;
+  try { request = JSON.parse(payload); } catch { return; }
+  if (!request || typeof request.id !== "string" || !/^[a-z0-9-]{1,64}$/i.test(request.id) ||
+      typeof request.url !== "string") return;
+  const entry = registry.resolve(request.url);
+  if (!entry || entry.mime !== "video/mp4") {
+    await session.evaluate(`window.__CODEX_DREAM_SKIN_VIDEO_RESOLVE__?.(${JSON.stringify(request.id)}, null, "Rejected video asset")`);
+    return;
+  }
+  try {
+    const bytes = await fs.readFile(entry.filePath);
+    const dataUrl = `data:${entry.mime};base64,${bytes.toString("base64")}`;
+    await applyToSession(
+      session,
+      `window.__CODEX_DREAM_SKIN_VIDEO_RESOLVE__?.(${JSON.stringify(request.id)}, ${JSON.stringify(dataUrl)}, null)`,
+    );
+  } catch (error) {
+    await session.evaluate(`window.__CODEX_DREAM_SKIN_VIDEO_RESOLVE__?.(${JSON.stringify(request.id)}, null, ${JSON.stringify(error.message)})`).catch(() => {});
+  }
+}
 
 function parseArgs(argv) {
   const options = {
@@ -293,7 +414,7 @@ async function connectBrowserIdentityAnchor(port, expectedBrowserId) {
   return new BrowserIdentityAnchor(validatedDebuggerUrl(version, port)).open();
 }
 
-async function loadThemePackage(themeDir, baseCss) {
+async function loadThemePackage(themeDir, assetRegistry = null) {
   const manifestPath = path.join(themeDir, "theme.json");
   const [manifestText, themeCss] = await Promise.all([
     fs.readFile(manifestPath, "utf8"),
@@ -310,6 +431,10 @@ async function loadThemePackage(themeDir, baseCss) {
     ? value : fallback;
   const text = (value, fallback, max = 100) => typeof value === "string" && value.trim()
     ? value.trim().slice(0, max) : fallback;
+  const themeId = text(raw.id, "custom", 64);
+  const assetReference = async (filename, filePath, mime) => assetRegistry
+    ? assetRegistry.register(themeId, filename, filePath, mime)
+    : `data:${mime};base64,${(await fs.readFile(filePath)).toString("base64")}`;
   const image = raw.image ?? "background.png";
   if (path.basename(image) !== image || !/\.(?:png|jpe?g|webp)$/i.test(image)) {
     throw new Error("Theme image must be a PNG, JPEG, or WebP file inside the theme directory");
@@ -351,11 +476,10 @@ async function loadThemePackage(themeDir, baseCss) {
     if (!sidebarImageStat.isFile() || sidebarImageStat.size < 1 || sidebarImageStat.size > MAX_ART_BYTES) {
       throw new Error("Sidebar image must be non-empty and no larger than 8 MB");
     }
-    const sidebarImageBytes = await fs.readFile(sidebarImagePath);
     const sidebarExtension = path.extname(raw.sidebarImage).toLowerCase();
     const sidebarMime = sidebarExtension === ".webp" ? "image/webp" :
       sidebarExtension === ".jpg" || sidebarExtension === ".jpeg" ? "image/jpeg" : "image/png";
-    sidebarImageDataUrl = `url("data:${sidebarMime};base64,${sidebarImageBytes.toString("base64")}")`;
+    sidebarImageDataUrl = `url("${await assetReference(raw.sidebarImage, sidebarImagePath, sidebarMime)}")`;
   }
   let motionImageDataUrl = null;
   if (raw.motionImage !== undefined) {
@@ -368,8 +492,7 @@ async function loadThemePackage(themeDir, baseCss) {
     if (!motionImageStat.isFile() || motionImageStat.size < 1 || motionImageStat.size > 2 * 1024 * 1024) {
       throw new Error("Motion image must be non-empty and no larger than 2 MB");
     }
-    const motionImageBytes = await fs.readFile(motionImagePath);
-    motionImageDataUrl = `data:image/webp;base64,${motionImageBytes.toString("base64")}`;
+    motionImageDataUrl = await assetReference(raw.motionImage, motionImagePath, "image/webp");
   }
   const loadBackgroundVideo = async (fieldName, fileName) => {
     if (fileName === undefined) return null;
@@ -381,8 +504,7 @@ async function loadThemePackage(themeDir, baseCss) {
     if (!videoStat.isFile() || videoStat.size < 1 || videoStat.size > MAX_VIDEO_BYTES) {
       throw new Error(`${fieldName} must be non-empty and no larger than 8 MB`);
     }
-    const videoBytes = await fs.readFile(videoPath);
-    return `data:video/mp4;base64,${videoBytes.toString("base64")}`;
+    return assetReference(fileName, videoPath, "video/mp4");
   };
   const homeSoftVideoDataUrl = await loadBackgroundVideo("Home soft video", raw.homeSoftVideo);
   const conversationSoftVideoDataUrl = await loadBackgroundVideo(
@@ -406,9 +528,8 @@ async function loadThemePackage(themeDir, baseCss) {
     if (!selectedLeafStat.isFile() || selectedLeafStat.size < 1 || selectedLeafStat.size > 512 * 1024) {
       throw new Error("Selected leaf must be non-empty and no larger than 512 KB");
     }
-    const selectedLeafBytes = await fs.readFile(selectedLeafPath);
     const selectedLeafMime = path.extname(raw.selectedLeaf).toLowerCase() === ".webp" ? "image/webp" : "image/png";
-    selectedLeafDataUrl = `url("data:${selectedLeafMime};base64,${selectedLeafBytes.toString("base64")}")`;
+    selectedLeafDataUrl = `url("${await assetReference(raw.selectedLeaf, selectedLeafPath, selectedLeafMime)}")`;
   }
   let composerEdgeDataUrl = "none";
   let composerEdgePosition = "left bottom";
@@ -427,9 +548,8 @@ async function loadThemePackage(themeDir, baseCss) {
     if (!composerEdgeStat.isFile() || composerEdgeStat.size < 1 || composerEdgeStat.size > 2 * 1024 * 1024) {
       throw new Error("Composer edge must be non-empty and no larger than 2 MB");
     }
-    const composerEdgeBytes = await fs.readFile(composerEdgePath);
     const composerEdgeMime = path.extname(composerEdge.image).toLowerCase() === ".webp" ? "image/webp" : "image/png";
-    composerEdgeDataUrl = `url("data:${composerEdgeMime};base64,${composerEdgeBytes.toString("base64")}")`;
+    composerEdgeDataUrl = `url("${await assetReference(composerEdge.image, composerEdgePath, composerEdgeMime)}")`;
     const horizontal = ["left", "center", "right"].includes(composerEdge.horizontal)
       ? composerEdge.horizontal : "left";
     const vertical = ["top", "center", "bottom"].includes(composerEdge.vertical)
@@ -443,7 +563,7 @@ async function loadThemePackage(themeDir, baseCss) {
     }
   }
   const theme = {
-    id: text(raw.id, "custom", 64),
+    id: themeId,
     name: text(raw.name, "Dream Skin", 80),
     subtitle: text(raw.subtitle, "CODEX THEME", 80),
     accent: color(raw.colors?.accent, "#8b5cf6"),
@@ -467,26 +587,43 @@ async function loadThemePackage(themeDir, baseCss) {
         /<(?:script|foreignObject|iframe|image)\b|\bon\w+\s*=|\b(?:href|src)\s*=|url\s*\(/i.test(iconText)) {
       throw new Error(`Theme icon ${key} contains unsupported SVG content`);
     }
-    theme.icons[key] = `data:image/svg+xml;base64,${Buffer.from(iconText).toString("base64")}`;
+    theme.icons[key] = assetRegistry
+      ? assetRegistry.register(themeId, filename, iconPath, "image/svg+xml")
+      : `data:image/svg+xml;base64,${Buffer.from(iconText).toString("base64")}`;
   }
-  const art = await fs.readFile(imagePath);
   const extension = path.extname(image).toLowerCase();
   const mime = extension === ".webp" ? "image/webp" : extension === ".jpg" || extension === ".jpeg"
     ? "image/jpeg" : "image/png";
   const themeVariables = `:root.codex-dream-skin{--dream-purple:${theme.accent};--dream-pink:${theme.accentAlt};--dream-surface:${theme.surface};--dream-ink:${theme.text};--dream-sidebar-art:${sidebarImageDataUrl};--dream-selected-leaf:${selectedLeafDataUrl};--dream-composer-edge:${composerEdgeDataUrl};--dream-composer-edge-position:${composerEdgePosition};--dream-composer-edge-max-height:${composerEdgeMaxHeight}px;--dream-composer-edge-opacity:${composerEdgeOpacity};}`;
-  const artDataUrl = `data:${mime};base64,${art.toString("base64")}`;
-  const conversationArt = conversationImagePath === imagePath ? art : await fs.readFile(conversationImagePath);
+  const artDataUrl = await assetReference(image, imagePath, mime);
   const conversationExtension = path.extname(conversationImage).toLowerCase();
   const conversationMime = conversationExtension === ".webp" ? "image/webp" :
     conversationExtension === ".jpg" || conversationExtension === ".jpeg" ? "image/jpeg" : "image/png";
-  const conversationArtDataUrl = `data:${conversationMime};base64,${conversationArt.toString("base64")}`;
+  const conversationArtDataUrl = conversationImagePath === imagePath
+    ? artDataUrl
+    : await assetReference(conversationImage, conversationImagePath, conversationMime);
   let usageArtDataUrl = null;
   if (usageImagePath) {
-    const usageArt = await fs.readFile(usageImagePath);
     const usageExtension = path.extname(raw.usageImage).toLowerCase();
     const usageMime = usageExtension === ".webp" ? "image/webp" :
       usageExtension === ".jpg" || usageExtension === ".jpeg" ? "image/jpeg" : "image/png";
-    usageArtDataUrl = `data:${usageMime};base64,${usageArt.toString("base64")}`;
+    usageArtDataUrl = await assetReference(raw.usageImage, usageImagePath, usageMime);
+  }
+  let previewArtDataUrl = artDataUrl;
+  if (raw.previewImage !== undefined) {
+    if (typeof raw.previewImage !== "string" || path.basename(raw.previewImage) !== raw.previewImage ||
+        !/\.(?:png|jpe?g|webp)$/i.test(raw.previewImage)) {
+      throw new Error("Theme preview image must be a PNG, JPEG, or WebP file inside the theme directory");
+    }
+    const previewPath = path.join(themeDir, raw.previewImage);
+    const previewStat = await fs.stat(previewPath);
+    if (!previewStat.isFile() || previewStat.size < 1 || previewStat.size > 256 * 1024) {
+      throw new Error("Theme preview image must be non-empty and no larger than 256 KB");
+    }
+    const previewExtension = path.extname(raw.previewImage).toLowerCase();
+    const previewMime = previewExtension === ".webp" ? "image/webp" :
+      previewExtension === ".jpg" || previewExtension === ".jpeg" ? "image/jpeg" : "image/png";
+    previewArtDataUrl = await assetReference(raw.previewImage, previewPath, previewMime);
   }
   const performanceGuards = `
 html:root.codex-dream-skin body{background-attachment:scroll!important;}
@@ -498,8 +635,9 @@ html:root.codex-dream-skin .codex-dream-background-video-layer{transform:transla
   return {
     ...theme,
     windowVideoCanvas: raw.windowVideoCanvas === true,
-    cssText: `${themeVariables}\n${baseCss}\n${themeCss}\n${performanceGuards}`,
+    cssText: `${themeVariables}\n${themeCss}\n${performanceGuards}`,
     artDataUrl,
+    previewArtDataUrl,
     conversationArtDataUrl,
     motionArtDataUrl: motionImageDataUrl,
     homeSoftVideoDataUrl,
@@ -511,7 +649,7 @@ html:root.codex-dream-skin .codex-dream-background-video-layer{transform:transla
   };
 }
 
-async function loadPayload(themeDir) {
+async function loadPayload(themeDir, assetRegistry = null) {
   const [baseCss, template] = await Promise.all([
     fs.readFile(path.join(root, "assets", "base.css"), "utf8"),
     fs.readFile(path.join(root, "assets", "runtime.js"), "utf8"),
@@ -539,11 +677,12 @@ async function loadPayload(themeDir) {
     if (path.dirname(directory) !== themesRoot || path.basename(directory) !== id) {
       throw new Error(`Rejected theme catalog path: ${id}`);
     }
-    const result = await loadThemePackage(directory, baseCss);
+    const result = await loadThemePackage(directory, assetRegistry);
     if (result.id !== id) throw new Error(`Theme ID ${result.id} must match its directory ${id}`);
     return result;
   }));
   return template
+    .replace("__DREAM_BASE_CSS_JSON__", JSON.stringify(baseCss))
     .replace("__DREAM_THEME_CATALOG_JSON__", JSON.stringify(themes))
     .replace("__DREAM_INITIAL_THEME_ID_JSON__", JSON.stringify(initialThemeId));
 }
@@ -625,7 +764,7 @@ async function applyToSession(session, payload) {
 }
 
 async function removeFromSession(session) {
-  return session.evaluate(`(() => {
+  const removed = await session.evaluate(`(() => {
     window.__CODEX_DREAM_SKIN_DISABLED__ = true;
     const state = window.__CODEX_DREAM_SKIN_STATE__;
     if (state?.cleanup) return state.cleanup();
@@ -633,6 +772,7 @@ async function removeFromSession(session) {
     document.documentElement?.style.removeProperty('--dream-art');
     document.querySelectorAll('.dream-home').forEach((node) => node.classList.remove('dream-home'));
     document.querySelectorAll('.dream-home-shell').forEach((node) => node.classList.remove('dream-home-shell'));
+    document.getElementById('codex-dream-skin-base-style')?.remove();
     document.getElementById('codex-dream-skin-style')?.remove();
     document.getElementById('codex-dream-skin-chrome')?.remove();
     document.getElementById('codex-dream-skin-actions')?.remove();
@@ -640,9 +780,13 @@ async function removeFromSession(session) {
     document.getElementById('codex-dream-home-overlay')?.remove();
     document.querySelectorAll('.dream-project-picker').forEach((node) => node.classList.remove('dream-project-picker'));
     document.getElementById('codex-dream-theme-switcher')?.remove();
+    delete window.__CODEX_DREAM_SKIN_VIDEO_RESOLVE__;
+    delete window.__CODEX_DREAM_SKIN_VIDEO__;
     delete window.__CODEX_DREAM_SKIN_STATE__;
     return true;
   })()`);
+  await session.send("Runtime.removeBinding", { name: VIDEO_BINDING_NAME }).catch(() => {});
+  return removed;
 }
 
 async function verifyRemovedSession(session) {
@@ -651,6 +795,7 @@ async function verifyRemovedSession(session) {
     !document.documentElement.style.getPropertyValue('--dream-art') &&
     !document.querySelector('.dream-home') &&
     !document.querySelector('.dream-home-shell') &&
+    !document.getElementById('codex-dream-skin-base-style') &&
     !document.getElementById('codex-dream-skin-style') &&
     !document.getElementById('codex-dream-skin-chrome') &&
     !document.getElementById('codex-dream-skin-actions') &&
@@ -1094,7 +1239,9 @@ async function runWatch(options) {
   process.on("SIGTERM", stop);
 
   try {
-    const payload = await loadPayload(options.themeDir);
+    const assetRegistry = createAssetRegistry();
+    const payload = await loadPayload(options.themeDir, assetRegistry);
+    console.log(`[dream-skin] lazy asset catalog ready (${assetRegistry.size} files)`);
     while (!stopping) {
       if (identityAnchor.closed) {
         console.error("[dream-skin] original CDP browser identity closed; watcher is stopping instead of reconnecting");
@@ -1135,6 +1282,7 @@ async function runWatch(options) {
         let session;
         try {
           session = await connectTarget(target, options.port);
+          await enableAssetInterception(session, assetRegistry);
           if (identityAnchor.closed) throw new CdpIdentityMismatchError("Original CDP browser identity closed");
           const probe = await probeSession(session);
           if (!probe?.codex) {
@@ -1215,14 +1363,34 @@ if (options.mode === "self-test") {
       invalidPageTargets.some((item) => isValidCdpPageTarget(item, options.port))) {
     throw new Error("CDP URL and target validation self-test failed");
   }
-  console.log(JSON.stringify({ pass: true, version: SKIN_VERSION, test: "loopback-cdp-validation" }));
+  const registry = createAssetRegistry();
+  const registered = registry.register("test-theme", "preview.webp", "C:\\test\\preview.webp", "image/webp");
+  if (!registry.resolve(registered) || registry.resolve(`${registered}?unexpected=1`) ||
+      requestHeader({ Range: "bytes=0-9" }, "range") !== "bytes=0-9" ||
+      requestHeader([{ name: "range", value: "bytes=10-19" }], "Range") !== "bytes=10-19") {
+    throw new Error("Lazy asset registry self-test failed");
+  }
+  console.log(JSON.stringify({ pass: true, version: SKIN_VERSION, test: "lazy-asset-cdp-validation" }));
 } else if (options.mode === "check-payload") {
-  const payload = await loadPayload(options.themeDir);
-  if (payload.includes("__DREAM_THEME_CATALOG_JSON__") ||
+  const assetRegistry = createAssetRegistry();
+  const payload = await loadPayload(options.themeDir, assetRegistry);
+  if (payload.includes("__DREAM_BASE_CSS_JSON__") ||
+      payload.includes("__DREAM_THEME_CATALOG_JSON__") ||
       payload.includes("__DREAM_INITIAL_THEME_ID_JSON__")) {
     throw new Error("Payload placeholders were not fully replaced");
   }
   new Function(payload);
-  console.log(JSON.stringify({ pass: true, version: SKIN_VERSION, payloadBytes: Buffer.byteLength(payload) }));
+  const embeddedMediaCount = (payload.match(/data:(?:image\/(?:png|jpe?g|webp)|video\/mp4);base64,/gi) ?? []).length;
+  const runtimeTemplate = await fs.readFile(path.join(root, "assets", "runtime.js"), "utf8");
+  const sharedCssCopies = runtimeTemplate.split("__DREAM_BASE_CSS_JSON__").length - 1;
+  console.log(JSON.stringify({
+    pass: true,
+    version: SKIN_VERSION,
+    payloadBytes: Buffer.byteLength(payload),
+    assetCount: assetRegistry.size,
+    assetMode: "lazy-cdp",
+    embeddedMediaCount,
+    sharedCssCopies,
+  }));
 } else if (options.mode === "watch") await runWatch(options);
 else await runOneShot(options);

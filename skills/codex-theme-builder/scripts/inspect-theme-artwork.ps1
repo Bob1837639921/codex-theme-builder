@@ -98,14 +98,24 @@ $entries = @(
   [pscustomobject]@{ Role = 'home'; File = [string]$manifest.image },
   [pscustomobject]@{ Role = 'conversation'; File = [string]$manifest.conversationImage }
 )
+if ($manifest.previewImage) {
+  $entries += [pscustomobject]@{ Role = 'preview'; File = [string]$manifest.previewImage }
+}
 
 $results = foreach ($entry in $entries) {
   $path = Join-Path $theme $entry.File
   if (-not (Test-Path -LiteralPath $path -PathType Leaf)) { throw "Theme artwork not found: $path" }
   $dimensions = Get-RasterDimensions $path
   $file = Get-Item -LiteralPath $path
-  $recommended = $dimensions[0] -ge $RecommendedMinimumWidth
-  if (-not $recommended) {
+  $recommended = if ($entry.Role -eq 'preview') {
+    $dimensions[0] -eq 320 -and $dimensions[1] -eq 180
+  } else {
+    $dimensions[0] -ge $RecommendedMinimumWidth
+  }
+  if ($entry.Role -eq 'preview' -and -not $recommended) {
+    throw "preview artwork must be exactly 320x180: $path"
+  }
+  if ($entry.Role -ne 'preview' -and -not $recommended) {
     Write-Warning "$($entry.Role) artwork is $($dimensions[0]) px wide; $RecommendedMinimumWidth px or more is recommended for large displays: $path"
   }
   [pscustomobject]@{
