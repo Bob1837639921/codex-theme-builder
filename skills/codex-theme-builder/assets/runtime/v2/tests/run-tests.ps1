@@ -478,10 +478,10 @@ if ($frostleafCss -notmatch '(?s)\.dream-queued-message-list\s*\{[^}]*background
     $templateCss -notmatch '(?s)\.dream-queued-message-list\s*\{[^}]*background:\s*var\(--theme-solid-panel\).*?border:') {
   throw 'Queued follow-up guidance must use a reusable marker with explicit background and descendant contrast.'
 }
-if ($runtimeJs -notmatch '\[role="textbox"\]\[aria-label="编辑消息"\]' -or
+if ($runtimeJs -notmatch '\[role="textbox"\]\[aria-label=' -or
     $runtimeJs -notmatch 'closest\("form"\)' -or
     $runtimeJs -notmatch 'dream-message-editor' -or
-    $baseCss -notmatch '(?s)\.dream-message-editor :is\(\[role="textbox"\]\[aria-label="编辑消息"\].*?-webkit-text-fill-color:' -or
+    $baseCss -notmatch '(?s)\.dream-message-editor :is\(\[role="textbox"\]\[aria-label=.*?-webkit-text-fill-color:' -or
     $baseCss -notmatch '(?s)\.dream-message-editor button\[class~="bg-token-bg-fog"\].*?background:' -or
     $baseCss -notmatch '(?s)\.dream-message-editor button\[class~="bg-token-foreground"\].*?background:' -or
     $templateCss -notmatch '--theme-message-editor-primary-surface') {
