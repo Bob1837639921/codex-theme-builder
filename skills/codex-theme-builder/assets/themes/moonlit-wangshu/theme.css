@@ -857,6 +857,7 @@ html.codex-dream-skin[data-codex-window-type] .composer-surface-chrome {
   -webkit-text-fill-color: var(--dream-usage-muted) !important;
 }
 
+
 :root.codex-dream-skin .dream-home { --thread-content-max-width: min(1480px, calc(100cqw - 48px)) !important; }
 
 :root.codex-dream-skin .dream-home .dream-title {
@@ -940,4 +941,78 @@ html.codex-dream-skin[data-codex-window-type] .composer-surface-chrome {
   :root.codex-dream-skin .dream-progress-indicator { animation: none !important; }
   :root.codex-dream-skin .composer-surface-chrome::before,
   :root.codex-dream-skin body::after { animation: none !important; }
+}
+
+/* Wangshu alone uses a restrained crescent selection. Other themes retain
+   their own full-width ornamental artwork from their theme-local CSS. */
+html:root.codex-dream-skin.codex-dream-skin aside.app-shell-left-panel
+  :is(.dream-selected-thread, [aria-current="page"].sidebar-item) {
+  position: relative !important;
+  isolation: isolate !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+  padding-left: 29px !important;
+  padding-right: 6px !important;
+  color: #f0fbff !important;
+  background-color: transparent !important;
+  background-image: linear-gradient(90deg, rgb(117 203 234 / 14%), rgb(189 238 255 / 5%) 44%, transparent 78%) !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  background-size: 100% 100% !important;
+  border: 1px solid rgb(189 238 255 / 32%) !important;
+  border-radius: 9px !important;
+  box-shadow: inset 2px 0 0 rgb(117 203 234 / 88%), inset 0 1px 0 rgb(255 255 255 / 8%), 0 2px 9px rgb(0 0 0 / 14%) !important;
+  transition: none !important;
+}
+
+html:root.codex-dream-skin.codex-dream-skin aside.app-shell-left-panel
+  :is(.dream-selected-thread, [aria-current="page"].sidebar-item)::before {
+  content: "" !important;
+  position: absolute !important;
+  z-index: 0 !important;
+  left: 6px !important;
+  top: 50% !important;
+  width: 19px !important;
+  height: 20px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: linear-gradient(145deg, #effcff, #86d8f2) !important;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath fill='black' d='M14.8 2.1A8.2 8.2 0 1 0 14.8 17.9 6.45 6.45 0 0 1 14.8 2.1Z'/%3E%3C/svg%3E") center / contain no-repeat !important;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath fill='black' d='M14.8 2.1A8.2 8.2 0 1 0 14.8 17.9 6.45 6.45 0 0 1 14.8 2.1Z'/%3E%3C/svg%3E") center / contain no-repeat !important;
+  box-shadow: none !important;
+  filter: drop-shadow(0 0 4px rgb(173 232 255 / 48%)) !important;
+  transform: translateY(-50%) !important;
+  pointer-events: none !important;
+}
+
+html:root.codex-dream-skin.codex-dream-skin aside.app-shell-left-panel
+  :is(.dream-selected-thread, [aria-current="page"].sidebar-item):hover {
+  background-image: linear-gradient(90deg, rgb(117 203 234 / 18%), rgb(189 238 255 / 7%) 48%, transparent 82%) !important;
+  border-color: rgb(189 238 255 / 44%) !important;
+}
+
+html:root.codex-dream-skin.codex-dream-skin aside.app-shell-left-panel
+  :is(.dream-selected-thread, [aria-current="page"].sidebar-item)
+  :is(.dream-selected-thread-label, [data-dream-selected-label]) {
+  padding-left: 0 !important;
+  background-image: none !important;
+}
+
+html:root.codex-dream-skin.codex-dream-skin aside.app-shell-left-panel
+  :is(.dream-selected-thread, [aria-current="page"].sidebar-item)
+  :is(.dream-selected-thread-label, [data-dream-selected-label])::before {
+  display: none !important;
+}
+
+html:root.codex-dream-skin.codex-dream-skin aside.app-shell-left-panel
+  :is(.dream-selected-thread, [aria-current="page"].sidebar-item) button {
+  background: transparent !important;
+  box-shadow: none !important;
+  opacity: .78 !important;
+}
+
+html:root.codex-dream-skin.codex-dream-skin aside.app-shell-left-panel
+  :is(.dream-selected-thread, [aria-current="page"].sidebar-item) button:is(:hover, :focus-visible) {
+  background: rgb(117 203 234 / 14%) !important;
+  opacity: 1 !important;
 }

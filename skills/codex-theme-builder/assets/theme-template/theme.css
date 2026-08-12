@@ -15,6 +15,15 @@
   --theme-window-controls-border: 0 solid transparent;
   --theme-conversation-code-ink: var(--dream-ink, #26332f);
   --theme-conversation-muted-ink: var(--theme-muted-text);
+  --theme-message-editor-ink: var(--theme-panel-text);
+  --theme-message-editor-muted: var(--theme-muted-text);
+  --theme-message-editor-accent: var(--dream-accent, #58766c);
+  --theme-message-editor-surface: var(--theme-solid-panel);
+  --theme-message-editor-border: var(--theme-border);
+  --theme-message-editor-secondary-surface: color-mix(in srgb, var(--dream-accent, #58766c) 12%, transparent);
+  --theme-message-editor-primary-surface: var(--dream-accent, #58766c);
+  --theme-message-editor-primary-ink: #ffffff;
+  --theme-message-editor-shadow: 0 10px 28px rgb(0 0 0 / 12%);
   --theme-home-top-fade-display: block;
   --theme-main-content-top-fade-display: block;
   --theme-composer-host-edge-display: block;
@@ -36,9 +45,35 @@
   --dream-usage-accent: var(--dream-accent, #58766c);
   --dream-usage-overlay: rgb(251 249 243 / 86%);
   --dream-usage-border: rgb(72 93 82 / 20%);
+  --dream-usage-card: rgb(255 255 255 / 42%);
+  --dream-usage-card-hover: rgb(255 255 255 / 58%);
+  --dream-usage-divider: rgb(72 93 82 / 14%);
   --dream-plugin-ink: var(--dream-ink, #26332f);
   --dream-plugin-surface: color-mix(in srgb, var(--dream-surface, #f4f0e6) 82%, transparent);
   --dream-plugin-border: color-mix(in srgb, var(--dream-accent, #58766c) 28%, transparent);
+}
+
+/* Keep the native usage page grouped. Theme artwork and panel opacity belong
+   to the outer dialog; quota rows and purchase actions must retain their own
+   semantic cards instead of floating directly on the illustration. */
+:root.codex-dream-skin .dream-usage-panel
+  :is([class*="rounded-2xl"], [class*="rounded-xl"])[class*="border"] {
+  background-color: var(--dream-usage-card) !important;
+  border-color: var(--dream-usage-border) !important;
+}
+
+:root.codex-dream-skin .dream-usage-panel [class*="divide-y"] > :not(:first-child),
+:root.codex-dream-skin .dream-usage-panel [class*="border-token-border"] {
+  border-color: var(--dream-usage-divider) !important;
+}
+
+:root.codex-dream-skin .dream-usage-panel button[class*="bg-token-main-surface"] {
+  background-color: var(--dream-usage-card) !important;
+  border: 1px solid var(--dream-usage-border) !important;
+}
+
+:root.codex-dream-skin .dream-usage-panel button[class*="bg-token-main-surface"]:is(:hover, :focus-visible) {
+  background-color: var(--dream-usage-card-hover) !important;
 }
 
 :root.codex-dream-skin[data-dream-motion="low"] {

@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, "..");
-const SKIN_VERSION = "2.3.6-conversation-status-contrast";
+const SKIN_VERSION = "2.3.9-theme-local-selected-task";
 const MAX_ART_BYTES = 8 * 1024 * 1024;
 const MAX_VIDEO_BYTES = 8 * 1024 * 1024;
 const DIRECT_EVALUATE_LIMIT = 8 * 1024 * 1024;
@@ -883,7 +883,10 @@ async function verifySession(session) {
     }
     const iconsPresent = actionGrid ? [...actionGrid.querySelectorAll('button')].every((button) => {
       const image = button.querySelector('img');
-      return Boolean(image?.src?.startsWith('data:image/svg+xml;base64,'));
+      const source = image?.currentSrc || image?.src || '';
+      const supportedSource = source.startsWith('data:image/svg+xml;base64,') ||
+        source.startsWith(${JSON.stringify(ASSET_ORIGIN + "/")});
+      return Boolean(image?.complete && image.naturalWidth > 0 && supportedSource);
     }) : false;
     const toolbarButtons = [...document.querySelectorAll('main.main-surface > header.app-header-tint button')]
       .filter((button) => {
@@ -921,6 +924,8 @@ async function verifySession(session) {
         scene: backgroundVideo.dataset.dreamScene ?? null,
         ready: backgroundVideo.classList.contains('is-ready'),
         readyState: backgroundVideo.readyState,
+        naturalWidth: backgroundVideo.videoWidth,
+        naturalHeight: backgroundVideo.videoHeight,
         paused: backgroundVideo.paused,
         currentTime: Number(backgroundVideo.currentTime.toFixed(3)),
         duration: Number.isFinite(backgroundVideo.duration) ? Number(backgroundVideo.duration.toFixed(3)) : null,

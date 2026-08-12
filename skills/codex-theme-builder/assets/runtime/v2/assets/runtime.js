@@ -14,7 +14,7 @@
   const STORAGE_KEY = "codex-dream-theme-active";
   const MOTION_STORAGE_KEY = "codex-dream-motion-level";
   const MOTION_LEVELS = ["off", "low", "high"];
-  const RUNTIME_VERSION = "2.3.6-conversation-status-contrast";
+  const RUNTIME_VERSION = "2.3.9-theme-local-selected-task";
   const THEME_SEARCH_THRESHOLD = 6;
   const MUTATION_COALESCE_MS = 180;
   const VIDEO_BINDING_NAME = "__CODEX_DREAM_SKIN_VIDEO__";
@@ -192,6 +192,7 @@
     outputScanRequested: true,
     usagePanel: document.querySelector(".dream-usage-panel"),
     queuedMessageList: document.querySelector(".dream-queued-message-list"),
+    messageEditor: document.querySelector(".dream-message-editor"),
   };
   const syncMarker = (key, node, className) => {
     const previousNode = markerState[key];
@@ -244,11 +245,24 @@
     document.querySelectorAll(".dream-output-panel").forEach((node) => node.classList.remove("dream-output-panel"));
     document.querySelectorAll(".dream-usage-panel").forEach((node) => node.classList.remove("dream-usage-panel"));
     document.querySelectorAll(".dream-queued-message-list").forEach((node) => node.classList.remove("dream-queued-message-list"));
+    document.querySelectorAll(".dream-message-editor").forEach((node) => node.classList.remove("dream-message-editor"));
     detailState.queuedMessageList = null;
+    detailState.messageEditor = null;
     restoreSidebarControls();
   };
 
   const markDetailSurfaces = () => {
+    const messageEditorInput = document.querySelector('[role="textbox"][aria-label="编辑消息"]');
+    const messageEditor = messageEditorInput?.closest("form") || null;
+    if (detailState.messageEditor && detailState.messageEditor !== messageEditor) {
+      detailState.messageEditor.classList.remove("dream-message-editor");
+    }
+    document.querySelectorAll(".dream-message-editor").forEach((node) => {
+      if (node !== messageEditor) node.classList.remove("dream-message-editor");
+    });
+    messageEditor?.classList.add("dream-message-editor");
+    detailState.messageEditor = messageEditor;
+
     const diffHeaders = [...document.getElementsByClassName("group/turn-diff-header")];
     const diffCards = new Set(diffHeaders.map((header) => header.parentElement).filter(Boolean));
     document.querySelectorAll(".dream-file-changes-summary").forEach((node) => {

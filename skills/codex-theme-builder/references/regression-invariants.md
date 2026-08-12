@@ -179,6 +179,23 @@ Additional paint invariants:
 - Sidebar task hover belongs to the complete `.sidebar-item` row, including
   its right action zone. Exclude task rows from generic circular button-hover
   effects, and never duplicate selected artwork on the nested title label.
+- Current-task appearance is theme-local. Shared runtime CSS may expose stable
+  markers and preserve native geometry, but must never impose a generic border,
+  wash, seal, or background that overrides a theme's selected-row artwork.
+- Current-task emphasis must not become a full-width opaque color tile. Each
+  theme may use its approved scene-preserving ornament, edge cue, transparent
+  emblem, and low-opacity wash. Native pin/archive controls receive only
+  localized hover/focus surfaces and retain their geometry.
+- A quiet selected-task variant must not erase another theme's identity motif.
+  Keep it in the owning theme (for example Wangshu's transparent crescent), do
+  not crop from an asset whose painted ground becomes a square tile, and never
+  duplicate the motif on the nested label.
+- The inline `编辑消息` form is a separate semantic surface from the composer.
+  Runtime must mark its owning form as `.dream-message-editor`; its ProseMirror
+  text/caret, placeholder, secondary cancel action, and primary send action each
+  require explicit theme tokens. Never rely on inherited utility foregrounds,
+  because dark themes otherwise produce near-black editor text and white-on-white
+  cancel buttons.
 
 For a newly found regression: reproduce it in the live Codex DOM, identify the
 native state change, implement the smallest shared invariant, add a deterministic

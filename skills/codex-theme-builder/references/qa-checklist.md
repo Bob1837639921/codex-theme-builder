@@ -74,6 +74,9 @@
 - Sidebar and conversation content read as one coordinated full-window scene; the content column must not restart, tile, or crop a second copy of the same raster.
 - Background detail remains crisp at the largest available target viewport without runtime sharpening or full-screen filters.
 - Text, code, diffs, tool output, links, and image previews remain legible.
+- Edit an existing user message and verify the inline editor text, caret,
+  placeholder, cancel button, and send button all remain readable. Confirm the
+  editor marker disappears after cancel/send and the ordinary composer is unchanged.
 - Composer aligns with the content column.
 - No opaque white frame or side rail appears on any of the composer's four edges. Verify the top and bottom as well as the left and right in the conversation route.
 - Trigger a file change and verify no white strip appears behind the file-changes summary pill.
@@ -97,6 +100,14 @@
   shell. Switch between both modes and confirm neither geometry leaks.
 - Running progress uses only small-area motion and stops under reduced-motion preferences.
 - Current thread remains legible when pin/archive controls appear; controls do not shift the title.
+- Switch through every bundled theme and verify the current-task row retains
+  that theme's own ornament, silhouette, or emblem; shared runtime CSS must not
+  reduce the catalog to the same border with only a color change.
+- The current task reads as selected without a full-width opaque color block:
+  its theme-local cue remains visible, the central scene remains perceptible,
+  and pin/archive hover surfaces stay localized to those controls.
+- Themes with an approved selected-task identity motif retain one recognizable
+  transparent emblem without reintroducing an opaque full-row illustration.
 - On long conversations, the native quick-jump rail is visible without hover on
   both the brightest and darkest parts of the theme artwork; hover and keyboard
   focus enlarge the active marker without changing native scroll behavior.

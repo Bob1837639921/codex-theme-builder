@@ -363,6 +363,11 @@ if ($injectorText -notmatch 'const\s+homeVisualAnchor\s*=\s*home\?\.querySelecto
     $injectorText -match 'hero:\s*box\(home\?\.firstElementChild') {
   throw 'Injection verification must use stable runtime home markers instead of Codex DOM depth.'
 }
+if ($injectorText -notmatch "source\.startsWith\('data:image/svg\+xml;base64,'\)" -or
+    $injectorText -notmatch 'source\.startsWith\(\$\{JSON\.stringify\(ASSET_ORIGIN \+ "/"\)\}\)' -or
+    $injectorText -notmatch 'image\?\.complete\s*&&\s*image\.naturalWidth\s*>\s*0\s*&&\s*supportedSource') {
+  throw 'Injection verification must accept both legacy inline SVG icons and loaded lazy asset-registry SVG icons.'
+}
 if ($injectorText -notmatch "routeKind:\s*home\s*\?\s*'home'\s*:\s*\(conversation\s*\?\s*'conversation'\s*:\s*'native'\)" -or
     $injectorText -notmatch "composerRequired\s*=\s*result\.routeKind\s*===\s*'conversation'" -or
     $injectorText -notmatch 'composerReady\s*=\s*!result\.composerRequired\s*\|\|\s*Boolean\(result\.composer\)' -or
@@ -473,9 +478,22 @@ if ($frostleafCss -notmatch '(?s)\.dream-queued-message-list\s*\{[^}]*background
     $templateCss -notmatch '(?s)\.dream-queued-message-list\s*\{[^}]*background:\s*var\(--theme-solid-panel\).*?border:') {
   throw 'Queued follow-up guidance must use a reusable marker with explicit background and descendant contrast.'
 }
+if ($runtimeJs -notmatch '\[role="textbox"\]\[aria-label="编辑消息"\]' -or
+    $runtimeJs -notmatch 'closest\("form"\)' -or
+    $runtimeJs -notmatch 'dream-message-editor' -or
+    $baseCss -notmatch '(?s)\.dream-message-editor :is\(\[role="textbox"\]\[aria-label="编辑消息"\].*?-webkit-text-fill-color:' -or
+    $baseCss -notmatch '(?s)\.dream-message-editor button\[class~="bg-token-bg-fog"\].*?background:' -or
+    $baseCss -notmatch '(?s)\.dream-message-editor button\[class~="bg-token-foreground"\].*?background:' -or
+    $templateCss -notmatch '--theme-message-editor-primary-surface') {
+  throw 'Inline message editing must use a scoped runtime marker and explicit editor, cancel, and send contrast tokens.'
+}
 if ($themeCss -notmatch '(?s):is\(\.dream-selected-thread,\s*\[aria-current="page"\]\.sidebar-item\)\s*\{[^}]*border:.*?transition:\s*none\s*!important' -or
     $templateCss -notmatch '(?s):is\(\.dream-selected-thread,\s*\[aria-current="page"\]\.sidebar-item\)\s*\{[^}]*border:.*?transition:\s*none\s*!important') {
   throw 'Selected task styling must use the stable native current-row fallback without a flashing transition.'
+}
+if ($baseCss -match 'dream-selected-thread' -or
+    $baseCss -match '\[aria-current="page"\]\.sidebar-item') {
+  throw 'Shared runtime CSS must not override theme-local selected-task artwork.'
 }
 if ($baseCss -match ':has\(' -or
     $injectorText -notmatch 'performanceGuards' -or
@@ -602,7 +620,9 @@ $windowCanvasThemes = @(Get-ChildItem -LiteralPath $themesRoot -Directory | Wher
   $candidate = Get-Content -LiteralPath $candidateManifest -Raw -Encoding UTF8 | ConvertFrom-Json
   return $candidate.windowVideoCanvas -eq $true
 } | ForEach-Object Name)
-if ($windowCanvasThemes.Count -ne 1 -or $windowCanvasThemes[0] -ne 'vermilion-feather') {
-  throw 'Only vermilion-feather may opt into the full-window video canvas in the current catalog.'
+if ($windowCanvasThemes.Count -ne 2 -or
+    $windowCanvasThemes -notcontains 'vermilion-feather' -or
+    $windowCanvasThemes -notcontains 'moonlit-wangshu') {
+  throw 'Only vermilion-feather and moonlit-wangshu may opt into the full-window video canvas in the current catalog.'
 }
 Write-Host 'PASS: syntax, CDP validation, selected theme payload, composer fade regression, dialog contrast regression, detail polish, reduced motion, Store activation bridge, launch defaults, and zero-config-invasion checks.'

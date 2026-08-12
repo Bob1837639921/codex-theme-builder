@@ -22,6 +22,51 @@ html.codex-dream-skin [role="dialog"] {
   background-color: var(--dream-surface) !important;
 }
 
+/* Native message editing is not the composer: Codex mounts a separate form
+   whose ProseMirror and fog button carry light-mode foregrounds. Runtime marks
+   only that form so dark themes receive explicit, localized contrast. */
+html.codex-dream-skin main.dream-conversation-shell .dream-message-editor {
+  color: var(--theme-message-editor-ink, var(--theme-conversation-code-ink, var(--dream-ink))) !important;
+  background: var(--theme-message-editor-surface, var(--theme-solid-panel)) !important;
+  border: 1px solid var(--theme-message-editor-border, var(--theme-border)) !important;
+  box-shadow: var(--theme-message-editor-shadow, 0 10px 28px rgb(0 0 0 / 12%)) !important;
+}
+
+html.codex-dream-skin main.dream-conversation-shell
+  .dream-message-editor :is([role="textbox"][aria-label="编辑消息"], [role="textbox"][aria-label="编辑消息"] *) {
+  color: var(--theme-message-editor-ink, var(--theme-conversation-code-ink, var(--dream-ink))) !important;
+  -webkit-text-fill-color: var(--theme-message-editor-ink, var(--theme-conversation-code-ink, var(--dream-ink))) !important;
+  caret-color: var(--theme-message-editor-accent, var(--dream-accent)) !important;
+}
+
+html.codex-dream-skin main.dream-conversation-shell
+  .dream-message-editor [role="textbox"][aria-label="编辑消息"] p.is-editor-empty:first-child::before {
+  color: var(--theme-message-editor-muted, var(--theme-conversation-muted-ink, var(--dream-muted))) !important;
+  -webkit-text-fill-color: var(--theme-message-editor-muted, var(--theme-conversation-muted-ink, var(--dream-muted))) !important;
+}
+
+html.codex-dream-skin main.dream-conversation-shell
+  .dream-message-editor button[class~="bg-token-bg-fog"] {
+  color: var(--theme-message-editor-ink, var(--theme-conversation-code-ink, var(--dream-ink))) !important;
+  -webkit-text-fill-color: var(--theme-message-editor-ink, var(--theme-conversation-code-ink, var(--dream-ink))) !important;
+  background: var(--theme-message-editor-secondary-surface, color-mix(in srgb, var(--dream-accent) 12%, transparent)) !important;
+  border-color: var(--theme-message-editor-border, var(--theme-border)) !important;
+}
+
+html.codex-dream-skin main.dream-conversation-shell
+  .dream-message-editor button[class~="bg-token-foreground"] {
+  color: var(--theme-message-editor-primary-ink, #ffffff) !important;
+  -webkit-text-fill-color: var(--theme-message-editor-primary-ink, #ffffff) !important;
+  background: var(--theme-message-editor-primary-surface, var(--dream-accent)) !important;
+  border-color: transparent !important;
+}
+
+html.codex-dream-skin main.dream-conversation-shell
+  .dream-message-editor button :is(span, svg) {
+  color: inherit !important;
+  -webkit-text-fill-color: currentColor !important;
+}
+
 #codex-dream-motion-layer {
   display: none;
 }
