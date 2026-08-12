@@ -1,0 +1,31 @@
+{
+    "schemaVersion":  1,
+    "id":  "moonlit-wangshu",
+    "name":  "幽月望舒",
+    "subtitle":  "MOONLIT WANGSHU · CODEX",
+    "image":  "home.webp",
+    "previewImage":  "preview.webp",
+    "conversationImage":  "conversation.webp",
+    "sidebarImage":  "sidebar.webp",
+    "usageImage":  "usage-background.webp",
+    "selectedLeaf":  "selected-thread-background.png",
+    "composerEdge":  {
+                         "image":  "composer-edge.png",
+                         "horizontal":  "center",
+                         "vertical":  "top",
+                         "maxHeight":  72,
+                         "opacity":  0.9
+                     },
+    "icons":  {
+                  "build":  "icon-build.svg",
+                  "analyze":  "icon-analyze.svg",
+                  "automate":  "icon-automate.svg",
+                  "debug":  "icon-debug.svg"
+              },
+    "colors":  {
+                   "accent":  "#75CBEA",
+                   "accentAlt":  "#BDEEFF",
+                   "surface":  "#07182B",
+                   "text":  "#E9F7FF"
+               }
+}

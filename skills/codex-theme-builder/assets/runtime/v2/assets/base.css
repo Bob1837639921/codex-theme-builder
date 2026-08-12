@@ -221,6 +221,52 @@ html.codex-dream-skin main.main-surface > header.app-header-tint
   pointer-events: auto !important;
 }
 
+/* Newer Codex builds place toolbar labels and glyphs in additional wrappers
+   carrying their own muted foreground utilities. */
+html.codex-dream-skin main.main-surface > header.app-header-tint *,
+html.codex-dream-skin main.main-surface > header.app-header-tint svg {
+  color: var(--theme-toolbar-ink, var(--dream-ink, #26332f)) !important;
+  -webkit-text-fill-color: var(--theme-toolbar-ink, var(--dream-ink, #26332f)) !important;
+}
+
+/* The Electron application menu is rendered in the app DOM and its native
+   buttons keep light-mode tertiary utilities even over a dark themed canvas. */
+html.codex-dream-skin [class*="_ApplicationMenuTopBar_"]
+  :is(button, [role="button"], span, svg) {
+  color: var(--theme-app-menu-ink, var(--theme-toolbar-ink, var(--dream-ink, #26332f))) !important;
+  -webkit-text-fill-color: var(--theme-app-menu-ink, var(--theme-toolbar-ink, var(--dream-ink, #26332f))) !important;
+}
+
+/* Windows caption glyphs are drawn by Electron outside the DOM. In light
+   window mode they remain dark, so dark artwork needs a theme-owned quiet
+   backing plate beneath the native hit targets rather than a fake control. */
+html.codex-dream-skin [class*="_ApplicationMenuTopBar_"]::after {
+  content: "" !important;
+  position: fixed !important;
+  z-index: 0 !important;
+  top: 0 !important;
+  right: 0 !important;
+  width: var(--spacing-token-safe-header-right, 137px) !important;
+  height: 36px !important;
+  background: var(--theme-window-controls-backdrop, transparent) !important;
+  border-bottom: var(--theme-window-controls-border, 0 solid transparent) !important;
+  pointer-events: none !important;
+}
+
+/* Submit and stop share the semantic foreground button. Preserve their native
+   geometry and state handling while guaranteeing background/icon contrast. */
+html.codex-dream-skin .composer-surface-chrome button[class~="bg-token-foreground"] {
+  color: var(--theme-composer-submit-ink, var(--theme-primary-text, #ffffff)) !important;
+  -webkit-text-fill-color: var(--theme-composer-submit-ink, var(--theme-primary-text, #ffffff)) !important;
+  background: var(--theme-composer-submit-surface, var(--dream-accent, #58766c)) !important;
+  border-color: var(--theme-composer-submit-border, transparent) !important;
+}
+
+html.codex-dream-skin .composer-surface-chrome button[class~="bg-token-foreground"] :is(svg, span, path, rect) {
+  color: var(--theme-composer-submit-ink, var(--theme-primary-text, #ffffff)) !important;
+  -webkit-text-fill-color: var(--theme-composer-submit-ink, var(--theme-primary-text, #ffffff)) !important;
+}
+
 /* Keep Codex's native conversation quick-jump rail visible on every theme.
    This is a paint-only treatment: the native nav, buttons, focus handling,
    and scroll-to-message behavior remain untouched. */
@@ -278,7 +324,7 @@ html.codex-dream-skin .dream-composer-host {
 
 html.codex-dream-skin .dream-composer-host::after {
   content: "" !important;
-  display: block !important;
+  display: var(--theme-composer-host-edge-display, block) !important;
   position: absolute;
   z-index: 2;
   inset: -100px -180px -12px -76px;
@@ -379,13 +425,56 @@ html.codex-dream-skin .dream-home-hero {
   align-self: stretch !important;
 }
 
-/* Codex also renders a native four-card suggestion row on the home route.
-   Themes supply their own equivalent action grid, so never let the native
-   cards paint behind it during the first render or a renderer reload. */
+/* Codex also renders a native Home prompt and four-card suggestion row.
+   Themes supply their own title and action grid. Preserve the native boxes so
+   the composer layout does not jump while suppressing their paint. */
+html.codex-dream-skin .dream-home .dream-native-home-heading,
 html.codex-dream-skin .dream-home .dream-native-home-suggestions,
 html.codex-dream-skin .dream-home section[class~="group/home-suggestions"] {
   visibility: hidden !important;
   pointer-events: none !important;
+}
+
+html.codex-dream-skin[data-dream-route="home"]
+  :is(.app-shell-main-content-top-fade, [class*="_MainContentTopFade_"]),
+html.codex-dream-skin[data-dream-route="home"]
+  :is(.app-shell-main-content-top-fade, [class*="_MainContentTopFade_"])::before,
+html.codex-dream-skin[data-dream-route="home"]
+  :is(.app-shell-main-content-top-fade, [class*="_MainContentTopFade_"])::after {
+  display: var(--theme-home-top-fade-display, block) !important;
+}
+
+/* Current Codex also mounts the same light fade on conversation routes. Dark
+   themes can disable it for the full app surface without route assumptions. */
+html.codex-dream-skin[data-dream-route]
+  :is(.app-shell-main-content-top-fade, [class*="_MainContentTopFade_"]),
+html.codex-dream-skin[data-dream-route]
+  :is(.app-shell-main-content-top-fade, [class*="_MainContentTopFade_"])::before,
+html.codex-dream-skin[data-dream-route]
+  :is(.app-shell-main-content-top-fade, [class*="_MainContentTopFade_"])::after {
+  display: var(--theme-main-content-top-fade-display, block) !important;
+}
+
+html.codex-dream-skin main.dream-conversation-shell
+  :is(pre, code, [data-testid*="tool"], [data-testid*="command"])
+  :is(span, div, p, code) {
+  color: var(--theme-conversation-code-ink, var(--theme-primary-text, #ffffff)) !important;
+  -webkit-text-fill-color: var(--theme-conversation-code-ink, var(--theme-primary-text, #ffffff)) !important;
+}
+
+/* Thinking duration, timestamps, collapsed reasoning, and untagged execution
+   summaries often retain light-mode token utilities on dark artwork. */
+html.codex-dream-skin main.dream-conversation-shell
+  :is([class*="text-token-text-tertiary"], [class*="text-token-text-secondary"]) {
+  color: var(--theme-conversation-muted-ink, var(--theme-muted-text, currentColor)) !important;
+  -webkit-text-fill-color: var(--theme-conversation-muted-ink, var(--theme-muted-text, currentColor)) !important;
+}
+
+html.codex-dream-skin main.dream-conversation-shell
+  :is([class*="text-token-text-tertiary"], [class*="text-token-text-secondary"])
+  :is(span, div, p, code, svg) {
+  color: inherit !important;
+  -webkit-text-fill-color: inherit !important;
 }
 
 /* Keep the optional Fast-mode promotion usable without letting it consume

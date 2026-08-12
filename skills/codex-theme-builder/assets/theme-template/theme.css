@@ -9,8 +9,20 @@
   --theme-shadow: 0 18px 48px rgb(25 35 32 / 10%);
   --theme-canvas-wash: color-mix(in srgb, var(--dream-surface, #f4f0e6) 16%, transparent);
   --theme-toolbar-surface: color-mix(in srgb, var(--dream-surface, #f4f0e6) 68%, transparent);
+  --theme-toolbar-ink: var(--dream-ink, #26332f);
+  --theme-app-menu-ink: var(--theme-toolbar-ink);
+  --theme-window-controls-backdrop: transparent;
+  --theme-window-controls-border: 0 solid transparent;
+  --theme-conversation-code-ink: var(--dream-ink, #26332f);
+  --theme-conversation-muted-ink: var(--theme-muted-text);
+  --theme-home-top-fade-display: block;
+  --theme-main-content-top-fade-display: block;
+  --theme-composer-host-edge-display: block;
   --theme-composer-surface: color-mix(in srgb, var(--dream-surface, #f4f0e6) 88%, transparent);
   --theme-composer-control: color-mix(in srgb, var(--dream-ink, #26332f) 92%, transparent);
+  --theme-composer-submit-surface: var(--dream-accent, #58766c);
+  --theme-composer-submit-ink: #ffffff;
+  --theme-composer-submit-border: transparent;
   --theme-composer-placeholder: color-mix(in srgb, var(--dream-ink, #26332f) 54%, transparent);
   --theme-focus-ring: color-mix(in srgb, var(--dream-accent, #58766c) 28%, transparent);
   --theme-atmosphere-duration: 16s;
@@ -111,7 +123,8 @@
   box-shadow: inset 0 -1px rgb(255 255 255 / 12%) !important;
 }
 
-:root.codex-dream-skin main.main-surface > header.app-header-tint :is(button, span, svg) {
+:root.codex-dream-skin main.main-surface > header.app-header-tint :is(button, span, svg),
+:root.codex-dream-skin main.main-surface > header.app-header-tint * {
   color: var(--dream-ink, #26332f) !important;
   -webkit-text-fill-color: var(--dream-ink, #26332f) !important;
 }

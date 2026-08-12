@@ -1,5 +1,16 @@
 # Reusable new-theme blueprint
 
+## Required paint tokens
+
+Every generated theme defines `--theme-toolbar-ink`, `--theme-app-menu-ink`,
+`--theme-window-controls-backdrop`, `--theme-conversation-code-ink`,
+`--theme-conversation-muted-ink`,
+`--theme-home-top-fade-display`, `--theme-main-content-top-fade-display`,
+`--theme-composer-submit-surface`, and `--theme-composer-submit-ink`. Dark
+themes normally set the last token to `none`. A new theme must choose exactly
+one composer-edge owner: the composer surface or the compatible parent host.
+When the surface owns it, set `--theme-composer-host-edge-display: none`.
+
 Read this reference whenever creating, porting, or substantially redesigning a theme. The built-in ink and frost themes are examples, not templates that constrain the visual direction.
 
 For conversation behavior, also follow
@@ -56,7 +67,7 @@ Review each surface instead of treating a theme as a background replacement:
 12. **Optional scene videos:** declare independent local `homeVideo` and `conversationVideo` MP4 files only when the visual direction genuinely needs full-canvas motion. Generate each from its matching static artwork, keep each at or below 8 MB, and never leave the static poster visibly mixed beneath a ready video. The shared runtime owns route-aware source switching, lazy creation, pause/resume, theme cleanup, reduced-motion fallback, and outgoing-video continuity when Codex replaces the entire route shell. Full videos run only under the high tier. Prefer lightweight CSS/WebP effects for low; when the user explicitly approves a deterministic pre-rendered soft treatment, declare `homeSoftVideo` and `conversationSoftVideo`, keep them lower-cost than the full clips, and verify that switching tiers replaces rather than stacks the sources. During both `home -> conversation` and `conversation -> home`, the currently playing video must remain the painted fallback until the incoming scene is decoded and covering; the route's static raster must not reappear between them.
 13. **Plugin discovery:** style the runtime-marked `.dream-plugin-search-shell` and `.dream-plugin-search` with explicit surface, border, ink, icon, and placeholder contrast. The sticky search rail must blend into the theme instead of painting an opaque native white band.
 
-The shared runtime suppresses Codex's native four-card home suggestion row after
+The shared runtime suppresses Codex's semantic native Home heading and native four-card suggestion row after
 the themed four-action grid is available, and marks the optional Fast-mode
 promotion as `.dream-home-promo`. Keep that promotion interactive but out of the
 normal home layout so it never pushes the project picker or composer below the

@@ -19,6 +19,11 @@ artwork, motion, or theme identity.
   A fix that hides only the left and right rails is incomplete.
 - Attach ornamental borders to the composer box, never the viewport or a fixed
   ancestor. Preserve native controls and hit targets.
+- Themes whose `composer-edge` is already painted on `.composer-surface-chrome`
+  must set `--theme-composer-host-edge-display: none` and explicitly suppress
+  the host pseudo-element. Legacy themes may retain the shared parent carrier
+  when their approved artwork depends on an outside-the-box ornament; never
+  render the same asset on both layers.
 - Keep the typing path free of theme rescans: character-only mutations inside
   `.ProseMirror`, `textarea`, or `input` must not schedule the global marker
   pass. Route and composer-host state belong on stable runtime classes or data
@@ -97,9 +102,16 @@ artwork, motion, or theme identity.
   menus, dialogs, and popovers as explicit semantic surfaces. Set descendant
   `color` and `-webkit-text-fill-color` where native utility classes override
   inheritance, especially for dark themes.
+- Do not apply universal descendants or broad `[data-state]` descendant color
+  selectors across the conversation shell. Long streaming tasks can force
+  thousands of selector rematches; target the Markdown root and explicit
+  semantic surfaces instead.
 - Keep native home promotions discoverable by semantic structure or natural
   `scrollHeight`; never depend on an already clipped rendered height. Promotions
   must not collapse into a white strip or push the home composer off-screen.
+- Mark the native Home heading through `[data-feature="game-source"]` and hide
+  only that semantic node while the themed overlay is active. Keep its parent
+  layout in flow so the project selector and composer do not jump.
 - Keep the native project selector geometry untouched. Shared CSS may prevent a
   translucent carrier from bleeding, but must not reconstruct the control.
 
@@ -139,8 +151,42 @@ artwork, motion, or theme identity.
 
 ## Completion rule
 
+Additional paint invariants:
+
+- Dark themes set `--theme-home-top-fade-display: none` and verify both the
+  stable Home top-fade class and current CSS-module carrier, including pseudo
+  elements, leave no white shadow beneath the themed title.
+- Inspect nested command/tool wrappers, not only outer `pre`/`code` elements:
+  utility-colored descendants must resolve to `--theme-conversation-code-ink`.
+- Thinking duration, timestamps, collapsed reasoning labels, and muted execution
+  summaries must resolve to `--theme-conversation-muted-ink`; current Codex
+  applies light-mode tertiary utilities directly to these descendants.
+- Every nested content-toolbar label and icon resolves to
+  `--theme-toolbar-ink`; new muted utility wrappers must not hide actions.
+- Electron application-menu buttons and glyphs resolve to
+  `--theme-app-menu-ink`; setting foreground only on their parent is
+  insufficient because native tertiary-text utilities override inheritance.
+- Dark themes set `--theme-main-content-top-fade-display: none` when the native
+  `_MainContentTopFade_*` white gradient conflicts with both Home and
+  conversation artwork. Verify both routes, not only Home.
+- Windows caption glyphs are native Electron chrome and may remain dark when
+  Codex reports a light window mode. Dark themes provide a calm contrasting
+  `--theme-window-controls-backdrop` beneath the reserved caption area; never
+  draw replacement minimize, maximize, or close buttons or intercept clicks.
+- Composer submit and stop controls explicitly pair
+  `--theme-composer-submit-surface` with `--theme-composer-submit-ink`. Do not
+  inherit a black `bg-token-foreground` button over dark artwork.
+- Sidebar task hover belongs to the complete `.sidebar-item` row, including
+  its right action zone. Exclude task rows from generic circular button-hover
+  effects, and never duplicate selected artwork on the nested title label.
+
 For a newly found regression: reproduce it in the live Codex DOM, identify the
 native state change, implement the smallest shared invariant, add a deterministic
 test when possible, update this reference and the QA checklist, hot-preview the
 affected state, and validate every bundled theme. Do not mark the issue complete
 from a static screenshot alone.
+
+Any shared `base.css` or runtime behavior change must advance both
+`SKIN_VERSION` and `RUNTIME_VERSION`. Hot preview intentionally reuses an
+existing base-style node when versions match; failing to bump the version makes
+new shared CSS appear present on disk while the live renderer keeps stale rules.

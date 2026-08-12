@@ -1,5 +1,27 @@
 # Theme QA checklist
 
+## Current Codex paint regressions
+
+- Confirm composer-edge artwork is painted on exactly one intended layer. If a
+  theme paints it on `.composer-surface-chrome`, its parent-host copy is off;
+  no duplicate ornament crosses the conversation body.
+- Inspect nested command and tool-output `span`/`div` nodes on dark artwork;
+  all text remains readable through `--theme-conversation-code-ink`.
+- Inspect thinking duration, timestamps, collapsed reasoning, and untagged
+  execution summaries through `--theme-conversation-muted-ink`.
+- Inspect every content-toolbar label and SVG wrapper through
+  `--theme-toolbar-ink`, including disabled and muted native utilities.
+- On dark Home themes, confirm stable and CSS-module top-fade carriers plus
+  their pseudo elements leave no white shadow under the themed heading.
+- On dark conversation themes, repeat the top-fade check directly below the
+  content toolbar; no 16 px white gradient strip may remain.
+- Check `文件 / 编辑 / 视图 / 帮助`, back/forward icons, and window-side menu
+  glyphs independently; each uses `--theme-app-menu-ink` over dark artwork.
+- Check the native Windows minimize, maximize/restore, and close glyphs over
+  `--theme-window-controls-backdrop`; all three remain visible and clickable.
+- Check empty/disabled send, enabled send, running stop, and keyboard focus;
+  each submit state preserves explicit surface/icon contrast.
+
 ## Static checks
 
 - Untouched source/master artwork exists outside the distributable theme directory, and every changed delivery image was encoded directly from that source or a verified lossless working master.
@@ -34,7 +56,7 @@
   The active theme, scene background/video, motion tier, content styling, and
   composer must remain active while collapsed; the switcher must return when the
   sidebar expands without resetting the selected theme.
-- On the first home render, only the themed four-action grid is visible; Codex's native suggestion cards never peek out behind it.
+- On the first home render, only the themed title and four-action grid are visible; Codex's native heading and suggestion cards never peek out behind them.
 - When the Fast-mode promotion is present, it remains fully visible, clickable,
   and dismissible without collapsing into a white strip or moving the project
   selector/composer below the viewport. Validate this after a Codex DOM update;
@@ -64,6 +86,9 @@
 - Every composer control, placeholder, tooltip, disabled state, and filled submit/stop icon has an explicit readable color in both soft and full tiers.
 - Grow the composer to multiple lines and trigger file-change summaries; decorative borders remain attached to the composer box and never depend on a fixed viewport position.
 - Type continuously for at least 15 seconds and scroll a long conversation while the active route is idle. Verify character echo remains immediate, scroll stays smooth, runtime ensure-count does not rise for editor-only mutations, and the composer has no computed backdrop blur.
+- While a long task streams, verify theme CSS does not use universal descendants
+  or broad `[data-state]` descendants on the conversation shell and that style
+  recalculation remains a small fraction of the sample interval.
 - Test every declared video at off, low, and high tiers on both home and conversation routes. A route without a tier-specific video must have zero live background-video elements and must not decode a hidden fallback clip.
 - When a theme declares `windowVideoCanvas`, verify its active video is a direct
   child of `body`, covers the viewport, and continues behind menu strip, toolbar,

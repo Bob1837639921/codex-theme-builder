@@ -14,7 +14,7 @@
   const STORAGE_KEY = "codex-dream-theme-active";
   const MOTION_STORAGE_KEY = "codex-dream-motion-level";
   const MOTION_LEVELS = ["off", "low", "high"];
-  const RUNTIME_VERSION = "2.3.0-lazy-theme-assets";
+  const RUNTIME_VERSION = "2.3.6-conversation-status-contrast";
   const THEME_SEARCH_THRESHOLD = 6;
   const MUTATION_COALESCE_MS = 180;
   const VIDEO_BINDING_NAME = "__CODEX_DREAM_SKIN_VIDEO__";
@@ -172,6 +172,7 @@
     home: document.querySelector(".dream-home"),
     homeStage: document.querySelector(".dream-home-stage"),
     homeHero: document.querySelector(".dream-home-hero"),
+    nativeHomeHeading: document.querySelector(".dream-native-home-heading"),
     nativeHomeSuggestions: document.querySelector(".dream-native-home-suggestions"),
     conversation: document.querySelector(".dream-conversation"),
     promo: document.querySelector(".dream-home-promo"),
@@ -562,6 +563,7 @@
     document.querySelectorAll(".dream-home").forEach((node) => node.classList.remove("dream-home"));
     document.querySelectorAll(".dream-home-stage").forEach((node) => node.classList.remove("dream-home-stage"));
     document.querySelectorAll(".dream-home-hero").forEach((node) => node.classList.remove("dream-home-hero"));
+    document.querySelectorAll(".dream-native-home-heading").forEach((node) => node.classList.remove("dream-native-home-heading"));
     document.querySelectorAll(".dream-native-home-suggestions").forEach((node) => node.classList.remove("dream-native-home-suggestions"));
     document.querySelectorAll(".dream-conversation").forEach((node) => node.classList.remove("dream-conversation"));
     document.querySelectorAll(".dream-home-shell").forEach((node) => node.classList.remove("dream-home-shell"));
@@ -1187,6 +1189,12 @@
     const homeHero = homeStage?.querySelector(":scope > div:first-child") ?? null;
     syncMarker("homeStage", homeStage, "dream-home-stage");
     syncMarker("homeHero", homeHero, "dream-home-hero");
+    /* Newer Codex builds expose the native Home prompt through the stable
+       game-source feature marker. Themes provide their own title in the
+       shared overlay, so mark only this semantic native heading and leave its
+       surrounding layout intact. */
+    const nativeHomeHeading = home?.querySelector('[data-feature="game-source"]') ?? null;
+    syncMarker("nativeHomeHeading", nativeHomeHeading, "dream-native-home-heading");
     const nativeHomeSuggestions = home ? [...home.querySelectorAll("section")].find((node) => {
       if (node.closest(`#${HOME_OVERLAY_ID}`) || node.querySelectorAll("button").length < 4) return false;
       const rect = node.getBoundingClientRect();
@@ -1424,18 +1432,36 @@
     return Boolean(element?.closest?.('.ProseMirror[contenteditable="true"], textarea, input'));
   };
   const requestDetailScansFor = (mutations) => {
+    let requested = false;
     for (const mutation of mutations) {
       for (const node of mutation.addedNodes) {
         const value = (node.textContent || "").trim();
         if (!value || value.length > 4000) continue;
-        if (/\u7b2c\s*\d+\s*\/\s*\d+\s*\u6b65|\d+\s*\u4e2a?\u6587\u4ef6\u5df2\u66f4/.test(value)) {
+        if (!document.querySelector(".dream-progress-pill") &&
+            /\u7b2c\s*\d+\s*\/\s*\d+\s*\u6b65|\d+\s*\u4e2a?\u6587\u4ef6\u5df2\u66f4/.test(value)) {
           detailState.progressScanRequested = true;
+          requested = true;
         }
-        if (/(?:^|\n)(?:\u8f93\u51fa|\u73af\u5883\u4fe1\u606f|output|environment information)(?:\n|$)/i.test(value)) {
+        if (!document.querySelector(".dream-output-panel") &&
+            /(?:^|\n)(?:\u8f93\u51fa|\u73af境\u4fe1\u606f|output|environment information)(?:\n|$)/i.test(value)) {
           detailState.outputScanRequested = true;
+          requested = true;
         }
       }
     }
+    return requested;
+  };
+  const mutationNeedsFullEnsure = (mutation) => {
+    if (mutation.type === "attributes") return true;
+    const target = mutation.target?.nodeType === Node.ELEMENT_NODE ? mutation.target : mutation.target?.parentElement;
+    if (!target?.closest?.("main.dream-conversation-shell")) return true;
+    /* Streaming long conversations can append dozens of text/tool nodes per
+       second. Those additions do not change route or stable theme hosts, so a
+       full compatibility scan would only force expensive style resolution.
+       Still wake immediately for structural/portaled surfaces. */
+    const structuralSelector = '[role="dialog"], [role="menu"], [role="main"], [data-testid="home-icon"], .composer-surface-chrome, aside.app-shell-left-panel';
+    return [...mutation.addedNodes].some((node) => node.nodeType === Node.ELEMENT_NODE &&
+      (node.matches?.(structuralSelector) || node.querySelector?.(structuralSelector)));
   };
   const scheduleEnsure = (mutations = []) => {
     if (mutations.length) requestDetailScansFor(mutations);
@@ -1459,7 +1485,8 @@
   const observer = new MutationObserver((mutations) => {
     const relevantMutations = mutations.filter((mutation) =>
       !mutationIsRuntimeOwned(mutation) && !mutationIsComposerTyping(mutation));
-    if (relevantMutations.length) scheduleEnsure(relevantMutations);
+    const detailRequested = requestDetailScansFor(relevantMutations);
+    if (detailRequested || relevantMutations.some(mutationNeedsFullEnsure)) scheduleEnsure();
   });
   observer.observe(document.documentElement, {
     childList: true,
@@ -1467,11 +1494,10 @@
     attributes: true,
     attributeFilter: ["aria-current", "aria-selected"],
   });
-  const timer = setInterval(() => {
-    detailState.progressScanRequested = true;
-    detailState.outputScanRequested = true;
-    scheduleEnsure();
-  }, 5000);
+  /* Slow reconciliation remains as a recovery path for native DOM changes
+     which expose no useful mutation signal. It must not become a periodic
+     full-scan tax while a large task is streaming. */
+  const timer = setInterval(() => scheduleEnsure(), 30000);
   window[STATE_KEY] = {
     ensure,
     cleanup,

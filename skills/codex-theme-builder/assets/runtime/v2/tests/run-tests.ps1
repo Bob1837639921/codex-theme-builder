@@ -115,6 +115,10 @@ if (($runtimeText -join "`n") -match '(?i)config\.toml|appearanceTheme|BaseUrl|A
   throw 'V2 runtime must not read or write Codex configuration or provider settings.'
 }
 $themeCss = Get-Content -LiteralPath (Join-Path $theme 'theme.css') -Raw
+if ($themeCss -match '(?s)main\.dream-conversation-shell\s+\*\s*\{' -or
+    $themeCss -match '(?s)main\.dream-conversation-shell\s+:is\([^)]*\[data-state\][^)]*\)\s+:is\(') {
+  throw 'Conversation theme CSS must not use universal or broad data-state descendant selectors that trigger long-task rematching.'
+}
 $baseCss = Get-Content -LiteralPath (Join-Path $Root 'assets\base.css') -Raw
 $templateCss = Get-Content -LiteralPath (Join-Path $Root '..\..\theme-template\theme.css') -Raw
 $runtimeJs = Get-Content -LiteralPath (Join-Path $Root 'assets\runtime.js') -Raw
@@ -401,7 +405,9 @@ if ($themeCss -notmatch '(?s)main\.dream-conversation-shell\s+\.sticky\.bottom-0
   throw 'Conversation composer fades must stay transparent, including the in-progress file-summary state.'
 }
 if ($themeCss -notmatch '(?s)main\.main-surface\s*>\s*header\.app-header-tint\s*\{[^}]*color:\s*[^;]+\s*!important[^}]*background:\s*.+?\s*!important[^}]*border-bottom:' -or
-    $themeCss -notmatch '(?s)header\.app-header-tint\s+:is\(button,\s*span,\s*svg\)\s*\{[^}]*color:\s*[^;]+\s*!important') {
+    $themeCss -notmatch '(?s)header\.app-header-tint\s+:is\(button,\s*span,\s*svg\)\s*\{[^}]*color:\s*[^;]+\s*!important' -or
+    $baseCss -notmatch '--theme-toolbar-ink' -or
+    $baseCss -notmatch '(?s)header\.app-header-tint\s+\*.*?\{[^}]*color:\s*var\(--theme-toolbar-ink') {
   throw 'Every theme must adapt the Codex content toolbar divider, text, and icons while the shared glass rule preserves scene continuity.'
 }
 if ($themeCss -match 'group\\/project-selector' -or
@@ -485,16 +491,25 @@ if ($templateCss -match '(?s):is\(\.dream-selected-thread,\s*\[aria-current="pag
     $templateCss -notmatch '(?s)main\.dream-conversation-shell\s+\.sticky\.bottom-0\s+\[class~="bg-gradient-to-t"\]\s*\{[^}]*background-image:\s*none\s*!important') {
   throw 'The shared template must preserve native selected-row overlays and prevent the four-sided conversation composer frame.'
 }
-if ($runtimeJs -notmatch 'dream-native-home-suggestions' -or
+if ($runtimeJs -notmatch 'dream-native-home-heading' -or
+    $runtimeJs -notmatch '\[data-feature="game-source"\]' -or
+    $runtimeJs -notmatch 'dream-native-home-suggestions' -or
     $runtimeJs -notmatch 'dream-plugin-search-shell' -or
     $runtimeJs -notmatch 'dream-home-promo' -or
     $runtimeJs -notmatch 'closest\("aside, \[role=status\]"\)' -or
     $runtimeJs -notmatch 'Math\.max\(rect\.height, candidate\.scrollHeight \|\| 0\)' -or
-    $baseCss -notmatch '(?s)\.dream-native-home-suggestions.*?visibility:\s*hidden\s*!important' -or
+    $baseCss -notmatch '(?s)\.dream-native-home-heading,.*?\.dream-native-home-suggestions.*?visibility:\s*hidden\s*!important' -or
     $baseCss -notmatch '(?s)\.dream-home-promo\s*\{[^}]*position:\s*absolute\s*!important' -or
     $baseCss -notmatch '(?s)\.dream-plugin-search-shell\s*\{[^}]*background:\s*transparent\s*!important' -or
     $baseCss -notmatch '(?s)\.dream-plugin-search\s*\{[^}]*background:\s*var\(--dream-plugin-surface\)\s*!important') {
-  throw 'Home suggestions, clipped promotional banners, and plugin discovery must keep reusable non-invasive theme hooks.'
+  throw 'Home heading/suggestions, clipped promotional banners, and plugin discovery must keep reusable non-invasive theme hooks.'
+}
+if ($runtimeJs -notmatch 'mutationNeedsFullEnsure' -or
+    $runtimeJs -notmatch 'Streaming long conversations' -or
+    $runtimeJs -notmatch '!document\.querySelector\("\.dream-progress-pill"\)' -or
+    $runtimeJs -notmatch '!document\.querySelector\("\.dream-output-panel"\)' -or
+    $runtimeJs -notmatch 'setInterval\(\(\) => scheduleEnsure\(\), 30000\)') {
+  throw 'Long streaming tasks must bypass full compatibility scans while retaining slow structural reconciliation.'
 }
 if ($sunkenCss -notmatch '(?s)\.dream-file-changes-summary\s*\{[^}]*background:.*?border:' -or
     $sunkenCss -notmatch '(?s)\.dream-file-changes-summary.*?group\\\/turn-diff-header\s*\{[^}]*background:' -or
@@ -558,14 +573,27 @@ if ($manifest.composerEdge.image -ne 'composer-edge.png' -or
     $injectorText -notmatch 'Composer edge must be a PNG or WebP' -or
     $injectorText -notmatch '--dream-composer-edge' -or
     $injectorText -notmatch '--dream-composer-edge-position' -or
-    $baseCss -notmatch 'background-position:\s*var\(--dream-composer-edge-position' -or
-    $baseCss -notmatch 'background-size:\s*auto\s+var\(--dream-composer-edge-max-height' -or
-    $baseCss -notmatch '(?s)\.dream-composer-host::after\s*\{[^}]*background-image:\s*var\(--dream-composer-edge\)' -or
-    $baseCss -notmatch 'inset:\s*-100px\s+-180px\s+-12px\s+-76px' -or
-    $baseCss -notmatch '(?s)\.dream-composer-host::after\s*\{[^}]*z-index:\s*2' -or
+    $baseCss -notmatch '(?s)\.dream-composer-host::after\s*\{[^}]*display:\s*var\(--theme-composer-host-edge-display,\s*block\)\s*!important[^}]*background-image:\s*var\(--dream-composer-edge\)' -or
     $baseCss -notmatch '(?s)\.composer-surface-chrome\s*>\s*\*\s*\{[^}]*z-index:\s*3' -or
-    $themeCss -match '(?s)\.dream-composer-host::after\s*,.*?display:\s*none') {
+    $templateCss -notmatch '--theme-composer-host-edge-display:\s*block') {
   throw 'The theme-specific composer-edge raster contract and shared rendering hook must remain validated and bundled.'
+}
+if ($baseCss -notmatch '--theme-home-top-fade-display' -or
+    $baseCss -notmatch '(?s)\[class\*="_ApplicationMenuTopBar_"\].*?--theme-app-menu-ink' -or
+    $baseCss -notmatch '(?s)\[class\*="_ApplicationMenuTopBar_"\]::after.*?--theme-window-controls-backdrop' -or
+    $baseCss -notmatch '(?s)composer-surface-chrome button\[class~="bg-token-foreground"\].*?--theme-composer-submit-surface' -or
+    $baseCss -notmatch '(?s)\[data-dream-route\].*?\[class\*="_MainContentTopFade_"\].*?--theme-main-content-top-fade-display' -or
+    $baseCss -notmatch '--theme-conversation-code-ink' -or
+    $baseCss -notmatch '(?s)text-token-text-tertiary.*?--theme-conversation-muted-ink' -or
+    $templateCss -notmatch '--theme-toolbar-ink' -or
+    $templateCss -notmatch '--theme-app-menu-ink' -or
+    $templateCss -notmatch '--theme-window-controls-backdrop' -or
+    $templateCss -notmatch '--theme-composer-submit-surface' -or
+    $templateCss -notmatch '--theme-main-content-top-fade-display' -or
+    $templateCss -notmatch '--theme-conversation-code-ink' -or
+    $templateCss -notmatch '--theme-conversation-muted-ink' -or
+    $templateCss -notmatch '--theme-home-top-fade-display') {
+  throw 'Home/content fades, nested tool output, Electron/content toolbar, native caption, and composer submit contrast regressions must remain guarded by shared semantic tokens.'
 }
 $themesRoot = [System.IO.Path]::GetFullPath((Join-Path $Root '..\..\themes'))
 $windowCanvasThemes = @(Get-ChildItem -LiteralPath $themesRoot -Directory | Where-Object {
