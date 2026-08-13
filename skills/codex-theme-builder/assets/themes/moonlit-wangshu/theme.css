@@ -11,8 +11,8 @@
   --theme-toolbar-surface: color-mix(in srgb, var(--dream-surface, #f4f0e6) 68%, transparent);
   --theme-toolbar-ink: #e8f7ff;
   --theme-app-menu-ink: #e8f7ff;
-  --theme-window-controls-backdrop: linear-gradient(90deg, transparent 0%, rgb(105 168 196 / 38%) 34%, rgb(168 215 232 / 80%) 100%);
-  --theme-window-controls-border: 1px solid rgb(112 190 219 / 18%);
+  --theme-window-controls-backdrop: linear-gradient(90deg, rgb(133 181 200 / 82%) 0%, rgb(187 221 233 / 94%) 28%, rgb(215 238 246 / 98%) 100%);
+  --theme-window-controls-border: 1px solid rgb(174 221 237 / 46%);
   --dream-project-control-surface: #eef5f8;
   --dream-project-control-ink: #102839;
   --dream-project-control-muted: #587584;
