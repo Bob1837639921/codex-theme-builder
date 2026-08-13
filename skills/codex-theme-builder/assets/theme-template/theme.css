@@ -15,6 +15,7 @@
   --theme-window-controls-border: 0 solid transparent;
   --theme-conversation-code-ink: var(--dream-ink, #26332f);
   --theme-conversation-muted-ink: var(--theme-muted-text);
+  --theme-conversation-activity-icon: var(--theme-conversation-code-ink);
   --theme-message-editor-ink: var(--theme-panel-text);
   --theme-message-editor-muted: var(--theme-muted-text);
   --theme-message-editor-accent: var(--dream-accent, #58766c);

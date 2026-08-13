@@ -7,6 +7,10 @@
   no duplicate ornament crosses the conversation body.
 - Inspect nested command and tool-output `span`/`div` nodes on dark artwork;
   all text remains readable through `--theme-conversation-code-ink`.
+- Inspect collapsed, expanded, running, and completed command/tool activity
+  headers; both the leading function icon and disclosure chevron remain visible
+  through `--theme-conversation-activity-icon` before and during hover, with the
+  disclosure chevron softly present even when the pointer is elsewhere.
 - Inspect thinking duration, timestamps, collapsed reasoning, and untagged
   execution summaries through `--theme-conversation-muted-ink`.
 - Inspect every content-toolbar label and SVG wrapper through

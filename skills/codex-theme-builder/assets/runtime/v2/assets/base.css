@@ -653,6 +653,28 @@ html.codex-dream-skin main.dream-conversation-shell
   -webkit-text-fill-color: inherit !important;
 }
 
+/* Command/tool activity headers use conversation-body utilities instead of
+   the tertiary wrappers above. Their leading function glyph and disclosure
+   chevron therefore need an explicit semantic foreground on dark artwork. */
+html.codex-dream-skin main.dream-conversation-shell
+  :is(.group\/activity-header, [class~="group/activity-header"])
+  :is(svg[class*="text-token-conversation-body"], svg[class*="text-token-text-tertiary"]) {
+  color: var(--theme-conversation-activity-icon, var(--theme-conversation-code-ink, var(--theme-primary-text, #ffffff))) !important;
+  -webkit-text-fill-color: currentColor !important;
+}
+
+html.codex-dream-skin main.dream-conversation-shell
+  :is(.group\/activity-header, [class~="group/activity-header"])
+  svg.icon-2xs[class*="text-token-conversation-body"] {
+  opacity: .72 !important;
+}
+
+html.codex-dream-skin main.dream-conversation-shell
+  :is(.group\/activity-header, [class~="group/activity-header"]):is(:hover, :focus-within)
+  svg.icon-2xs[class*="text-token-conversation-body"] {
+  opacity: 1 !important;
+}
+
 /* Keep the optional Fast-mode promotion usable without letting it consume
    home-layout height and push the project picker/composer off screen. */
 html.codex-dream-skin .dream-home .dream-home-promo {

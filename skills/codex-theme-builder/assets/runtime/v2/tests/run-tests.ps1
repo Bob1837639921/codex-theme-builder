@@ -604,6 +604,8 @@ if ($baseCss -notmatch '--theme-home-top-fade-display' -or
     $baseCss -notmatch '(?s)composer-surface-chrome button\[class~="bg-token-foreground"\].*?--theme-composer-submit-surface' -or
     $baseCss -notmatch '(?s)\[data-dream-route\].*?\[class\*="_MainContentTopFade_"\].*?--theme-main-content-top-fade-display' -or
     $baseCss -notmatch '--theme-conversation-code-ink' -or
+    $baseCss -notmatch '(?s)group\\/activity-header.*?svg\[class\*="text-token-conversation-body"\].*?--theme-conversation-activity-icon' -or
+    $baseCss -notmatch '(?s)group\\/activity-header.*?svg\.icon-2xs\[class\*="text-token-conversation-body"\].*?opacity:\s*\.72\s*!important' -or
     $baseCss -notmatch '(?s)text-token-text-tertiary.*?--theme-conversation-muted-ink' -or
     $runtimeJs -notmatch 'dream-create-project-dialog' -or
     $runtimeJs -notmatch 'dream-project-name-control' -or
@@ -620,6 +622,7 @@ if ($baseCss -notmatch '--theme-home-top-fade-display' -or
     $templateCss -notmatch '--theme-toolbar-ink' -or
     $templateCss -notmatch '--theme-app-menu-ink' -or
     $templateCss -notmatch '--theme-window-controls-backdrop' -or
+    $templateCss -notmatch '--theme-conversation-activity-icon' -or
     $templateCss -notmatch '--theme-composer-submit-surface' -or
     $templateCss -notmatch '--theme-main-content-top-fade-display' -or
     $templateCss -notmatch '--theme-conversation-code-ink' -or

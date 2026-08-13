@@ -163,6 +163,12 @@ Additional paint invariants:
   applies light-mode tertiary utilities directly to these descendants.
 - Every nested content-toolbar label and icon resolves to
   `--theme-toolbar-ink`; new muted utility wrappers must not hide actions.
+- Command/tool activity headers use a separate conversation-body foreground.
+  Their leading function glyph and disclosure chevron resolve through
+  `--theme-conversation-activity-icon`; do not depend on readable label text to
+  imply that the adjacent SVG controls are also readable. Keep the disclosure
+  chevron softly visible at rest and fully visible on hover/focus; a correct
+  color still appears absent when its native opacity utility remains zero.
 - Electron application-menu buttons and glyphs resolve to
   `--theme-app-menu-ink`; setting foreground only on their parent is
   insufficient because native tertiary-text utilities override inheritance.
