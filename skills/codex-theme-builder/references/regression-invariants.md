@@ -179,9 +179,10 @@ Additional paint invariants:
   Codex reports a light window mode. Dark themes provide a calm contrasting
   `--theme-window-controls-backdrop` beneath the reserved caption area; never
   draw replacement minimize, maximize, or close buttons or intercept clicks.
-  The complete three-button span must resolve to a sufficiently pale surface;
-  a transparent leading stop can leave the minimize glyph dark-on-dark even
-  when maximize and close appear acceptable.
+  Choose the backing plate per theme and preserve approved treatments: themes
+  with dark native caption glyphs need a pale complete three-button span, while
+  a previously approved translucent gradient must not be replaced while fixing
+  a different theme.
   Keep that pointer-free backing plate above route artwork and an opted-in
   full-window video canvas; a non-positive stacking layer can disappear behind
   moving artwork even though the same rule looks correct with static artwork.

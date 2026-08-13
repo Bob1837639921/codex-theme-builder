@@ -20,6 +20,10 @@
   --dream-motion-fast: 180ms;
   --dream-motion-panel: 200ms;
   --dream-ease: cubic-bezier(.2, .8, .2, 1);
+  --theme-toolbar-ink: #e9f4fa;
+  --theme-app-menu-ink: #e9f4fa;
+  --theme-window-controls-backdrop: linear-gradient(90deg, rgb(90 160 184 / 76%) 0%, rgb(139 188 205 / 90%) 42%, rgb(190 218 228 / 96%) 100%);
+  --theme-window-controls-border: 1px solid rgb(115 202 224 / 34%);
 }
 
 :root.codex-dream-skin [class*="_ApplicationMenuTopBar_"] {

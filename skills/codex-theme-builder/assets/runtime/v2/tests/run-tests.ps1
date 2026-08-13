@@ -600,7 +600,8 @@ if ($manifest.composerEdge.image -ne 'composer-edge.png' -or
 if ($baseCss -notmatch '--theme-home-top-fade-display' -or
     $baseCss -notmatch '(?s)\[class\*="_ApplicationMenuTopBar_"\].*?--theme-app-menu-ink' -or
     $baseCss -notmatch '(?s)\[class\*="_ApplicationMenuTopBar_"\]::after.*?z-index:\s*1\s*!important.*?--theme-window-controls-backdrop.*?pointer-events:\s*none\s*!important' -or
-    $moonlitCss -notmatch '(?s)--theme-window-controls-backdrop:\s*linear-gradient\([^;]*rgb\(133 181 200 / 82%\)[^;]*rgb\(215 238 246 / 98%\)' -or
+    $moonlitCss -notmatch '(?s)--theme-window-controls-backdrop:\s*linear-gradient\(90deg,\s*transparent\s+0%,\s*rgb\(105 168 196 / 38%\)' -or
+    $sunkenCss -notmatch '(?s)--theme-window-controls-backdrop:\s*linear-gradient\([^;]*rgb\(90 160 184 / 76%\)[^;]*rgb\(190 218 228 / 96%\)' -or
     $baseCss -notmatch '(?s)composer-surface-chrome button\[class~="bg-token-foreground"\].*?--theme-composer-submit-surface' -or
     $baseCss -notmatch '(?s)\[data-dream-route\].*?\[class\*="_MainContentTopFade_"\].*?--theme-main-content-top-fade-display' -or
     $baseCss -notmatch '--theme-conversation-code-ink' -or
