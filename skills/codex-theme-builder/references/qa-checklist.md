@@ -18,7 +18,8 @@
 - Check `文件 / 编辑 / 视图 / 帮助`, back/forward icons, and window-side menu
   glyphs independently; each uses `--theme-app-menu-ink` over dark artwork.
 - Check the native Windows minimize, maximize/restore, and close glyphs over
-  `--theme-window-controls-backdrop`; all three remain visible and clickable.
+  `--theme-window-controls-backdrop`; all three remain visible and clickable
+  over both the static poster and an active full-window video canvas.
 - Check empty/disabled send, enabled send, running stop, and keyboard focus;
   each submit state preserves explicit surface/icon contrast.
 

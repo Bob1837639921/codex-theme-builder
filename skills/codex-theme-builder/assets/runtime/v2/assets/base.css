@@ -288,7 +288,9 @@ html.codex-dream-skin [class*="_ApplicationMenuTopBar_"]
 html.codex-dream-skin [class*="_ApplicationMenuTopBar_"]::after {
   content: "" !important;
   position: fixed !important;
-  z-index: 0 !important;
+  /* Keep the plate above route artwork and the opt-in full-window video
+     canvas. The native Electron caption glyphs remain above this DOM layer. */
+  z-index: 1 !important;
   top: 0 !important;
   right: 0 !important;
   width: var(--spacing-token-safe-header-right, 137px) !important;

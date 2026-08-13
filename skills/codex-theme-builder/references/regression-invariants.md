@@ -173,6 +173,9 @@ Additional paint invariants:
   Codex reports a light window mode. Dark themes provide a calm contrasting
   `--theme-window-controls-backdrop` beneath the reserved caption area; never
   draw replacement minimize, maximize, or close buttons or intercept clicks.
+  Keep that pointer-free backing plate above route artwork and an opted-in
+  full-window video canvas; a non-positive stacking layer can disappear behind
+  moving artwork even though the same rule looks correct with static artwork.
 - Composer submit and stop controls explicitly pair
   `--theme-composer-submit-surface` with `--theme-composer-submit-ink`. Do not
   inherit a black `bg-token-foreground` button over dark artwork.
