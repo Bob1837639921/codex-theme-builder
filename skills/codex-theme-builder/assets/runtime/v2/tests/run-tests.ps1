@@ -606,8 +606,14 @@ if ($baseCss -notmatch '--theme-home-top-fade-display' -or
     $runtimeJs -notmatch 'dream-create-project-dialog' -or
     $runtimeJs -notmatch 'dream-project-name-control' -or
     $runtimeJs -notmatch 'dream-project-source-control' -or
+    $runtimeJs -notmatch 'dream-sites-surface' -or
+    $runtimeJs -notmatch 'dream-sites-search' -or
+    $runtimeJs -notmatch 'dream-sites-intro-dialog' -or
+    $injectorText -notmatch 'markers\.composer \|\| markers\.main \|\| markers\.nativeFeature' -or
     $baseCss -notmatch '(?s)dream-create-project-dialog.*?--dream-project-control-ink' -or
     $baseCss -notmatch '(?s)dream-project-name-control input::placeholder.*?--dream-project-control-muted' -or
+    $baseCss -notmatch '(?s)main\.dream-sites-surface.*?--dream-sites-ink' -or
+    $baseCss -notmatch '(?s)dream-sites-intro-dialog.*?--dream-sites-panel' -or
     $templateCss -notmatch '--theme-toolbar-ink' -or
     $templateCss -notmatch '--theme-app-menu-ink' -or
     $templateCss -notmatch '--theme-window-controls-backdrop' -or

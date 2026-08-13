@@ -16,6 +16,11 @@
   --dream-project-control-ink: #182b38;
   --dream-project-control-muted: #607887;
   --dream-project-control-border: rgb(91 137 157 / 42%);
+  --dream-sites-ink: var(--dream-ink);
+  --dream-sites-muted: var(--dream-muted, #607887);
+  --dream-sites-surface: color-mix(in srgb, var(--dream-surface, #f4f7f8) 90%, transparent);
+  --dream-sites-panel: color-mix(in srgb, var(--dream-surface, #f4f7f8) 96%, transparent);
+  --dream-sites-border: color-mix(in srgb, var(--dream-accent) 34%, transparent);
   --dream-unread-dot: color-mix(in srgb, var(--dream-accent-alt, var(--dream-accent, #5f7c72)) 72%, white);
   --dream-unread-ring: color-mix(in srgb, var(--dream-accent, #5f7c72) 78%, black);
   --dream-unread-glow: color-mix(in srgb, var(--dream-accent-alt, var(--dream-accent, #5f7c72)) 76%, transparent);
@@ -58,6 +63,92 @@ html.codex-dream-skin [role="dialog"].dream-create-project-dialog
 html.codex-dream-skin [role="dialog"].dream-create-project-dialog
   .dream-project-source-control button svg {
   color: var(--dream-project-control-muted) !important;
+}
+
+/* Sites is a native non-conversation route. Keep its layout and controls, but
+   remove opaque light utility surfaces and give its intro portal a coherent,
+   explicitly readable theme treatment. */
+html.codex-dream-skin main.dream-sites-surface,
+html.codex-dream-skin main.dream-sites-surface :is([class~="bg-token-main-surface-primary"], [class~="_MainContentViewport_zbk1f_143"], [class~="_MainContentFrame_zbk1f_191"]) {
+  color: var(--dream-sites-ink) !important;
+  background-color: transparent !important;
+}
+
+html.codex-dream-skin main.dream-sites-surface [class~="sticky"] {
+  background: transparent !important;
+}
+
+html.codex-dream-skin main.dream-sites-surface [class~="sticky"]::after {
+  display: none !important;
+}
+
+html.codex-dream-skin main.dream-sites-surface .dream-sites-search {
+  color: var(--dream-sites-ink) !important;
+  background: var(--dream-sites-surface) !important;
+  border-color: var(--dream-sites-border) !important;
+  box-shadow: 0 10px 28px rgb(0 10 22 / 18%) !important;
+}
+
+html.codex-dream-skin main.dream-sites-surface
+  :is(h1, h2, h3, [class*="text-token-foreground"], [class*="text-token-text-primary"]) {
+  color: var(--dream-sites-ink) !important;
+  -webkit-text-fill-color: currentColor !important;
+}
+
+html.codex-dream-skin main.dream-sites-surface
+  :is([class*="text-token-text-secondary"], [class*="text-token-text-tertiary"], svg) {
+  color: var(--dream-sites-muted) !important;
+  -webkit-text-fill-color: currentColor !important;
+}
+
+html.codex-dream-skin main.dream-sites-surface #appgen-site-search {
+  color: var(--dream-sites-ink) !important;
+  caret-color: var(--dream-accent) !important;
+}
+
+html.codex-dream-skin main.dream-sites-surface #appgen-site-search::placeholder {
+  color: var(--dream-sites-muted) !important;
+  -webkit-text-fill-color: var(--dream-sites-muted) !important;
+  opacity: 1 !important;
+}
+
+html.codex-dream-skin main.dream-sites-surface button[class~="bg-token-bg-fog"] {
+  color: var(--dream-sites-ink) !important;
+  -webkit-text-fill-color: currentColor !important;
+  background: var(--dream-sites-surface) !important;
+  border-color: var(--dream-sites-border) !important;
+}
+
+html.codex-dream-skin main.dream-sites-surface button[class~="bg-token-foreground"] {
+  color: var(--theme-composer-submit-ink, #ffffff) !important;
+  -webkit-text-fill-color: currentColor !important;
+  background: var(--theme-composer-submit-surface, var(--dream-accent)) !important;
+  border-color: var(--dream-sites-border) !important;
+}
+
+html.codex-dream-skin [role="dialog"].dream-sites-intro-dialog {
+  color: var(--dream-sites-ink) !important;
+  background: var(--dream-sites-panel) !important;
+  border-color: var(--dream-sites-border) !important;
+  box-shadow: 0 24px 72px rgb(0 10 22 / 34%) !important;
+}
+
+html.codex-dream-skin [role="dialog"].dream-sites-intro-dialog
+  :is(h1, h2, h3, p, li, span, div, label, svg) {
+  color: inherit !important;
+  -webkit-text-fill-color: currentColor !important;
+  text-shadow: none !important;
+}
+
+html.codex-dream-skin [role="dialog"].dream-sites-intro-dialog a {
+  color: var(--dream-accent-alt, var(--dream-accent)) !important;
+  -webkit-text-fill-color: currentColor !important;
+}
+
+html.codex-dream-skin [role="dialog"].dream-sites-intro-dialog button[class~="bg-token-foreground"] {
+  color: var(--theme-composer-submit-ink, #ffffff) !important;
+  -webkit-text-fill-color: currentColor !important;
+  background: var(--theme-composer-submit-surface, var(--dream-accent)) !important;
 }
 
 /* Native message editing is not the composer: Codex mounts a separate form

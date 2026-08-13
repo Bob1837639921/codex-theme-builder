@@ -14,7 +14,7 @@
   const STORAGE_KEY = "codex-dream-theme-active";
   const MOTION_STORAGE_KEY = "codex-dream-motion-level";
   const MOTION_LEVELS = ["off", "low", "high"];
-  const RUNTIME_VERSION = "2.3.11-create-project-contrast";
+  const RUNTIME_VERSION = "2.3.12-sites-surface-contrast";
   const THEME_SEARCH_THRESHOLD = 6;
   const MUTATION_COALESCE_MS = 180;
   const VIDEO_BINDING_NAME = "__CODEX_DREAM_SKIN_VIDEO__";
@@ -180,6 +180,8 @@
     projectPicker: document.querySelector(".dream-project-picker"),
     pluginSearch: document.querySelector(".dream-plugin-search"),
     pluginSearchShell: document.querySelector(".dream-plugin-search-shell"),
+    sitesSurface: document.querySelector(".dream-sites-surface"),
+    sitesSearch: document.querySelector(".dream-sites-search"),
     composerHost: document.querySelector(".dream-composer-host"),
     quickJumpRail: document.querySelector(".dream-quick-jump-rail"),
   };
@@ -192,6 +194,7 @@
     outputScanRequested: true,
     usagePanel: document.querySelector(".dream-usage-panel"),
     createProjectDialog: document.querySelector(".dream-create-project-dialog"),
+    sitesIntroDialog: document.querySelector(".dream-sites-intro-dialog"),
     queuedMessageList: document.querySelector(".dream-queued-message-list"),
     messageEditor: document.querySelector(".dream-message-editor"),
   };
@@ -246,6 +249,7 @@
     document.querySelectorAll(".dream-output-panel").forEach((node) => node.classList.remove("dream-output-panel"));
     document.querySelectorAll(".dream-usage-panel").forEach((node) => node.classList.remove("dream-usage-panel"));
     document.querySelectorAll(".dream-create-project-dialog").forEach((node) => node.classList.remove("dream-create-project-dialog"));
+    document.querySelectorAll(".dream-sites-intro-dialog").forEach((node) => node.classList.remove("dream-sites-intro-dialog"));
     document.querySelectorAll(".dream-project-name-control").forEach((node) => node.classList.remove("dream-project-name-control"));
     document.querySelectorAll(".dream-project-source-control").forEach((node) => node.classList.remove("dream-project-source-control"));
     document.querySelectorAll(".dream-queued-message-list").forEach((node) => node.classList.remove("dream-queued-message-list"));
@@ -256,6 +260,17 @@
   };
 
   const markDetailSurfaces = () => {
+    const sitesIntroPattern = /(?:\u4f7f\u7528\s*Sites\s*\u4e4b\u524d|before\s+using\s+Sites)/i;
+    let sitesIntroDialog = detailState.sitesIntroDialog;
+    if (!sitesIntroDialog?.isConnected || !sitesIntroDialog.classList.contains("dream-sites-intro-dialog") ||
+        !sitesIntroPattern.test(sitesIntroDialog.textContent || "")) {
+      sitesIntroDialog?.classList.remove("dream-sites-intro-dialog");
+      sitesIntroDialog = [...document.querySelectorAll('[role="dialog"]')].find((node) =>
+        sitesIntroPattern.test(node.textContent || "")) || null;
+      sitesIntroDialog?.classList.add("dream-sites-intro-dialog");
+      detailState.sitesIntroDialog = sitesIntroDialog;
+    }
+
     const projectNamePattern = /(?:\u9879\u76ee\u540d\u79f0|project\s+name)/i;
     const projectSourcePattern = /(?:\u9009\u62e9\u6e90\u6587\u4ef6\u5939|\u9009\u62e9\u6587\u4ef6\u5939|select\s+(?:a\s+)?(?:source\s+)?folder)/i;
     let createProjectDialog = detailState.createProjectDialog;
@@ -1270,6 +1285,10 @@
     const pluginSearchShell = pluginSearch?.closest('[class~="sticky"]') ?? null;
     syncMarker("pluginSearch", pluginSearch, "dream-plugin-search");
     syncMarker("pluginSearchShell", pluginSearchShell, "dream-plugin-search-shell");
+    const sitesSearch = document.getElementById("appgen-site-search");
+    const sitesSurface = sitesSearch?.closest("main.main-surface, main, [role=main]") ?? null;
+    syncMarker("sitesSurface", sitesSurface, "dream-sites-surface");
+    syncMarker("sitesSearch", sitesSearch?.parentElement ?? null, "dream-sites-search");
 
     if (!home) {
       syncMarker("promo", null, "dream-home-promo");

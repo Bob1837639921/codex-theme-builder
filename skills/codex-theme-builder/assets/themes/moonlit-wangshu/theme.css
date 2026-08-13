@@ -17,6 +17,11 @@
   --dream-project-control-ink: #102839;
   --dream-project-control-muted: #587584;
   --dream-project-control-border: rgb(114 191 220 / 54%);
+  --dream-sites-ink: #e9f7ff;
+  --dream-sites-muted: #9fc5d7;
+  --dream-sites-surface: rgb(4 21 38 / 88%);
+  --dream-sites-panel: linear-gradient(145deg, rgb(7 29 50 / 98%), rgb(4 19 35 / 98%));
+  --dream-sites-border: rgb(112 201 233 / 38%);
   --theme-conversation-code-ink: #dff5ff;
   --theme-conversation-muted-ink: #a9cad9;
   --theme-home-top-fade-display: none;
@@ -435,6 +440,31 @@ html.codex-dream-skin main.dream-conversation-shell .sticky.bottom-0 [class~="bg
 
 :root.codex-dream-skin [data-radix-popper-content-wrapper] {
   color: var(--dream-ink) !important;
+}
+
+/* Keep Sites overrides after the theme's generic portal/control rules. */
+:root.codex-dream-skin main.dream-sites-surface .dream-sites-search {
+  color: var(--dream-sites-ink) !important;
+  background: var(--dream-sites-surface) !important;
+  border-color: var(--dream-sites-border) !important;
+}
+
+:root.codex-dream-skin main.dream-sites-surface button[class~="bg-token-bg-fog"] {
+  color: var(--dream-sites-ink) !important;
+  -webkit-text-fill-color: currentColor !important;
+  background: var(--dream-sites-surface) !important;
+  border-color: var(--dream-sites-border) !important;
+}
+
+:root.codex-dream-skin [role="dialog"].dream-sites-intro-dialog,
+:root.codex-dream-skin [role="dialog"].dream-sites-intro-dialog :is(div, h1, h2, h3, p, span, strong, small, button, label, svg) {
+  color: var(--dream-sites-ink) !important;
+  -webkit-text-fill-color: currentColor !important;
+}
+
+:root.codex-dream-skin [role="dialog"].dream-sites-intro-dialog {
+  background: var(--dream-sites-panel) !important;
+  border-color: var(--dream-sites-border) !important;
 }
 
 /* Do not let a dark theme's general portal palette wash out the fixed light

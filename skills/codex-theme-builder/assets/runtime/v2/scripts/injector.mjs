@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, "..");
-const SKIN_VERSION = "2.3.11-create-project-contrast";
+const SKIN_VERSION = "2.3.12-sites-surface-contrast";
 const MAX_ART_BYTES = 8 * 1024 * 1024;
 const MAX_VIDEO_BYTES = 8 * 1024 * 1024;
 const DIRECT_EVALUATE_LIMIT = 8 * 1024 * 1024;
@@ -699,10 +699,12 @@ async function probeSession(session) {
         document.querySelector('[data-codex-composer-root] [data-composer-surface-variant]') ??
         document.querySelector('[data-codex-composer="true"]')?.closest('[data-composer-surface-variant]')),
       main: Boolean(document.querySelector('[role="main"]')),
+      nativeFeature: Boolean(document.getElementById('appgen-site-search')),
     };
     return {
       markers,
-      codex: location.protocol === 'app:' && markers.shell && markers.header && (markers.composer || markers.main),
+      codex: location.protocol === 'app:' && markers.shell && markers.header &&
+        (markers.composer || markers.main || markers.nativeFeature),
     };
   })()`);
 }

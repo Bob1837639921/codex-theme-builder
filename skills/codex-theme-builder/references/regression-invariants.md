@@ -184,6 +184,15 @@ Additional paint invariants:
   light. Runtime marks the dialog and both control groups semantically; their
   text, placeholder, folder glyph, explanatory copy, caret, and borders use
   `--dream-project-control-*` tokens instead of inherited dialog foregrounds.
+- The Sites route is a native non-conversation surface identified through the
+  stable `#appgen-site-search` control. Its opaque main-surface utilities,
+  sticky search rail, heading, empty state, search text, and placeholder must
+  use `--dream-sites-*` tokens. The separate Before using Sites portal receives
+  its own semantic marker so its title, body, bullets, links, close control, and
+  Continue action never inherit unreadable global dialog colors.
+  CDP verification recognizes this authenticated native feature route through
+  the same stable search control in addition to the semantic shell/header; it
+  must not require a conversation composer or `[role="main"]` to stay attached.
 - Sidebar task hover belongs to the complete `.sidebar-item` row, including
   its right action zone. Exclude task rows from generic circular button-hover
   effects, and never duplicate selected artwork on the nested title label.
