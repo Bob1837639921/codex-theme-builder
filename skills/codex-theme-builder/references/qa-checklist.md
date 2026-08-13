@@ -128,6 +128,9 @@
 
 ## Portaled overlays
 
+- Open Create Project and verify the project-name field, placeholder, folder
+  icon, source-folder instruction, caret, borders, cancel/create actions, and
+  close control all remain readable while preserving native geometry.
 - Open the usage/credits card and verify its remaining percentage, reset schedule, close control, progress bar, and both actions use dark readable text on the light card, including under every dark theme.
 - Open the full usage-details panel and verify its dedicated non-home/non-conversation artwork, title, reset rows, availability badges, progress bar, close control, disabled states, actions, and long-content scrolling. Switch themes while it is open and confirm artwork plus all text colors update together.
 - Open menus, dialogs, and popovers from both the sidebar and conversation toolbar.

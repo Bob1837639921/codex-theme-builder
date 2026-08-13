@@ -13,6 +13,10 @@
   --theme-app-menu-ink: #e8f7ff;
   --theme-window-controls-backdrop: linear-gradient(90deg, transparent 0%, rgb(105 168 196 / 38%) 34%, rgb(168 215 232 / 80%) 100%);
   --theme-window-controls-border: 1px solid rgb(112 190 219 / 18%);
+  --dream-project-control-surface: #eef5f8;
+  --dream-project-control-ink: #102839;
+  --dream-project-control-muted: #587584;
+  --dream-project-control-border: rgb(114 191 220 / 54%);
   --theme-conversation-code-ink: #dff5ff;
   --theme-conversation-muted-ink: #a9cad9;
   --theme-home-top-fade-display: none;

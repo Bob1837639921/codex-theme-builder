@@ -603,6 +603,11 @@ if ($baseCss -notmatch '--theme-home-top-fade-display' -or
     $baseCss -notmatch '(?s)\[data-dream-route\].*?\[class\*="_MainContentTopFade_"\].*?--theme-main-content-top-fade-display' -or
     $baseCss -notmatch '--theme-conversation-code-ink' -or
     $baseCss -notmatch '(?s)text-token-text-tertiary.*?--theme-conversation-muted-ink' -or
+    $runtimeJs -notmatch 'dream-create-project-dialog' -or
+    $runtimeJs -notmatch 'dream-project-name-control' -or
+    $runtimeJs -notmatch 'dream-project-source-control' -or
+    $baseCss -notmatch '(?s)dream-create-project-dialog.*?--dream-project-control-ink' -or
+    $baseCss -notmatch '(?s)dream-project-name-control input::placeholder.*?--dream-project-control-muted' -or
     $templateCss -notmatch '--theme-toolbar-ink' -or
     $templateCss -notmatch '--theme-app-menu-ink' -or
     $templateCss -notmatch '--theme-window-controls-backdrop' -or

@@ -14,7 +14,7 @@
   const STORAGE_KEY = "codex-dream-theme-active";
   const MOTION_STORAGE_KEY = "codex-dream-motion-level";
   const MOTION_LEVELS = ["off", "low", "high"];
-  const RUNTIME_VERSION = "2.3.10-caption-backdrop-layer";
+  const RUNTIME_VERSION = "2.3.11-create-project-contrast";
   const THEME_SEARCH_THRESHOLD = 6;
   const MUTATION_COALESCE_MS = 180;
   const VIDEO_BINDING_NAME = "__CODEX_DREAM_SKIN_VIDEO__";
@@ -191,6 +191,7 @@
     progressScanRequested: true,
     outputScanRequested: true,
     usagePanel: document.querySelector(".dream-usage-panel"),
+    createProjectDialog: document.querySelector(".dream-create-project-dialog"),
     queuedMessageList: document.querySelector(".dream-queued-message-list"),
     messageEditor: document.querySelector(".dream-message-editor"),
   };
@@ -244,6 +245,9 @@
     document.querySelectorAll(".dream-file-changes-summary").forEach((node) => node.classList.remove("dream-file-changes-summary"));
     document.querySelectorAll(".dream-output-panel").forEach((node) => node.classList.remove("dream-output-panel"));
     document.querySelectorAll(".dream-usage-panel").forEach((node) => node.classList.remove("dream-usage-panel"));
+    document.querySelectorAll(".dream-create-project-dialog").forEach((node) => node.classList.remove("dream-create-project-dialog"));
+    document.querySelectorAll(".dream-project-name-control").forEach((node) => node.classList.remove("dream-project-name-control"));
+    document.querySelectorAll(".dream-project-source-control").forEach((node) => node.classList.remove("dream-project-source-control"));
     document.querySelectorAll(".dream-queued-message-list").forEach((node) => node.classList.remove("dream-queued-message-list"));
     document.querySelectorAll(".dream-message-editor").forEach((node) => node.classList.remove("dream-message-editor"));
     detailState.queuedMessageList = null;
@@ -252,6 +256,36 @@
   };
 
   const markDetailSurfaces = () => {
+    const projectNamePattern = /(?:\u9879\u76ee\u540d\u79f0|project\s+name)/i;
+    const projectSourcePattern = /(?:\u9009\u62e9\u6e90\u6587\u4ef6\u5939|\u9009\u62e9\u6587\u4ef6\u5939|select\s+(?:a\s+)?(?:source\s+)?folder)/i;
+    let createProjectDialog = detailState.createProjectDialog;
+    if (!createProjectDialog?.isConnected || !createProjectDialog.classList.contains("dream-create-project-dialog")) {
+      createProjectDialog?.classList.remove("dream-create-project-dialog");
+      createProjectDialog = [...document.querySelectorAll('[role="dialog"]')].find((node) => {
+        const nameInput = [...node.querySelectorAll("input")].find((input) =>
+          projectNamePattern.test(`${input.getAttribute("aria-label") || ""} ${input.placeholder || ""}`));
+        const sourceButton = [...node.querySelectorAll("button")].find((button) =>
+          projectSourcePattern.test(`${button.getAttribute("aria-label") || ""} ${button.textContent || ""}`));
+        return Boolean(nameInput && sourceButton);
+      }) || null;
+      createProjectDialog?.classList.add("dream-create-project-dialog");
+      detailState.createProjectDialog = createProjectDialog;
+    }
+    const projectNameInput = createProjectDialog ? [...createProjectDialog.querySelectorAll("input")].find((input) =>
+      projectNamePattern.test(`${input.getAttribute("aria-label") || ""} ${input.placeholder || ""}`)) : null;
+    const projectNameControl = projectNameInput?.parentElement || null;
+    const projectSourceButton = createProjectDialog ? [...createProjectDialog.querySelectorAll("button")].find((button) =>
+      projectSourcePattern.test(`${button.getAttribute("aria-label") || ""} ${button.textContent || ""}`)) : null;
+    const projectSourceControl = projectSourceButton?.parentElement || null;
+    document.querySelectorAll(".dream-project-name-control").forEach((node) => {
+      if (node !== projectNameControl) node.classList.remove("dream-project-name-control");
+    });
+    document.querySelectorAll(".dream-project-source-control").forEach((node) => {
+      if (node !== projectSourceControl) node.classList.remove("dream-project-source-control");
+    });
+    projectNameControl?.classList.add("dream-project-name-control");
+    projectSourceControl?.classList.add("dream-project-source-control");
+
     const messageEditorInput = document.querySelector('[role="textbox"][aria-label="编辑消息"]');
     const messageEditor = messageEditorInput?.closest("form") || null;
     if (detailState.messageEditor && detailState.messageEditor !== messageEditor) {

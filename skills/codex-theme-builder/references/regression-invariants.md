@@ -179,6 +179,11 @@ Additional paint invariants:
 - Composer submit and stop controls explicitly pair
   `--theme-composer-submit-surface` with `--theme-composer-submit-ink`. Do not
   inherit a black `bg-token-foreground` button over dark artwork.
+- The create-project dialog is a mixed-surface portal: its shell may use the
+  active dark theme, while the project-name and source-folder controls remain
+  light. Runtime marks the dialog and both control groups semantically; their
+  text, placeholder, folder glyph, explanatory copy, caret, and borders use
+  `--dream-project-control-*` tokens instead of inherited dialog foregrounds.
 - Sidebar task hover belongs to the complete `.sidebar-item` row, including
   its right action zone. Exclude task rows from generic circular button-hover
   effects, and never duplicate selected artwork on the nested title label.

@@ -12,6 +12,10 @@
   --dream-plugin-ink: var(--dream-ink, #252a27);
   --dream-plugin-surface: color-mix(in srgb, var(--dream-surface, #f5f2e9) 82%, transparent);
   --dream-plugin-border: color-mix(in srgb, var(--dream-accent, #5f7c72) 28%, transparent);
+  --dream-project-control-surface: #f4f7f8;
+  --dream-project-control-ink: #182b38;
+  --dream-project-control-muted: #607887;
+  --dream-project-control-border: rgb(91 137 157 / 42%);
   --dream-unread-dot: color-mix(in srgb, var(--dream-accent-alt, var(--dream-accent, #5f7c72)) 72%, white);
   --dream-unread-ring: color-mix(in srgb, var(--dream-accent, #5f7c72) 78%, black);
   --dream-unread-glow: color-mix(in srgb, var(--dream-accent-alt, var(--dream-accent, #5f7c72)) 76%, transparent);
@@ -20,6 +24,40 @@
 html.codex-dream-skin [role="dialog"] {
   color: var(--dream-ink) !important;
   background-color: var(--dream-surface) !important;
+}
+
+/* Create Project mixes a theme-colored portaled shell with native light input
+   and folder-picker surfaces. Scope their contrast separately from dialogs. */
+html.codex-dream-skin [role="dialog"].dream-create-project-dialog
+  :is(.dream-project-name-control, .dream-project-source-control) {
+  color: var(--dream-project-control-ink) !important;
+  background: var(--dream-project-control-surface) !important;
+  border-color: var(--dream-project-control-border) !important;
+}
+
+html.codex-dream-skin [role="dialog"].dream-create-project-dialog
+  :is(.dream-project-name-control, .dream-project-source-control)
+  :is(input, button, span, svg) {
+  color: var(--dream-project-control-ink) !important;
+  -webkit-text-fill-color: currentColor !important;
+  text-shadow: none !important;
+}
+
+html.codex-dream-skin [role="dialog"].dream-create-project-dialog
+  .dream-project-name-control input {
+  caret-color: var(--dream-accent) !important;
+}
+
+html.codex-dream-skin [role="dialog"].dream-create-project-dialog
+  .dream-project-name-control input::placeholder {
+  color: var(--dream-project-control-muted) !important;
+  -webkit-text-fill-color: var(--dream-project-control-muted) !important;
+  opacity: 1 !important;
+}
+
+html.codex-dream-skin [role="dialog"].dream-create-project-dialog
+  .dream-project-source-control button svg {
+  color: var(--dream-project-control-muted) !important;
 }
 
 /* Native message editing is not the composer: Codex mounts a separate form
