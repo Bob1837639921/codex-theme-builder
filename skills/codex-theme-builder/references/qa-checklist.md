@@ -132,6 +132,8 @@
   icon/text/placeholder, empty state, refresh action, and create actions remain
   readable. Open Before using Sites and inspect its title, body, bullets, link,
   close control, and Continue button independently.
+  Confirm no full-width dark/light strip or fade remains behind the bounded
+  search field at the top of the page.
 - Open Create Project and verify the project-name field, placeholder, folder
   icon, source-folder instruction, caret, borders, cancel/create actions, and
   close control all remain readable while preserving native geometry.

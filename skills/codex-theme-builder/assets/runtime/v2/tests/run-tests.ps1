@@ -127,6 +127,7 @@ $sunkenCss = Get-Content -LiteralPath (Join-Path $Root '..\..\themes\sunken-oper
 $tidalCss = Get-Content -LiteralPath (Join-Path $Root '..\..\themes\tidal-hymn\theme.css') -Raw
 $luminousCss = Get-Content -LiteralPath (Join-Path $Root '..\..\themes\luminous-spirit-garden\theme.css') -Raw
 $frostleafCss = Get-Content -LiteralPath (Join-Path $Root '..\..\themes\frostleaf-illusionist\theme.css') -Raw
+$moonlitCss = Get-Content -LiteralPath (Join-Path $Root '..\..\themes\moonlit-wangshu\theme.css') -Raw
 $luminousTheme = Join-Path $Root '..\..\themes\luminous-spirit-garden'
 $luminousManifest = Get-Content -LiteralPath (Join-Path $luminousTheme 'theme.json') -Raw | ConvertFrom-Json
 $frostTheme = Join-Path $Root '..\..\themes\frost-sword-immortal'
@@ -614,6 +615,7 @@ if ($baseCss -notmatch '--theme-home-top-fade-display' -or
     $baseCss -notmatch '(?s)dream-project-name-control input::placeholder.*?--dream-project-control-muted' -or
     $baseCss -notmatch '(?s)main\.dream-sites-surface.*?--dream-sites-ink' -or
     $baseCss -notmatch '(?s)dream-sites-intro-dialog.*?--dream-sites-panel' -or
+    $moonlitCss -notmatch '(?s)main\.dream-sites-surface \[class~="sticky"\].*?background-color:\s*transparent\s*!important.*?background-image:\s*none\s*!important' -or
     $templateCss -notmatch '--theme-toolbar-ink' -or
     $templateCss -notmatch '--theme-app-menu-ink' -or
     $templateCss -notmatch '--theme-window-controls-backdrop' -or

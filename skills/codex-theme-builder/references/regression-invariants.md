@@ -193,6 +193,8 @@ Additional paint invariants:
   CDP verification recognizes this authenticated native feature route through
   the same stable search control in addition to the semantic shell/header; it
   must not require a conversation composer or `[role="main"]` to stay attached.
+  The native sticky search carrier and its downward-fade pseudo-element remain
+  fully transparent; only the bounded search control receives a themed surface.
 - Sidebar task hover belongs to the complete `.sidebar-item` row, including
   its right action zone. Exclude task rows from generic circular button-hover
   effects, and never duplicate selected artwork on the nested title label.
