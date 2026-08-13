@@ -28,6 +28,14 @@ theme-id/
 
 The image names are configurable. `theme.css` is optional to the runtime but generated for every scaffold.
 
+Themes using `color-scheme: dark` participate in the shared dark-caption
+architecture. The runtime marks the active root with
+`data-dream-color-scheme="dark"` and composes the native Windows caption backing
+gradient from `--theme-dark-caption-start`, `--theme-dark-caption-mid`, and
+`--theme-dark-caption-end`. A theme may set
+`--theme-window-controls-backdrop` only to preserve an explicitly approved
+custom treatment. Light themes do not receive the shared caption backing.
+
 ## Manifest schema
 
 ```json

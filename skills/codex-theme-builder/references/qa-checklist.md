@@ -24,6 +24,8 @@
 - Check the native Windows minimize, maximize/restore, and close glyphs over
   `--theme-window-controls-backdrop`; all three remain visible and clickable
   over both the static poster and an active full-window video canvas.
+  Confirm the shared backing gradient exists only when
+  `data-dream-color-scheme="dark"`; light themes retain native caption paint.
   Inspect the left edge of the reserved caption span separately so the
   minimize glyph is not left over a transparent dark-artwork stop.
 - Check empty/disabled send, enabled send, running stop, and keyboard focus;

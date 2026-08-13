@@ -14,7 +14,7 @@
   const STORAGE_KEY = "codex-dream-theme-active";
   const MOTION_STORAGE_KEY = "codex-dream-motion-level";
   const MOTION_LEVELS = ["off", "low", "high"];
-  const RUNTIME_VERSION = "2.3.16-activity-disclosure-contrast";
+  const RUNTIME_VERSION = "2.3.17-dark-caption-architecture";
   const THEME_SEARCH_THRESHOLD = 6;
   const MUTATION_COALESCE_MS = 180;
   const VIDEO_BINDING_NAME = "__CODEX_DREAM_SKIN_VIDEO__";
@@ -944,6 +944,7 @@
     style.dataset.dreamThemeId = theme.id;
     root.classList.add("codex-dream-skin");
     root.classList.add("dream-native-surface");
+    root.dataset.dreamColorScheme = getComputedStyle(root).colorScheme.split(" ")[0] === "dark" ? "dark" : "light";
     root.classList.toggle("dream-video-window-canvas", theme.windowVideoCanvas === true);
     root.style.setProperty("--dream-art", `url("${urls.artUrl}")`);
     root.style.setProperty("--dream-conversation-art", `url("${urls.conversationUrl}")`);
@@ -1435,6 +1436,7 @@
     document.documentElement?.classList.remove("codex-dream-skin");
     document.documentElement?.removeAttribute("data-dream-motion");
     document.documentElement?.removeAttribute("data-dream-route");
+    document.documentElement?.removeAttribute("data-dream-color-scheme");
     document.documentElement?.classList.remove("dream-native-surface");
     document.documentElement?.classList.remove("dream-video-window-canvas", "dream-video-covering");
     document.documentElement?.style.removeProperty("--dream-art");

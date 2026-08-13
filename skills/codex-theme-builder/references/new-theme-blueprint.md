@@ -3,7 +3,8 @@
 ## Required paint tokens
 
 Every generated theme defines `--theme-toolbar-ink`, `--theme-app-menu-ink`,
-`--theme-window-controls-backdrop`, `--theme-conversation-code-ink`,
+the dark-caption palette (`--theme-dark-caption-start`,
+`--theme-dark-caption-mid`, `--theme-dark-caption-end`), `--theme-conversation-code-ink`,
 `--theme-conversation-muted-ink`,
 `--theme-home-top-fade-display`, `--theme-main-content-top-fade-display`,
 `--theme-composer-submit-surface`, and `--theme-composer-submit-ink`. Dark

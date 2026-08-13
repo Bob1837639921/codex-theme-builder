@@ -414,7 +414,7 @@ html.codex-dream-skin [class*="_ApplicationMenuTopBar_"]
 /* Windows caption glyphs are drawn by Electron outside the DOM. In light
    window mode they remain dark, so dark artwork needs a theme-owned quiet
    backing plate beneath the native hit targets rather than a fake control. */
-html.codex-dream-skin [class*="_ApplicationMenuTopBar_"]::after {
+html.codex-dream-skin[data-dream-color-scheme="dark"] [class*="_ApplicationMenuTopBar_"]::after {
   content: "" !important;
   position: fixed !important;
   /* Keep the plate above route artwork and the opt-in full-window video
@@ -424,7 +424,15 @@ html.codex-dream-skin [class*="_ApplicationMenuTopBar_"]::after {
   right: 0 !important;
   width: var(--spacing-token-safe-header-right, 137px) !important;
   height: 36px !important;
-  background: var(--theme-window-controls-backdrop, transparent) !important;
+  background: var(
+    --theme-window-controls-backdrop,
+    linear-gradient(
+      90deg,
+      var(--theme-dark-caption-start, rgb(104 143 165 / 76%)) 0%,
+      var(--theme-dark-caption-mid, rgb(151 184 201 / 88%)) 44%,
+      var(--theme-dark-caption-end, rgb(205 226 235 / 96%)) 100%
+    )
+  ) !important;
   border-bottom: var(--theme-window-controls-border, 0 solid transparent) !important;
   pointer-events: none !important;
 }

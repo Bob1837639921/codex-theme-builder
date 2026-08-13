@@ -177,7 +177,11 @@ Additional paint invariants:
   conversation artwork. Verify both routes, not only Home.
 - Windows caption glyphs are native Electron chrome and may remain dark when
   Codex reports a light window mode. Dark themes provide a calm contrasting
-  `--theme-window-controls-backdrop` beneath the reserved caption area; never
+  three-stop caption palette through `--theme-dark-caption-start`,
+  `--theme-dark-caption-mid`, and `--theme-dark-caption-end`; shared runtime
+  marks `data-dream-color-scheme="dark"` and composes the backing gradient only
+  for dark themes. `--theme-window-controls-backdrop` remains an approved-theme
+  override. Never
   draw replacement minimize, maximize, or close buttons or intercept clicks.
   Choose the backing plate per theme and preserve approved treatments: themes
   with dark native caption glyphs need a pale complete three-button span, while
