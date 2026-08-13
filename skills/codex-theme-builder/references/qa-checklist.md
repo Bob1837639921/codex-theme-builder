@@ -26,8 +26,9 @@
   over both the static poster and an active full-window video canvas.
   Confirm the shared backing gradient exists only when
   `data-dream-color-scheme="dark"`; light themes retain native caption paint.
-  Inspect the left edge of the reserved caption span separately so the
-  minimize glyph is not left over a transparent dark-artwork stop.
+  Inspect the left edge separately: the transparent start must blend into the
+  existing top bar without a hard vertical seam, while all three native glyphs
+  remain identifiable across the full transition.
 - Check empty/disabled send, enabled send, running stop, and keyboard focus;
   each submit state preserves explicit surface/icon contrast.
 

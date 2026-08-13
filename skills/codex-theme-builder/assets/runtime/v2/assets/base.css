@@ -428,9 +428,9 @@ html.codex-dream-skin[data-dream-color-scheme="dark"] [class*="_ApplicationMenuT
     --theme-window-controls-backdrop,
     linear-gradient(
       90deg,
-      var(--theme-dark-caption-start, rgb(104 143 165 / 76%)) 0%,
-      var(--theme-dark-caption-mid, rgb(151 184 201 / 88%)) 44%,
-      var(--theme-dark-caption-end, rgb(205 226 235 / 96%)) 100%
+      var(--theme-dark-caption-start, transparent) 0%,
+      var(--theme-dark-caption-mid, rgb(151 184 201 / 42%)) 34%,
+      var(--theme-dark-caption-end, rgb(205 226 235 / 82%)) 100%
     )
   ) !important;
   border-bottom: var(--theme-window-controls-border, 0 solid transparent) !important;

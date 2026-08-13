@@ -602,7 +602,7 @@ if ($baseCss -notmatch '--theme-home-top-fade-display' -or
     $baseCss -notmatch '(?s)data-dream-color-scheme="dark".*?\[class\*="_ApplicationMenuTopBar_"\]::after.*?z-index:\s*1\s*!important.*?--theme-window-controls-backdrop.*?--theme-dark-caption-start.*?--theme-dark-caption-mid.*?--theme-dark-caption-end.*?pointer-events:\s*none\s*!important' -or
     $runtimeJs -notmatch 'root\.dataset\.dreamColorScheme\s*=\s*getComputedStyle\(root\)\.colorScheme' -or
     $moonlitCss -notmatch '(?s)--theme-window-controls-backdrop:\s*linear-gradient\(90deg,\s*transparent\s+0%,\s*rgb\(105 168 196 / 38%\)' -or
-    $sunkenCss -notmatch '(?s)--theme-dark-caption-start:\s*rgb\(105 137 168 / 80%\).*?--theme-dark-caption-mid:\s*rgb\(139 169 196 / 91%\).*?--theme-dark-caption-end:\s*rgb\(192 211 227 / 97%\)' -or
+    $sunkenCss -notmatch '(?s)--theme-dark-caption-start:\s*transparent.*?--theme-dark-caption-mid:\s*rgb\(91 132 170 / 40%\).*?--theme-dark-caption-end:\s*rgb\(164 194 219 / 84%\)' -or
     $baseCss -notmatch '(?s)composer-surface-chrome button\[class~="bg-token-foreground"\].*?--theme-composer-submit-surface' -or
     $baseCss -notmatch '(?s)\[data-dream-route\].*?\[class\*="_MainContentTopFade_"\].*?--theme-main-content-top-fade-display' -or
     $baseCss -notmatch '--theme-conversation-code-ink' -or
@@ -624,6 +624,7 @@ if ($baseCss -notmatch '--theme-home-top-fade-display' -or
     $templateCss -notmatch '--theme-toolbar-ink' -or
     $templateCss -notmatch '--theme-app-menu-ink' -or
     $templateCss -notmatch '--theme-dark-caption-start' -or
+    $templateCss -notmatch '--theme-dark-caption-start:\s*transparent' -or
     $templateCss -notmatch '--theme-dark-caption-mid' -or
     $templateCss -notmatch '--theme-dark-caption-end' -or
     $templateCss -notmatch '--theme-conversation-activity-icon' -or

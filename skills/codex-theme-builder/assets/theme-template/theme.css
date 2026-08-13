@@ -11,9 +11,9 @@
   --theme-toolbar-surface: color-mix(in srgb, var(--dream-surface, #f4f0e6) 68%, transparent);
   --theme-toolbar-ink: var(--dream-ink, #26332f);
   --theme-app-menu-ink: var(--theme-toolbar-ink);
-  --theme-dark-caption-start: rgb(104 143 165 / 76%);
-  --theme-dark-caption-mid: rgb(151 184 201 / 88%);
-  --theme-dark-caption-end: rgb(205 226 235 / 96%);
+  --theme-dark-caption-start: transparent;
+  --theme-dark-caption-mid: rgb(151 184 201 / 42%);
+  --theme-dark-caption-end: rgb(205 226 235 / 82%);
   --theme-window-controls-border: 1px solid rgb(171 211 226 / 28%);
   --theme-conversation-code-ink: var(--dream-ink, #26332f);
   --theme-conversation-muted-ink: var(--theme-muted-text);

@@ -184,9 +184,11 @@ Additional paint invariants:
   override. Never
   draw replacement minimize, maximize, or close buttons or intercept clicks.
   Choose the backing plate per theme and preserve approved treatments: themes
-  with dark native caption glyphs need a pale complete three-button span, while
-  a previously approved translucent gradient must not be replaced while fixing
-  a different theme.
+  use the approved Wangshu-style structure by default—transparent at the left
+  edge, a restrained translucent middle stop, and a readable pale right stop—
+  so the caption area blends into artwork without a hard vertical seam. A
+  previously approved custom gradient must not be replaced while fixing a
+  different theme.
   Keep that pointer-free backing plate above route artwork and an opted-in
   full-window video canvas; a non-positive stacking layer can disappear behind
   moving artwork even though the same rule looks correct with static artwork.

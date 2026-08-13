@@ -22,10 +22,10 @@
   --dream-ease: cubic-bezier(.2, .8, .2, 1);
   --theme-toolbar-ink: #e9f4fa;
   --theme-app-menu-ink: #e9f4fa;
-  --theme-dark-caption-start: rgb(105 137 168 / 80%);
-  --theme-dark-caption-mid: rgb(139 169 196 / 91%);
-  --theme-dark-caption-end: rgb(192 211 227 / 97%);
-  --theme-window-controls-border: 1px solid rgb(123 184 211 / 30%);
+  --theme-dark-caption-start: transparent;
+  --theme-dark-caption-mid: rgb(91 132 170 / 40%);
+  --theme-dark-caption-end: rgb(164 194 219 / 84%);
+  --theme-window-controls-border: 1px solid rgb(115 178 211 / 20%);
 }
 
 :root.codex-dream-skin [class*="_ApplicationMenuTopBar_"] {
