@@ -11,6 +11,12 @@
   headers; both the leading function icon and disclosure chevron remain visible
   through `--theme-conversation-activity-icon` before and during hover, with the
   disclosure chevron softly present even when the pointer is elsewhere.
+- While an activity or automatic context compaction is running on a dark theme,
+  pause between shimmer sweeps and confirm the complete status label remains
+  readable; the moving highlight brightens a visible base rather than revealing
+  otherwise black text.
+- After the activity finishes, confirm its static summary, collapsed label, and
+  disclosure copy retain the same readable base tone instead of turning black.
 - Inspect thinking duration, timestamps, collapsed reasoning, and untagged
   execution summaries through `--theme-conversation-muted-ink`.
 - Inspect every content-toolbar label and SVG wrapper through
@@ -59,7 +65,9 @@
 - Hero fills the intended region at common window sizes.
 - Hero detail remains crisp at the largest available target viewport at 100% display scaling; inspect faces, hair, foliage, architecture, line art, and other high-information regions.
 - Heading and subtitle remain readable.
-- Four action blocks appear, align, and retain icons.
+- Four equal-width action blocks appear, align, and retain icons; each icon,
+  title, and supporting description forms a separate vertical row with no
+  concatenated copy.
 - Clicking an action fills the native composer without submitting.
 - Sidebar, menus, project selection, and window controls remain usable.
 - Collapse and expand the native sidebar with both its toolbar button and `Ctrl+B`.

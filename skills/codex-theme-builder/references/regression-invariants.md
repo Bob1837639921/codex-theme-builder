@@ -5,6 +5,14 @@ fix is complete only when the shared template, an automated guard, and live QA
 cover the same failure mode. Preserve these invariants while changing palettes,
 artwork, motion, or theme identity.
 
+## Home action grid
+
+- Keep each runtime-owned home action as three distinct vertically stacked rows:
+  icon, title, then supporting description. Native button typography must never
+  concatenate the title and description or distort the four equal-width tabs.
+- Keep the four action buttons confined to the true home route and preserve the
+  native composer-fill behavior without submitting the prompt.
+
 ## Composer and conversation chrome
 
 - Keep `.composer-surface-chrome` on a transparent two-pixel border. Current
@@ -169,6 +177,14 @@ Additional paint invariants:
   imply that the adjacent SVG controls are also readable. Keep the disclosure
   chevron softly visible at rest and fully visible on hover/focus; a correct
   color still appears absent when its native opacity utility remains zero.
+- On dark themes, running activity and automatic context-compaction labels keep
+  a readable resting foreground through `--theme-conversation-activity-ink`.
+  Preserve the native cadence with the brighter
+  `--theme-conversation-activity-highlight`; the moving shimmer must enhance the
+  label instead of being the only moment when it can be read.
+- Apply the same explicit text-fill token to completed, collapsed, and idle
+  activity summaries. Do not derive their fill from `currentColor`: native
+  important conversation-body utilities may still resolve that color to black.
 - Electron application-menu buttons and glyphs resolve to
   `--theme-app-menu-ink`; setting foreground only on their parent is
   insufficient because native tertiary-text utilities override inheritance.

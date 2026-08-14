@@ -24,6 +24,8 @@
   --dream-sites-border: rgb(112 201 233 / 38%);
   --theme-conversation-code-ink: #dff5ff;
   --theme-conversation-muted-ink: #a9cad9;
+  --theme-conversation-activity-ink: #b9deed;
+  --theme-conversation-activity-highlight: #f2fbff;
   --theme-conversation-activity-icon: #9fe7ff;
   --theme-home-top-fade-display: none;
   --theme-main-content-top-fade-display: none;
@@ -944,6 +946,13 @@ html.codex-dream-skin[data-codex-window-type] .composer-surface-chrome {
 }
 
 :root.codex-dream-skin .dream-action-button {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  min-width: 0 !important;
+  padding: 10px 12px !important;
   border: 0 !important;
   border-right: 1px solid rgb(117 203 234 / 16%) !important;
   border-radius: 0 !important;
@@ -953,9 +962,9 @@ html.codex-dream-skin[data-codex-window-type] .composer-surface-chrome {
 
 :root.codex-dream-skin .dream-action-button:last-child { border-right: 0 !important; }
 :root.codex-dream-skin .dream-action-button:hover { background: rgb(117 203 234 / 9%) !important; }
-:root.codex-dream-skin .dream-action-button strong { color: #e9f7ff !important; }
-:root.codex-dream-skin .dream-action-button span { color: #9bb9ca !important; }
-:root.codex-dream-skin .dream-action-button img { filter: drop-shadow(0 2px 5px rgb(0 16 31 / 38%)) !important; }
+:root.codex-dream-skin .dream-action-button strong { color: #e9f7ff !important; font-size: 18px !important; line-height: 1.25 !important; }
+:root.codex-dream-skin .dream-action-button span { color: #9bb9ca !important; font-size: 12px !important; line-height: 1.3 !important; white-space: nowrap !important; }
+:root.codex-dream-skin .dream-action-button img { width: 42px !important; height: 42px !important; object-fit: contain !important; filter: drop-shadow(0 2px 5px rgb(0 16 31 / 38%)) !important; }
 
 :root.codex-dream-skin[data-dream-motion="low"] .composer-surface-chrome::before {
   animation: wangshu-calibration 8s ease-in-out infinite !important;

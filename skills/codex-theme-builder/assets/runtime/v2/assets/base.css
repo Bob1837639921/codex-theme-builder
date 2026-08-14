@@ -31,6 +31,27 @@ html.codex-dream-skin [role="dialog"] {
   background-color: var(--dream-surface) !important;
 }
 
+/* Home action cards are runtime-owned controls. Keep their icon, title and
+   supporting copy in an explicit vertical stack so native button typography
+   changes cannot collapse the three parts into one inline sentence. */
+html.codex-dream-skin .dream-action-button {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 0 !important;
+}
+
+html.codex-dream-skin .dream-action-button > :is(img, strong, span) {
+  flex: 0 0 auto !important;
+}
+
+html.codex-dream-skin .dream-action-button > :is(strong, span) {
+  display: block !important;
+  max-width: 100% !important;
+  text-align: center !important;
+}
+
 /* Create Project mixes a theme-colored portaled shell with native light input
    and folder-picker surfaces. Scope their contrast separately from dialogs. */
 html.codex-dream-skin [role="dialog"].dream-create-project-dialog
@@ -669,6 +690,31 @@ html.codex-dream-skin main.dream-conversation-shell
   :is(svg[class*="text-token-conversation-body"], svg[class*="text-token-text-tertiary"]) {
   color: var(--theme-conversation-activity-icon, var(--theme-conversation-code-ink, var(--theme-primary-text, #ffffff))) !important;
   -webkit-text-fill-color: currentColor !important;
+}
+
+/* Running activity labels use two overlapping CSS-module shimmer layers. On
+   dark artwork the native resting layer can still resolve to light-mode black,
+   making the label readable only while the highlight crosses it. Give the
+   base copy a persistent semantic foreground and keep the moving duplicate a
+   brighter tone so the original cadence remains visible. */
+html.codex-dream-skin[data-dream-color-scheme="dark"] main.dream-conversation-shell
+  :is(.group\/activity-header, [class~="group/activity-header"])
+  :is(span, p, code) {
+  color: var(--theme-conversation-activity-ink, var(--theme-conversation-code-ink, var(--dream-ink, #dff5ff))) !important;
+  -webkit-text-fill-color: var(--theme-conversation-activity-ink, var(--theme-conversation-code-ink, var(--dream-ink, #dff5ff))) !important;
+}
+
+html.codex-dream-skin[data-dream-color-scheme="dark"] body main.dream-conversation-shell
+  [class~="group/activity-header"] span.loading-shimmer-pure-text {
+  color: var(--theme-conversation-activity-ink, var(--theme-conversation-code-ink, var(--dream-ink, #dff5ff))) !important;
+  -webkit-text-fill-color: var(--theme-conversation-activity-ink, var(--theme-conversation-code-ink, var(--dream-ink, #dff5ff))) !important;
+}
+
+html.codex-dream-skin[data-dream-color-scheme="dark"] body main.dream-conversation-shell
+  [class~="group/activity-header"] span.loading-shimmer-pure-text
+  span[class*="cadencedShimmerHighlight"] {
+  color: var(--theme-conversation-activity-highlight, #f3fbff) !important;
+  -webkit-text-fill-color: var(--theme-conversation-activity-highlight, #f3fbff) !important;
 }
 
 html.codex-dream-skin main.dream-conversation-shell

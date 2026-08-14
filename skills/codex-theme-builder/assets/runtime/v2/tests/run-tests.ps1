@@ -128,6 +128,12 @@ $tidalCss = Get-Content -LiteralPath (Join-Path $Root '..\..\themes\tidal-hymn\t
 $luminousCss = Get-Content -LiteralPath (Join-Path $Root '..\..\themes\luminous-spirit-garden\theme.css') -Raw
 $frostleafCss = Get-Content -LiteralPath (Join-Path $Root '..\..\themes\frostleaf-illusionist\theme.css') -Raw
 $moonlitCss = Get-Content -LiteralPath (Join-Path $Root '..\..\themes\moonlit-wangshu\theme.css') -Raw
+if ($baseCss -notmatch '(?s)\.dream-action-button\s*\{[^}]*display:\s*flex\s*!important[^}]*flex-direction:\s*column\s*!important' -or
+    $baseCss -notmatch '(?s)\.dream-action-button\s*>\s*:is\(strong,\s*span\)\s*\{[^}]*display:\s*block\s*!important' -or
+    $moonlitCss -notmatch '(?s)\.dream-action-button\s*\{[^}]*gap:\s*6px\s*!important' -or
+    $moonlitCss -notmatch '(?s)\.dream-action-button\s+span\s*\{[^}]*font-size:\s*12px\s*!important') {
+  throw 'Home actions must preserve an icon/title/description vertical stack, including the Wangshu preset.'
+}
 $luminousTheme = Join-Path $Root '..\..\themes\luminous-spirit-garden'
 $luminousManifest = Get-Content -LiteralPath (Join-Path $luminousTheme 'theme.json') -Raw | ConvertFrom-Json
 $frostTheme = Join-Path $Root '..\..\themes\frost-sword-immortal'
@@ -608,6 +614,9 @@ if ($baseCss -notmatch '--theme-home-top-fade-display' -or
     $baseCss -notmatch '--theme-conversation-code-ink' -or
     $baseCss -notmatch '(?s)group\\/activity-header.*?svg\[class\*="text-token-conversation-body"\].*?--theme-conversation-activity-icon' -or
     $baseCss -notmatch '(?s)group\\/activity-header.*?svg\.icon-2xs\[class\*="text-token-conversation-body"\].*?opacity:\s*\.72\s*!important' -or
+    $baseCss -notmatch '(?s)data-dream-color-scheme="dark".*?group\\/activity-header.*?:is\(span,\s*p,\s*code\).*?--theme-conversation-activity-ink.*?-webkit-text-fill-color:\s*var\(--theme-conversation-activity-ink' -or
+    $baseCss -notmatch '(?s)loading-shimmer-pure-text.*?--theme-conversation-activity-ink.*?cadencedShimmerHighlight.*?--theme-conversation-activity-highlight' -or
+    $baseCss -notmatch '(?s)loading-shimmer-pure-text\s*\{.*?-webkit-text-fill-color:\s*var\(--theme-conversation-activity-ink.*?cadencedShimmerHighlight.*?-webkit-text-fill-color:\s*var\(--theme-conversation-activity-highlight' -or
     $baseCss -notmatch '(?s)text-token-text-tertiary.*?--theme-conversation-muted-ink' -or
     $runtimeJs -notmatch 'dream-create-project-dialog' -or
     $runtimeJs -notmatch 'dream-project-name-control' -or
@@ -628,6 +637,8 @@ if ($baseCss -notmatch '--theme-home-top-fade-display' -or
     $templateCss -notmatch '--theme-dark-caption-mid' -or
     $templateCss -notmatch '--theme-dark-caption-end' -or
     $templateCss -notmatch '--theme-conversation-activity-icon' -or
+    $templateCss -notmatch '--theme-conversation-activity-ink' -or
+    $templateCss -notmatch '--theme-conversation-activity-highlight' -or
     $templateCss -notmatch '--theme-composer-submit-surface' -or
     $templateCss -notmatch '--theme-main-content-top-fade-display' -or
     $templateCss -notmatch '--theme-conversation-code-ink' -or

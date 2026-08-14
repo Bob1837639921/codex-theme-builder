@@ -17,6 +17,8 @@
   --theme-window-controls-border: 1px solid rgb(171 211 226 / 28%);
   --theme-conversation-code-ink: var(--dream-ink, #26332f);
   --theme-conversation-muted-ink: var(--theme-muted-text);
+  --theme-conversation-activity-ink: var(--theme-conversation-code-ink);
+  --theme-conversation-activity-highlight: color-mix(in srgb, var(--theme-conversation-activity-ink) 72%, white);
   --theme-conversation-activity-icon: var(--theme-conversation-code-ink);
   --theme-message-editor-ink: var(--theme-panel-text);
   --theme-message-editor-muted: var(--theme-muted-text);
