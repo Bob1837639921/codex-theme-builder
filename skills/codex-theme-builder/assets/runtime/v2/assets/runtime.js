@@ -14,7 +14,7 @@
   const STORAGE_KEY = "codex-dream-theme-active";
   const MOTION_STORAGE_KEY = "codex-dream-motion-level";
   const MOTION_LEVELS = ["off", "low", "high"];
-  const RUNTIME_VERSION = "2.3.23-dark-activity-static";
+  const RUNTIME_VERSION = "2.3.27-duration-fallback";
   const THEME_SEARCH_THRESHOLD = 6;
   const MUTATION_COALESCE_MS = 180;
   const VIDEO_BINDING_NAME = "__CODEX_DREAM_SKIN_VIDEO__";
@@ -195,6 +195,12 @@
     usagePanel: document.querySelector(".dream-usage-panel"),
     createProjectDialog: document.querySelector(".dream-create-project-dialog"),
     sitesIntroDialog: document.querySelector(".dream-sites-intro-dialog"),
+    stepGuideSurfaces: new Set(document.querySelectorAll(".dream-step-guide-surface")),
+    turnDurationControls: new Set(document.querySelectorAll(".dream-turn-duration")),
+    conversationStatusLines: new Set(document.querySelectorAll(".dream-conversation-status-line")),
+    diffActionControls: new Set(document.querySelectorAll(".dream-diff-action")),
+    messageActionControls: new Set(document.querySelectorAll(".dream-message-action")),
+    messageActionRows: new Set(document.querySelectorAll(".dream-message-action-row")),
     queuedMessageList: document.querySelector(".dream-queued-message-list"),
     messageEditor: document.querySelector(".dream-message-editor"),
   };
@@ -252,6 +258,18 @@
     document.querySelectorAll(".dream-sites-intro-dialog").forEach((node) => node.classList.remove("dream-sites-intro-dialog"));
     document.querySelectorAll(".dream-project-name-control").forEach((node) => node.classList.remove("dream-project-name-control"));
     document.querySelectorAll(".dream-project-source-control").forEach((node) => node.classList.remove("dream-project-source-control"));
+    document.querySelectorAll(".dream-step-guide-surface").forEach((node) => node.classList.remove("dream-step-guide-surface"));
+    detailState.stepGuideSurfaces = new Set();
+    document.querySelectorAll(".dream-turn-duration").forEach((node) => node.classList.remove("dream-turn-duration"));
+    detailState.turnDurationControls = new Set();
+    document.querySelectorAll(".dream-conversation-status-line").forEach((node) => node.classList.remove("dream-conversation-status-line"));
+    detailState.conversationStatusLines = new Set();
+    document.querySelectorAll(".dream-diff-action").forEach((node) => node.classList.remove("dream-diff-action", "dream-diff-action-undo", "dream-diff-action-review"));
+    detailState.diffActionControls = new Set();
+    document.querySelectorAll(".dream-message-action").forEach((node) => node.classList.remove("dream-message-action"));
+    document.querySelectorAll(".dream-message-action-row").forEach((node) => node.classList.remove("dream-message-action-row"));
+    detailState.messageActionControls = new Set();
+    detailState.messageActionRows = new Set();
     document.querySelectorAll(".dream-queued-message-list").forEach((node) => node.classList.remove("dream-queued-message-list"));
     document.querySelectorAll(".dream-message-editor").forEach((node) => node.classList.remove("dream-message-editor"));
     detailState.queuedMessageList = null;
@@ -271,27 +289,53 @@
       detailState.sitesIntroDialog = sitesIntroDialog;
     }
 
+    const projectDialogPattern = /(?:\u521b\u5efa\u9879\u76ee|\u7f16\u8f91\u9879\u76ee|create\s+project|edit\s+project)/i;
     const projectNamePattern = /(?:\u9879\u76ee\u540d\u79f0|project\s+name)/i;
-    const projectSourcePattern = /(?:\u9009\u62e9\u6e90\u6587\u4ef6\u5939|\u9009\u62e9\u6587\u4ef6\u5939|select\s+(?:a\s+)?(?:source\s+)?folder)/i;
+    const projectSourcePattern = /(?:\u9009\u62e9\u6e90\u6587\u4ef6\u5939|\u9009\u62e9\u6587\u4ef6\u5939|\u6dfb\u52a0\u6587\u4ef6\u5939|select\s+(?:a\s+)?(?:source\s+)?folder|add\s+folder)/i;
+    const projectSourceLabelPattern = /^(?:\u6e90\u6587\u4ef6\u5939|\u6765\u6e90\u6587\u4ef6\u5939|source\s+folders?)$/i;
+    const normalizeProjectText = (value) => `${value || ""}`.replace(/\s+/g, " ").trim();
+    const findProjectNameInput = (dialog) => {
+      if (!dialog) return null;
+      const inputs = [...dialog.querySelectorAll('input:not([type="hidden"])')];
+      return inputs.find((input) => projectNamePattern.test(
+        `${input.getAttribute("aria-label") || ""} ${input.placeholder || ""}`
+      )) || (projectDialogPattern.test(dialog.textContent || "") ? inputs[0] || null : null);
+    };
+    const findProjectSourceLabel = (dialog) => dialog ? [...dialog.querySelectorAll("label, p, span, div")].find((node) =>
+      projectSourceLabelPattern.test(normalizeProjectText(node.textContent))
+    ) || null : null;
+    const findFollowingProjectControl = (label, dialog) => {
+      let cursor = label;
+      for (let depth = 0; cursor && cursor !== dialog && depth < 5; depth += 1, cursor = cursor.parentElement) {
+        let sibling = cursor.nextElementSibling;
+        while (sibling) {
+          if (sibling.matches?.("button, [role=\"button\"]") || sibling.querySelector?.("button, [role=\"button\"]")) {
+            return sibling;
+          }
+          sibling = sibling.nextElementSibling;
+        }
+      }
+      return null;
+    };
     let createProjectDialog = detailState.createProjectDialog;
     if (!createProjectDialog?.isConnected || !createProjectDialog.classList.contains("dream-create-project-dialog")) {
       createProjectDialog?.classList.remove("dream-create-project-dialog");
       createProjectDialog = [...document.querySelectorAll('[role="dialog"]')].find((node) => {
-        const nameInput = [...node.querySelectorAll("input")].find((input) =>
-          projectNamePattern.test(`${input.getAttribute("aria-label") || ""} ${input.placeholder || ""}`));
+        const nameInput = findProjectNameInput(node);
+        const sourceLabel = findProjectSourceLabel(node);
         const sourceButton = [...node.querySelectorAll("button")].find((button) =>
           projectSourcePattern.test(`${button.getAttribute("aria-label") || ""} ${button.textContent || ""}`));
-        return Boolean(nameInput && sourceButton);
+        return Boolean(nameInput && (sourceLabel || sourceButton));
       }) || null;
       createProjectDialog?.classList.add("dream-create-project-dialog");
       detailState.createProjectDialog = createProjectDialog;
     }
-    const projectNameInput = createProjectDialog ? [...createProjectDialog.querySelectorAll("input")].find((input) =>
-      projectNamePattern.test(`${input.getAttribute("aria-label") || ""} ${input.placeholder || ""}`)) : null;
+    const projectNameInput = findProjectNameInput(createProjectDialog);
     const projectNameControl = projectNameInput?.parentElement || null;
+    const projectSourceLabel = findProjectSourceLabel(createProjectDialog);
     const projectSourceButton = createProjectDialog ? [...createProjectDialog.querySelectorAll("button")].find((button) =>
       projectSourcePattern.test(`${button.getAttribute("aria-label") || ""} ${button.textContent || ""}`)) : null;
-    const projectSourceControl = projectSourceButton?.parentElement || null;
+    const projectSourceControl = findFollowingProjectControl(projectSourceLabel, createProjectDialog) || projectSourceButton?.parentElement || null;
     document.querySelectorAll(".dream-project-name-control").forEach((node) => {
       if (node !== projectNameControl) node.classList.remove("dream-project-name-control");
     });
@@ -300,6 +344,119 @@
     });
     projectNameControl?.classList.add("dream-project-name-control");
     projectSourceControl?.classList.add("dream-project-source-control");
+
+    /* Codex's transient multi-step guide keeps a native light card even when a
+       dark theme owns the surrounding portal. Identify the guide by its compact
+       step badge, then mark only the actually light surfaces near that badge so
+       unrelated menus and dark popovers retain their own palette. */
+    const stepGuidePattern = /^(?:(?:\u7b2c\s*)?\d+\s*\/\s*\d+(?:\s*\u6b65)?|step\s*\d+\s*(?:of|\/)\s*\d+)$/i;
+    const stepBadge = [...document.querySelectorAll(
+      '[role="status"], [class*="rounded-full"], [data-radix-popper-content-wrapper] :is(div, span, p)'
+    )].find((node) => {
+      const rect = node.getBoundingClientRect();
+      return rect.width > 0 && rect.height > 0 && stepGuidePattern.test(normalizeProjectText(node.textContent));
+    }) || null;
+    const parseLightSurface = (node) => {
+      if (!node) return false;
+      const match = getComputedStyle(node).backgroundColor.match(/[\d.]+/g)?.map(Number) || [];
+      if (match.length < 3 || (match.length > 3 && match[3] < .58)) return false;
+      const [red, green, blue] = match;
+      return ((.2126 * red) + (.7152 * green) + (.0722 * blue)) / 255 >= .68;
+    };
+    const nextStepGuideSurfaces = new Set();
+    if (stepBadge) {
+      const badgeRect = stepBadge.getBoundingClientRect();
+      let guideRoot = stepBadge.closest("[data-radix-popper-content-wrapper]");
+      if (!guideRoot) {
+        let cursor = stepBadge.parentElement;
+        for (let depth = 0; cursor && cursor !== document.body && depth < 6; depth += 1, cursor = cursor.parentElement) {
+          const rect = cursor.getBoundingClientRect();
+          if (rect.width <= 620 && rect.height <= 520 && normalizeProjectText(cursor.textContent).length > normalizeProjectText(stepBadge.textContent).length + 20) {
+            guideRoot = cursor;
+            break;
+          }
+        }
+      }
+      const localNodes = guideRoot ? [guideRoot, ...guideRoot.querySelectorAll("*")] : [];
+      localNodes.forEach((node) => {
+        const rect = node.getBoundingClientRect();
+        if (rect.width >= 120 && rect.width <= 620 && rect.height >= 24 && rect.height <= 520 && parseLightSurface(node)) {
+          nextStepGuideSurfaces.add(node);
+        }
+      });
+      let badgeSurface = stepBadge;
+      for (let depth = 0; badgeSurface && badgeSurface !== document.body && depth < 5 && !parseLightSurface(badgeSurface); depth += 1) {
+        badgeSurface = badgeSurface.parentElement;
+      }
+      if (badgeSurface && badgeSurface !== document.body && parseLightSurface(badgeSurface)) nextStepGuideSurfaces.add(badgeSurface);
+      if (![...nextStepGuideSurfaces].some((node) => node.getBoundingClientRect().height > badgeRect.height + 24)) {
+        const nearbyLightSurface = [...document.querySelectorAll('[class*="bg-token"], [class*="rounded-"]')]
+          .filter((node) => {
+            const rect = node.getBoundingClientRect();
+            const horizontalOverlap = Math.min(rect.right, badgeRect.right) - Math.max(rect.left, badgeRect.left);
+            const verticalGap = badgeRect.top - rect.bottom;
+            return rect.width >= 180 && rect.width <= 620 && rect.height >= 56 && rect.height <= 420 &&
+              horizontalOverlap > Math.min(rect.width, badgeRect.width) * .35 && verticalGap >= -8 && verticalGap <= 72 &&
+              parseLightSurface(node);
+          })
+          .sort((left, right) => Math.abs(badgeRect.top - left.getBoundingClientRect().bottom) - Math.abs(badgeRect.top - right.getBoundingClientRect().bottom))[0];
+        if (nearbyLightSurface) nextStepGuideSurfaces.add(nearbyLightSurface);
+      }
+    }
+    detailState.stepGuideSurfaces.forEach((node) => {
+      if (!nextStepGuideSurfaces.has(node)) node.classList.remove("dream-step-guide-surface");
+    });
+    nextStepGuideSurfaces.forEach((node) => node.classList.add("dream-step-guide-surface"));
+    detailState.stepGuideSurfaces = nextStepGuideSurfaces;
+
+    /* Current Codex renders completed-turn duration controls with text-text/60
+       and text-text/40 utilities rather than the older token-text tertiary
+       classes. Mark the semantic disclosure button so dark themes can provide
+       one readable muted foreground without broad utility-class overrides. */
+    const turnDurationPattern = /^(?:\u5df2\u5904\u7406|processed)\s+\d/i;
+    const conversationShellForDuration = document.querySelector("main.dream-conversation-shell");
+    const nextTurnDurationControls = new Set(conversationShellForDuration ?
+      [...conversationShellForDuration.querySelectorAll('button[aria-expanded], span.tabular-nums')].filter((node) =>
+        turnDurationPattern.test(normalizeProjectText(node.textContent))) : []);
+    detailState.turnDurationControls.forEach((node) => {
+      if (!nextTurnDurationControls.has(node)) node.classList.remove("dream-turn-duration");
+    });
+    nextTurnDurationControls.forEach((node) => node.classList.add("dream-turn-duration"));
+    detailState.turnDurationControls = nextTurnDurationControls;
+
+    /* Lifecycle copy such as stopped-turn notices, model changes, and the
+       compact thinking label uses light-palette utility colors even inside a
+       dark conversation. Mark the smallest stable row instead of recoloring
+       every conversation descendant, which would also damage icons and light
+       portaled cards. */
+    const conversationLifecyclePattern = /^(?:\u4f60\u5728\s*\d+\s*\u79d2\s*\u540e\u505c\u6b62\u4e86|you stopped after\s*\d+\s*seconds?|\u6a21\u578b\u5df2\u4ece.+(?:\u66f4\u6539|\u5207\u6362)\u4e3a.+|model (?:was )?changed from.+to.+|\u6b63\u5728\u601d\u8003(?:\u2026|\.{3})?|thinking(?:\u2026|\.{3})?)$/i;
+    const normalizeConversationStatusText = (node) => node?.matches?.("span.loading-shimmer-pure-text") ?
+      normalizeProjectText([...node.childNodes].filter((child) => child.nodeType === Node.TEXT_NODE).map((child) => child.textContent).join(" ")) :
+      normalizeProjectText(node?.textContent);
+    const nextConversationStatusLines = new Set();
+    if (conversationShellForDuration) {
+      [...conversationShellForDuration.querySelectorAll("span, p, button, [role=status], div")]
+        .filter((node) => {
+          const text = normalizeConversationStatusText(node);
+          if (!text || text.length > 220 || !conversationLifecyclePattern.test(text)) return false;
+          return ![...node.children].some((child) => normalizeProjectText(child.textContent) === text);
+        })
+        .forEach((node) => {
+          let row = node;
+          for (let depth = 0; depth < 3 && row.parentElement && row.parentElement !== conversationShellForDuration; depth += 1) {
+            const parent = row.parentElement;
+            const rect = parent.getBoundingClientRect();
+            if (normalizeConversationStatusText(parent) !== normalizeConversationStatusText(node) || rect.height > 52 || rect.width > 760) break;
+            row = parent;
+          }
+          nextConversationStatusLines.add(row);
+        });
+    }
+    detailState.conversationStatusLines.forEach((node) => {
+      if (!nextConversationStatusLines.has(node)) node.classList.remove("dream-conversation-status-line");
+    });
+    nextConversationStatusLines.forEach((node) => node.classList.add("dream-conversation-status-line"));
+    detailState.conversationStatusLines = nextConversationStatusLines;
 
     const messageEditorInput = document.querySelector('[role="textbox"][aria-label="编辑消息"]');
     const messageEditor = messageEditorInput?.closest("form") || null;
@@ -319,11 +476,55 @@
     });
     diffCards.forEach((node) => node.classList.add("dream-file-changes-summary"));
 
+    /* Diff-card actions use the native light primary-soft button token even
+       when the surrounding card is a dark theme. Mark only the localized
+       undo/review controls so the invisible full-row review hit target and
+       file rows keep their native behavior and geometry. */
+    const nextDiffActionControls = new Set();
+    diffCards.forEach((card) => {
+      [...card.querySelectorAll("button")].forEach((button) => {
+        const label = normalizeProjectText(button.textContent || button.getAttribute("aria-label") || "");
+        const action = /^(?:撤销|undo)$/i.test(label) ? "undo" : /^(?:审核|审查|review)$/i.test(label) ? "review" : "";
+        if (!action) return;
+        nextDiffActionControls.add(button);
+        button.classList.add("dream-diff-action", `dream-diff-action-${action}`);
+      });
+    });
+    detailState.diffActionControls.forEach((node) => {
+      if (!nextDiffActionControls.has(node)) node.classList.remove("dream-diff-action", "dream-diff-action-undo", "dream-diff-action-review");
+    });
+    detailState.diffActionControls = nextDiffActionControls;
+
     /* Queued follow-up prompts are rendered above the composer as a native
        vertical-scroll-fade-mask list. Mark only the language-independent
        max-height variant owned by QueuedMessageList; its action labels are
        localized and therefore unsuitable as the primary selector. */
     const conversationShell = document.querySelector("main.dream-conversation-shell");
+    const messageActionPattern = /^(?:\u590d\u5236|\u56de\u590d\u4f18\u79c0|\u56de\u590d\u4e0d\u4f73|\u4ece\u8fd9\u91cc\u521b\u5efa\u804a\u5929\u5206\u652f|\u590d\u5236\u6d88\u606f|\u7f16\u8f91\u6d88\u606f|copy|good response|bad response|branch from here|copy message|edit message)$/i;
+    const nextMessageActionControls = new Set(conversationShell ? [...conversationShell.querySelectorAll("button")].filter((button) =>
+      messageActionPattern.test(normalizeProjectText(button.getAttribute("aria-label") || button.title || button.textContent))) : []);
+    const nextMessageActionRows = new Set();
+    nextMessageActionControls.forEach((button) => {
+      button.classList.add("dream-message-action");
+      let row = button.parentElement;
+      for (let depth = 0; row && row !== conversationShell && depth < 5; depth += 1, row = row.parentElement) {
+        const rect = row.getBoundingClientRect();
+        const matches = [...row.querySelectorAll("button")].filter((candidate) => nextMessageActionControls.has(candidate)).length;
+        if (matches >= 2 && rect.width <= 760 && rect.height <= 56) {
+          row.classList.add("dream-message-action-row");
+          nextMessageActionRows.add(row);
+          break;
+        }
+      }
+    });
+    detailState.messageActionControls.forEach((node) => {
+      if (!nextMessageActionControls.has(node)) node.classList.remove("dream-message-action");
+    });
+    detailState.messageActionRows.forEach((node) => {
+      if (!nextMessageActionRows.has(node)) node.classList.remove("dream-message-action-row");
+    });
+    detailState.messageActionControls = nextMessageActionControls;
+    detailState.messageActionRows = nextMessageActionRows;
     const queuedMessageList = conversationShell ?
       [...conversationShell.querySelectorAll(".vertical-scroll-fade-mask.hide-scrollbar")].find((node) =>
         node.classList.contains("max-h-[30dvh]") &&

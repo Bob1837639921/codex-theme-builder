@@ -17,6 +17,31 @@
 
 final result: passed
 
+## 2026-08-16 对话状态与消息操作可读性
+
+- 消息底部的复制、点赞、点踩、分支、编辑与时间区域改为语义标记，深色场景统一使用冰蓝高对比前景，不改变原生尺寸和布局。
+- 修复原生 shimmer 在 `aria-hidden` 高亮层复制“正在思考”文本后导致状态识别失败的问题；匹配只读取直接文本节点，并同步着色动画高亮层。
+- 已完成热更新；运行时版本 `2.3.26-message-actions`，完整回归测试通过。
+
+final result: passed
+
+## 2026-08-15 文件编辑卡片按钮对比度
+
+- 深色望舒场景中，Codex 原生“审核”按钮仍继承浅色主题的白底，同时运行时文字色被设为浅色，导致按钮标签近似不可见。
+- 共享运行时只为卡片内可见的“撤销 / 审核”控件添加 `.dream-diff-action-undo` / `.dream-diff-action-review`，不触碰覆盖整行的审查命中层和文件行按钮。
+- 望舒为撤销提供深蓝半透明面，审核提供冰蓝面与深色文字；实机截图确认按钮文字、边框和 hover 状态清晰，原生尺寸与点击区域保持不变。
+
+final result: passed
+
+## 2026-08-15 对话状态文字对比度
+
+- Codex 新版的停止提示、模型切换与“正在思考”使用独立紧凑状态容器，不再可靠继承旧版三级文字色。
+- 共享运行时按语义添加 `.dream-conversation-status-line`，主题通过 `--theme-conversation-status-ink: #cceefa` 提供冰蓝白前景。
+- 选择器仅作用于已识别状态行及其图标，未使用对话区全局后代覆盖，避免再次污染活动图标和浅色弹窗。
+- 实机确认“你在 3秒 后停止了”与“模型已从 GPT-5.6 Sol 更改为 GPT-5.6 Luna”计算色为 `rgb(204, 238, 250)`，在深色背景上清晰可读。
+
+final result: passed
+
 ## 2026-08-13 soft-motion delivery refinement
 
 - Re-encoded `conversation-motion-soft.mp4` directly from the preserved ComfyUI 2560x1440 master; no resize, sharpening, interpolation, diffusion, or subject redraw was applied.

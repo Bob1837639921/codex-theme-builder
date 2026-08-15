@@ -63,10 +63,17 @@ html.codex-dream-skin [role="dialog"].dream-create-project-dialog
 
 html.codex-dream-skin [role="dialog"].dream-create-project-dialog
   :is(.dream-project-name-control, .dream-project-source-control)
-  :is(input, button, span, svg) {
+  :is(input, button, [role="button"], label, div, p, span, svg) {
   color: var(--dream-project-control-ink) !important;
   -webkit-text-fill-color: currentColor !important;
   text-shadow: none !important;
+}
+
+html.codex-dream-skin [role="dialog"].dream-create-project-dialog
+  .dream-project-source-control
+  :is([class~="text-token-text-secondary"], [class~="text-token-text-tertiary"], [class~="text-token-text-quaternary"]) {
+  color: var(--dream-project-control-muted) !important;
+  -webkit-text-fill-color: var(--dream-project-control-muted) !important;
 }
 
 html.codex-dream-skin [role="dialog"].dream-create-project-dialog
@@ -84,6 +91,34 @@ html.codex-dream-skin [role="dialog"].dream-create-project-dialog
 html.codex-dream-skin [role="dialog"].dream-create-project-dialog
   .dream-project-source-control button svg {
   color: var(--dream-project-control-muted) !important;
+}
+
+/* Multi-step walkthrough cards remain native light surfaces inside otherwise
+   dark portals. The runtime marks only the light card and badge, so keep their
+   foreground independent from the active theme's dark-panel ink. Repeating the
+   semantic class makes this contract outrank late theme-local portal rules. */
+html.codex-dream-skin body .dream-step-guide-surface.dream-step-guide-surface {
+  color: var(--dream-light-overlay-ink, #263746) !important;
+  -webkit-text-fill-color: var(--dream-light-overlay-ink, #263746) !important;
+  text-shadow: none !important;
+}
+
+html.codex-dream-skin body .dream-step-guide-surface.dream-step-guide-surface
+  :is(div, p, span, strong, small, li, label, button, svg) {
+  color: var(--dream-light-overlay-ink, #263746) !important;
+  -webkit-text-fill-color: currentColor !important;
+  text-shadow: none !important;
+}
+
+html.codex-dream-skin body .dream-step-guide-surface.dream-step-guide-surface
+  :is([class*="text-token-text-secondary"], [class*="text-token-text-tertiary"], [class*="text-token-input-placeholder-foreground"]) {
+  color: color-mix(in srgb, var(--dream-light-overlay-ink, #263746) 72%, transparent) !important;
+  -webkit-text-fill-color: currentColor !important;
+}
+
+html.codex-dream-skin body .dream-step-guide-surface.dream-step-guide-surface
+  :is([role="radio"], input[type="radio"], [class*="rounded-full"]) {
+  border-color: color-mix(in srgb, var(--dream-light-overlay-ink, #263746) 42%, transparent) !important;
 }
 
 /* Sites is a native non-conversation route. Keep its layout and controls, but
@@ -682,12 +717,56 @@ html.codex-dream-skin main.dream-conversation-shell
   -webkit-text-fill-color: inherit !important;
 }
 
+/* Completed-turn duration disclosures now use text-text/60 and text-text/40,
+   which are light-palette utilities even inside a dark conversation. Runtime
+   marks the exact semantic button so the label and chevron inherit the theme's
+   muted conversation foreground without recoloring unrelated native copy. */
+html.codex-dream-skin main.dream-conversation-shell .dream-turn-duration,
+html.codex-dream-skin main.dream-conversation-shell .dream-turn-duration
+  :is(span, div, p, code, svg) {
+  color: var(--theme-conversation-muted-ink, var(--theme-muted-text, #d7e8f2)) !important;
+  -webkit-text-fill-color: var(--theme-conversation-muted-ink, var(--theme-muted-text, #d7e8f2)) !important;
+}
+
+html.codex-dream-skin main.dream-conversation-shell .dream-turn-duration svg {
+  opacity: .72 !important;
+}
+
+html.codex-dream-skin main.dream-conversation-shell .dream-turn-duration:is(:hover, :focus-visible) svg {
+  opacity: 1 !important;
+}
+
+/* The live duration begins as a bare tabular span before the semantic marker
+   pass runs. Keep that first paint readable as well as the completed state. */
+html.codex-dream-skin main.dream-conversation-shell
+  span.tabular-nums[class*="text-text/"] {
+  color: var(--theme-conversation-muted-ink, var(--theme-muted-text, #d7e8f2)) !important;
+  -webkit-text-fill-color: var(--theme-conversation-muted-ink, var(--theme-muted-text, #d7e8f2)) !important;
+}
+
+/* Stopped-turn notices, model-change announcements, and compact thinking
+   labels are semantic conversation status rows. Keep their copy and adjacent
+   glyphs readable without applying a broad descendant override. */
+html.codex-dream-skin main.dream-conversation-shell .dream-conversation-status-line,
+html.codex-dream-skin main.dream-conversation-shell .dream-conversation-status-line
+  :is(span, div, p, code, svg) {
+  color: var(--theme-conversation-status-ink, var(--theme-conversation-muted-ink, var(--theme-muted-text, currentColor))) !important;
+  -webkit-text-fill-color: var(--theme-conversation-status-ink, var(--theme-conversation-muted-ink, var(--theme-muted-text, currentColor))) !important;
+}
+
+html.codex-dream-skin[data-dream-color-scheme="dark"] main.dream-conversation-shell
+  .dream-conversation-status-line.loading-shimmer-pure-text
+  span[class*="cadencedShimmerHighlight"] {
+  color: var(--theme-conversation-activity-highlight, #f3fbff) !important;
+  -webkit-text-fill-color: var(--theme-conversation-activity-highlight, #f3fbff) !important;
+}
+
 /* Command/tool activity headers use conversation-body utilities instead of
    the tertiary wrappers above. Their leading function glyph and disclosure
    chevron therefore need an explicit semantic foreground on dark artwork. */
 html.codex-dream-skin main.dream-conversation-shell
   :is(.group\/activity-header, [class~="group/activity-header"])
-  :is(svg[class*="text-token-conversation-body"], svg[class*="text-token-text-tertiary"]) {
+  :is(svg[class*="text-token-conversation-body"], svg[class*="text-token-text-tertiary"], svg[class*="text-text/"]) {
   color: var(--theme-conversation-activity-icon, var(--theme-conversation-code-ink, var(--theme-primary-text, #ffffff))) !important;
   -webkit-text-fill-color: currentColor !important;
 }
@@ -724,8 +803,20 @@ html.codex-dream-skin main.dream-conversation-shell
 }
 
 html.codex-dream-skin main.dream-conversation-shell
+  :is(.group\/activity-header, [class~="group/activity-header"])
+  svg.icon-2xs[class*="text-text/"] {
+  opacity: .72 !important;
+}
+
+html.codex-dream-skin main.dream-conversation-shell
   :is(.group\/activity-header, [class~="group/activity-header"]):is(:hover, :focus-within)
   svg.icon-2xs[class*="text-token-conversation-body"] {
+  opacity: 1 !important;
+}
+
+html.codex-dream-skin main.dream-conversation-shell
+  :is(.group\/activity-header, [class~="group/activity-header"]):is(:hover, :focus-within)
+  svg.icon-2xs[class*="text-text/"] {
   opacity: 1 !important;
 }
 

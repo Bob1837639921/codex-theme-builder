@@ -613,20 +613,58 @@ if ($baseCss -notmatch '--theme-home-top-fade-display' -or
     $baseCss -notmatch '(?s)\[data-dream-route\].*?\[class\*="_MainContentTopFade_"\].*?--theme-main-content-top-fade-display' -or
     $baseCss -notmatch '--theme-conversation-code-ink' -or
     $baseCss -notmatch '(?s)group\\/activity-header.*?svg\[class\*="text-token-conversation-body"\].*?--theme-conversation-activity-icon' -or
+    $baseCss -notmatch '(?s)group\\/activity-header.*?svg\[class\*="text-text/"\].*?--theme-conversation-activity-icon' -or
     $baseCss -notmatch '(?s)group\\/activity-header.*?svg\.icon-2xs\[class\*="text-token-conversation-body"\].*?opacity:\s*\.72\s*!important' -or
+    $baseCss -notmatch '(?s)group\\/activity-header.*?svg\.icon-2xs\[class\*="text-text/"\].*?opacity:\s*\.72\s*!important' -or
     $baseCss -notmatch '(?s)data-dream-color-scheme="dark".*?group\\/activity-header.*?:is\(span,\s*p,\s*code\).*?--theme-conversation-activity-ink.*?-webkit-text-fill-color:\s*var\(--theme-conversation-activity-ink' -or
     $baseCss -notmatch '(?s)loading-shimmer-pure-text.*?--theme-conversation-activity-ink.*?cadencedShimmerHighlight.*?--theme-conversation-activity-highlight' -or
     $baseCss -notmatch '(?s)loading-shimmer-pure-text\s*\{.*?-webkit-text-fill-color:\s*var\(--theme-conversation-activity-ink.*?cadencedShimmerHighlight.*?-webkit-text-fill-color:\s*var\(--theme-conversation-activity-highlight' -or
     $baseCss -notmatch '(?s)text-token-text-tertiary.*?--theme-conversation-muted-ink' -or
+    $runtimeJs -notmatch 'dream-turn-duration' -or
+    $runtimeJs -notmatch 'turnDurationPattern' -or
+    $runtimeJs -notmatch 'span\.tabular-nums' -or
+    $runtimeJs -notmatch '\\u5df2\\u5904\\u7406' -or
+    $baseCss -notmatch '(?s)dream-turn-duration.*?--theme-conversation-muted-ink.*?-webkit-text-fill-color' -or
+    $runtimeJs -notmatch 'dream-conversation-status-line' -or
+    $runtimeJs -notmatch 'conversationLifecyclePattern' -or
+    $runtimeJs -notmatch '\\u4f60\\u5728.*?\\u505c\\u6b62\\u4e86' -or
+    $runtimeJs -notmatch '\\u6a21\\u578b\\u5df2\\u4ece' -or
+    $runtimeJs -notmatch '\\u6b63\\u5728\\u601d\\u8003' -or
+    $baseCss -notmatch '(?s)dream-conversation-status-line.*?--theme-conversation-status-ink.*?-webkit-text-fill-color' -or
+    $moonlitCss -notmatch '--theme-conversation-status-ink:\s*#cceefa' -or
+    $runtimeJs -notmatch 'dream-diff-action' -or
+    $runtimeJs -notmatch 'dream-diff-action-undo' -or
+    $runtimeJs -notmatch 'dream-diff-action-review' -or
+    $runtimeJs -notmatch '(?:撤销|undo)' -or
+    $runtimeJs -notmatch '(?:审核|审查|review)' -or
+    $moonlitCss -notmatch '(?s)dream-diff-action-undo.*?background:.*?border-color:' -or
+    $moonlitCss -notmatch '(?s)dream-diff-action-review.*?color:.*?background:.*?border-color:' -or
+    $runtimeJs -notmatch 'dream-message-action' -or
+    $runtimeJs -notmatch 'dream-message-action-row' -or
+    $runtimeJs -notmatch 'messageActionPattern' -or
+    $runtimeJs -notmatch 'normalizeConversationStatusText' -or
+    $runtimeJs -notmatch 'Node\.TEXT_NODE' -or
+    $baseCss -notmatch '(?s)dream-conversation-status-line\.loading-shimmer-pure-text.*?cadencedShimmerHighlight' -or
+    $baseCss -notmatch 'span\.tabular-nums\[class\*="text-text/"\]' -or
+    $moonlitCss -notmatch '(?s)dream-message-action-row.*?#cceefa.*?-webkit-text-fill-color' -or
     $runtimeJs -notmatch 'dream-create-project-dialog' -or
     $runtimeJs -notmatch 'dream-project-name-control' -or
     $runtimeJs -notmatch 'dream-project-source-control' -or
+    $runtimeJs -notmatch 'projectDialogPattern' -or
+    $runtimeJs -notmatch 'projectSourceLabelPattern' -or
+    $runtimeJs -notmatch 'findFollowingProjectControl' -or
+    $runtimeJs -notmatch '\\u7f16\\u8f91\\u9879\\u76ee' -or
+    $runtimeJs -notmatch '\\u6dfb\\u52a0\\u6587\\u4ef6\\u5939' -or
+    $runtimeJs -notmatch 'dream-step-guide-surface' -or
+    $runtimeJs -notmatch 'stepGuidePattern' -or
+    $runtimeJs -notmatch 'nextStepGuideSurfaces' -or
     $runtimeJs -notmatch 'dream-sites-surface' -or
     $runtimeJs -notmatch 'dream-sites-search' -or
     $runtimeJs -notmatch 'dream-sites-intro-dialog' -or
     $injectorText -notmatch 'markers\.composer \|\| markers\.main \|\| markers\.nativeFeature' -or
     $baseCss -notmatch '(?s)dream-create-project-dialog.*?--dream-project-control-ink' -or
     $baseCss -notmatch '(?s)dream-project-name-control input::placeholder.*?--dream-project-control-muted' -or
+    $baseCss -notmatch '(?s)dream-step-guide-surface\.dream-step-guide-surface.*?--dream-light-overlay-ink.*?-webkit-text-fill-color' -or
     $baseCss -notmatch '(?s)main\.dream-sites-surface.*?--dream-sites-ink' -or
     $baseCss -notmatch '(?s)dream-sites-intro-dialog.*?--dream-sites-panel' -or
     $moonlitCss -notmatch '(?s)main\.dream-sites-surface \[class~="sticky"\].*?background-color:\s*transparent\s*!important.*?background-image:\s*none\s*!important' -or

@@ -545,6 +545,7 @@ html.codex-dream-skin main.dream-conversation-shell .sticky.bottom-0 [class~="bg
   --theme-composer-surface: rgb(5 23 41 / 94%);
   --theme-composer-control: #d8f3fc;
   --theme-composer-placeholder: #7899aa;
+  --theme-conversation-status-ink: #cceefa;
   --theme-focus-ring: rgb(117 203 234 / 32%);
 }
 
@@ -695,6 +696,27 @@ html.codex-dream-skin main.dream-conversation-shell .sticky.bottom-0 [class~="bg
 :root.codex-dream-skin main.dream-conversation-shell a {
   color: #83daf5 !important;
   -webkit-text-fill-color: #83daf5 !important;
+}
+
+/* Message action rows (copy, rating, branch, edit) use a light tertiary
+   utility in the native build. Keep the row's small hit targets and timestamp
+   readable on the moonlit artwork without changing message body colors. */
+:root.codex-dream-skin main.dream-conversation-shell .dream-message-action-row,
+:root.codex-dream-skin main.dream-conversation-shell .dream-message-action-row
+  :is(button, span, time, svg) {
+  color: #cceefa !important;
+  -webkit-text-fill-color: #cceefa !important;
+  opacity: 1 !important;
+}
+
+:root.codex-dream-skin main.dream-conversation-shell .dream-message-action-row button {
+  background: transparent !important;
+  border-color: transparent !important;
+}
+
+:root.codex-dream-skin main.dream-conversation-shell .dream-message-action-row button:is(:hover, :focus-visible, [data-state="open"]) {
+  background: rgb(117 203 234 / 16%) !important;
+  border-color: rgb(117 203 234 / 20%) !important;
 }
 
 :root.codex-dream-skin main.dream-conversation-shell :is(code, pre) {
@@ -862,6 +884,37 @@ html.codex-dream-skin[data-codex-window-type] .composer-surface-chrome {
 :root.codex-dream-skin main.dream-conversation-shell .dream-file-changes-summary [class*="text-red"] {
   color: #ff8790 !important;
   -webkit-text-fill-color: #ff8790 !important;
+}
+
+/* Diff-card actions are native buttons, but Codex's light primary-soft token
+   can leave the review label pale on a white pill in this dark scene. Runtime
+   marks only the visible undo/review actions so the full-row review hit target
+   and file rows retain their native surfaces and pointer behavior. */
+:root.codex-dream-skin main.dream-conversation-shell .dream-file-changes-summary .dream-diff-action {
+  text-shadow: none !important;
+}
+
+:root.codex-dream-skin main.dream-conversation-shell .dream-file-changes-summary .dream-diff-action-undo {
+  color: #d8f3fc !important;
+  -webkit-text-fill-color: #d8f3fc !important;
+  background: rgb(22 67 91 / 78%) !important;
+  border-color: rgb(117 203 234 / 24%) !important;
+}
+
+:root.codex-dream-skin main.dream-conversation-shell .dream-file-changes-summary .dream-diff-action-undo:is(:hover, [data-state="open"]) {
+  background: rgb(31 101 129 / 88%) !important;
+}
+
+:root.codex-dream-skin main.dream-conversation-shell .dream-file-changes-summary .dream-diff-action-review {
+  color: #082237 !important;
+  -webkit-text-fill-color: #082237 !important;
+  background: #c8ecf7 !important;
+  border-color: #8bcde2 !important;
+}
+
+:root.codex-dream-skin main.dream-conversation-shell .dream-file-changes-summary .dream-diff-action-review:is(:hover, [data-state="open"]) {
+  background: #e1f8ff !important;
+  border-color: #b2e7f4 !important;
 }
 
 :root.codex-dream-skin .dream-plugin-search-shell,

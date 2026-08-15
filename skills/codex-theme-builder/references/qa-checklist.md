@@ -10,7 +10,8 @@
 - Inspect collapsed, expanded, running, and completed command/tool activity
   headers; both the leading function icon and disclosure chevron remain visible
   through `--theme-conversation-activity-icon` before and during hover, with the
-  disclosure chevron softly present even when the pointer is elsewhere.
+  disclosure chevron softly present even when the pointer is elsewhere. Include
+  current activities whose SVGs use `text-text/60`, not only `text-token-*`.
 - While an activity or automatic context compaction is running on a dark theme,
   pause between shimmer sweeps and confirm the complete status label remains
   readable; the moving highlight brightens a visible base rather than revealing
@@ -18,7 +19,11 @@
 - After the activity finishes, confirm its static summary, collapsed label, and
   disclosure copy retain the same readable base tone instead of turning black.
 - Inspect thinking duration, timestamps, collapsed reasoning, and untagged
-  execution summaries through `--theme-conversation-muted-ink`.
+  execution summaries through `--theme-conversation-muted-ink`. Confirm every
+  completed-turn `已处理 / Processed` disclosure and its chevron remain readable
+  at rest, then expand and collapse one without changing nearby message colors.
+  During a running turn, confirm the standalone live duration uses the same tone
+  from its first paint, before and after the semantic marker attaches.
 - Inspect every content-toolbar label and SVG wrapper through
   `--theme-toolbar-ink`, including disabled and muted native utilities.
 - On dark Home themes, confirm stable and CSS-module top-fade carriers plus
@@ -154,9 +159,15 @@
 - Open Create Project and verify the project-name field, placeholder, folder
   icon, source-folder instruction, caret, borders, cancel/create actions, and
   close control all remain readable while preserving native geometry.
+- Select a real source folder, reopen Edit Project, and verify the selected
+  folder name, file/folder rows, remove control, Add Folder row, and muted copy
+  remain readable after their labels replace the initial picker instruction.
 - Open the usage/credits card and verify its remaining percentage, reset schedule, close control, progress bar, and both actions use dark readable text on the light card, including under every dark theme.
 - Open the full usage-details panel and verify its dedicated non-home/non-conversation artwork, title, reset rows, availability badges, progress bar, close control, disabled states, actions, and long-content scrolling. Switch themes while it is open and confirm artwork plus all text colors update together.
 - Open menus, dialogs, and popovers from both the sidebar and conversation toolbar.
+- Open a multi-step walkthrough on a dark theme and verify every instruction,
+  radio marker, muted line, and `current / total` badge remains dark and readable
+  on its native light card while neighboring dark popovers keep their palette.
 - Open Plugin discovery and verify the sticky search rail, search field, icon, text, and placeholder use the active theme instead of an opaque white band.
 - Open the full-access confirmation dialog and independently verify the title, explanatory paragraph, three permission descriptions, risk warning, link, cancel action, primary action, and disabled states.
 - Check headings, secondary copy, close buttons, progress indicators, and links independently.

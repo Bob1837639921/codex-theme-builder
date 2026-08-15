@@ -110,6 +110,15 @@ artwork, motion, or theme identity.
   menus, dialogs, and popovers as explicit semantic surfaces. Set descendant
   `color` and `-webkit-text-fill-color` where native utility classes override
   inheritance, especially for dark themes.
+- Diff-card undo/review actions must be marked as `.dream-diff-action-undo` or
+  `.dream-diff-action-review` and receive an explicit surface plus foreground
+  in dark themes. Keep the full-row review hit target and file-row buttons
+  unmarked so native geometry and pointer behavior remain unchanged.
+- Treat the transient multi-step walkthrough as a mixed light surface, not as a
+  dark-theme popover. Detect its compact `current / total` step badge, mark only
+  the nearby computed-light card and badge, and apply the independent
+  `--dream-light-overlay-ink` foreground to instructions, radio circles, muted
+  copy, and step text. Do not recolor unrelated dark Radix popovers.
 - Do not apply universal descendants or broad `[data-state]` descendant color
   selectors across the conversation shell. Long streaming tasks can force
   thousands of selector rematches; target the Markdown root and explicit
@@ -168,13 +177,27 @@ Additional paint invariants:
   utility-colored descendants must resolve to `--theme-conversation-code-ink`.
 - Thinking duration, timestamps, collapsed reasoning labels, and muted execution
   summaries must resolve to `--theme-conversation-muted-ink`; current Codex
-  applies light-mode tertiary utilities directly to these descendants.
+  applies light-mode tertiary utilities directly to these descendants. Completed
+  turn duration disclosures may instead use the newer `text-text/60` label and
+  `text-text/40` chevron utilities; runtime must mark the exact disclosure as
+  `.dream-turn-duration` rather than recoloring those broad utilities globally.
+  Mark the live standalone `span.tabular-nums` duration too, since it has no
+  disclosure button until the turn completes. Provide a narrow dark-theme CSS
+  fallback for that tabular duration so its first paint is readable during the
+  interval before the runtime marker pass attaches.
+- Stopped-turn notices, model-change announcements, and compact “正在思考” /
+  “Thinking” labels must be marked as `.dream-conversation-status-line` and
+  resolve to `--theme-conversation-status-ink`. Mark the smallest stable row so
+  its adjacent glyph inherits the same readable foreground; never fix these
+  lines with a universal conversation-descendant color rule because that
+  recolors light cards, diff semantics, and native controls.
 - Every nested content-toolbar label and icon resolves to
   `--theme-toolbar-ink`; new muted utility wrappers must not hide actions.
 - Command/tool activity headers use a separate conversation-body foreground.
   Their leading function glyph and disclosure chevron resolve through
   `--theme-conversation-activity-icon`; do not depend on readable label text to
-  imply that the adjacent SVG controls are also readable. Keep the disclosure
+  imply that the adjacent SVG controls are also readable. Cover both the legacy
+  `text-token-*` icon utilities and current `text-text/60` activity SVGs. Keep the disclosure
   chevron softly visible at rest and fully visible on hover/focus; a correct
   color still appears absent when its native opacity utility remains zero.
 - On dark themes, running activity and automatic context-compaction labels keep
@@ -216,6 +239,10 @@ Additional paint invariants:
   light. Runtime marks the dialog and both control groups semantically; their
   text, placeholder, folder glyph, explanatory copy, caret, and borders use
   `--dream-project-control-*` tokens instead of inherited dialog foregrounds.
+  Keep those markers after a folder is selected and its button label changes to
+  the real folder name. Detect both Create Project and Edit Project through the
+  project-name field plus the source-section structure; never depend solely on
+  the temporary Select/Add Folder button copy.
 - The Sites route is a native non-conversation surface identified through the
   stable `#appgen-site-search` control. Its opaque main-surface utilities,
   sticky search rail, heading, empty state, search text, and placeholder must
@@ -247,6 +274,14 @@ Additional paint invariants:
   require explicit theme tokens. Never rely on inherited utility foregrounds,
   because dark themes otherwise produce near-black editor text and white-on-white
   cancel buttons.
+- Conversation lifecycle labels and message action rows are semantic surfaces,
+  not ordinary inherited prose. Runtime must mark the lifecycle carrier and the
+  compact copy/rating/branch/edit action row; dark themes must provide explicit
+  foreground and text-fill colors for both icons and labels without changing
+  their native geometry. Native shimmer labels may contain an `aria-hidden`
+  duplicate highlight layer, so lifecycle matching must normalize only direct
+  text nodes. Styling must also color the shimmer highlight span, otherwise
+  `正在思考` can collapse visually to a single animated character.
 
 For a newly found regression: reproduce it in the live Codex DOM, identify the
 native state change, implement the smallest shared invariant, add a deterministic
