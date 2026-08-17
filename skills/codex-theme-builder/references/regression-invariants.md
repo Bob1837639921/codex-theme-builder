@@ -66,6 +66,10 @@ artwork, motion, or theme identity.
   and long title and compare bounding boxes before and during a running turn.
 - Style both the runtime marker and native ARIA fallback so row replacement does
   not flash or briefly lose its border.
+- When Codex hands `aria-current` or `aria-selected` from one recycled thread
+  row to another, clear the previous `.dream-selected-thread` marker in the
+  MutationObserver microtask before the next paint. Do not wait for the
+  coalesced full scan, which can expose two selected rows for a frame.
 
 ## Shell, sidebar, and canvas continuity
 

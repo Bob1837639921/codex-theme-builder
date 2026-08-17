@@ -484,6 +484,11 @@ if ($runtimeJs -notmatch 'markDetailSurfaces' -or
   $baseCss -notmatch '(?s)dream-output-panel.*?bg-surface-elevated-secondary.*?::before.*?background-color:\s*transparent\s*!important') {
   throw 'Detail-surface markers must remain scoped, stable, cleared on home, prefix-safe across task changes, frame-coalesced, and available for theme polish.'
 }
+if ($runtimeJs -notmatch 'reconcileNativeSelectedThreadMutation' -or
+    $runtimeJs -notmatch '(?s)reconcileNativeSelectedThreadMutation.*?aria-current.*?aria-selected.*?dream-selected-thread.*?dream-selected-thread-label' -or
+    $runtimeJs -notmatch '(?s)new MutationObserver.*?reconcileNativeSelectedThreadMutation\(mutations\).*?relevantMutations') {
+  throw 'Native selected-thread handoffs must clear stale runtime markers before the coalesced full ensure can paint a duplicate selected row.'
+}
 if ($moonlitCss -match '(?s)\.dream-output-panel\s*,\s*:root\.codex-dream-skin\s+main\.dream-conversation-shell\s+\.dream-file-changes-summary.*?border-radius:\s*3px\s*!important' -or
     $moonlitCss -notmatch '(?s)\.dream-output-panel\s*\{.*?border-radius:\s*22px\s*!important') {
   throw 'Moonlit Wangshu must keep the floating output panel rounded instead of inheriting the compact card radius.'
