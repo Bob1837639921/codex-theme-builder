@@ -484,11 +484,6 @@ if ($runtimeJs -notmatch 'markDetailSurfaces' -or
   $baseCss -notmatch '(?s)dream-output-panel.*?bg-surface-elevated-secondary.*?::before.*?background-color:\s*transparent\s*!important') {
   throw 'Detail-surface markers must remain scoped, stable, cleared on home, prefix-safe across task changes, frame-coalesced, and available for theme polish.'
 }
-if ($runtimeJs -notmatch 'reconcileNativeSelectedThreadMutation' -or
-    $runtimeJs -notmatch '(?s)reconcileNativeSelectedThreadMutation.*?aria-current.*?aria-selected.*?dream-selected-thread.*?dream-selected-thread-label' -or
-    $runtimeJs -notmatch '(?s)new MutationObserver.*?reconcileNativeSelectedThreadMutation\(mutations\).*?relevantMutations') {
-  throw 'Native selected-thread handoffs must clear stale runtime markers before the coalesced full ensure can paint a duplicate selected row.'
-}
 if ($moonlitCss -match '(?s)\.dream-output-panel\s*,\s*:root\.codex-dream-skin\s+main\.dream-conversation-shell\s+\.dream-file-changes-summary.*?border-radius:\s*3px\s*!important' -or
     $moonlitCss -notmatch '(?s)\.dream-output-panel\s*\{.*?border-radius:\s*22px\s*!important') {
   throw 'Moonlit Wangshu must keep the floating output panel rounded instead of inheriting the compact card radius.'
@@ -514,6 +509,10 @@ if ($themeCss -notmatch '(?s):is\(\.dream-selected-thread,\s*\[aria-current="pag
 if ($baseCss -match 'dream-selected-thread' -or
     $baseCss -match '\[aria-current="page"\]\.sidebar-item') {
   throw 'Shared runtime CSS must not override theme-local selected-task artwork.'
+}
+if ($baseCss -notmatch '(?s)\[data-app-action-sidebar-thread-row\]\.sidebar-item\[data-title-aligned-trailing-rail="true"\].*?\[class~="absolute"\]\[class~="end-0"\]\[class~="z-10"\].*?position:\s*absolute\s*!important.*?inset-inline-end:\s*0\s*!important.*?height:\s*100%\s*!important' -or
+    $baseCss -match '(?s)aside\.app-shell-left-panel\s+\.sidebar-item\[data-title-aligned-trailing-rail="true"\]') {
+  throw 'The native title-aligned trailing rail must remain an absolute overlay so pin/archive controls cannot push thread titles below fixed-height rows.'
 }
 if ($baseCss -match ':has\(' -or
     $injectorText -notmatch 'performanceGuards' -or

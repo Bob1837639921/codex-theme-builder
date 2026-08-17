@@ -31,6 +31,22 @@ html.codex-dream-skin [role="dialog"] {
   background-color: var(--dream-surface) !important;
 }
 
+/* Codex may temporarily opt a thread row into its title-aligned trailing rail.
+   The native utility then changes the pin/archive carrier from absolute to
+   relative positioning. A fixed-height block row treats that carrier as a new
+   first line and pushes the title below the 30 px row. Keep the native action
+   layer overlaid without assigning any shared selected-task artwork. */
+html.codex-dream-skin aside.app-shell-left-panel
+  [data-app-action-sidebar-thread-row].sidebar-item[data-title-aligned-trailing-rail="true"]
+  > [class~="absolute"][class~="end-0"][class~="z-10"] {
+  position: absolute !important;
+  inset-inline-end: 0 !important;
+  top: 0 !important;
+  height: 100% !important;
+  min-width: 52px !important;
+  padding-inline-end: 8px !important;
+}
+
 /* Current Codex thread-summary panels use elevated-surface utilities on both
    the outer shell and each sticky section heading. The runtime marks only the
    complete shell; clear nested native paint (including the sticky overscan

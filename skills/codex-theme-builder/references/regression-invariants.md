@@ -64,12 +64,13 @@ artwork, motion, or theme identity.
 - Keep the title single-line, vertically centered, and stable while the loading
   spinner appears, disappears, or changes into hover actions. Test both a short
   and long title and compare bounding boxes before and during a running turn.
+- When Codex sets `data-title-aligned-trailing-rail="true"` on a genuine
+  `[data-app-action-sidebar-thread-row]`, keep the native pin/archive carrier
+  absolutely overlaid. Its generated `relative` utility must never consume a
+  first line and push the title below the fixed 30 px row. Never apply this
+  task-only geometry to generic sidebar navigation items.
 - Style both the runtime marker and native ARIA fallback so row replacement does
   not flash or briefly lose its border.
-- When Codex hands `aria-current` or `aria-selected` from one recycled thread
-  row to another, clear the previous `.dream-selected-thread` marker in the
-  MutationObserver microtask before the next paint. Do not wait for the
-  coalesced full scan, which can expose two selected rows for a frame.
 
 ## Shell, sidebar, and canvas continuity
 

@@ -140,13 +140,14 @@
   visually unchanged. Off-screen rows must retain their native 30 px height
   when scrolled into view.
 - Start a turn so the selected task shows its loading spinner. The spinner remains overlaid at the right edge and the title stays on the same single-line vertical center before, during, and after loading.
+- Hover the selected row until pin/archive controls appear and verify the
+  `data-title-aligned-trailing-rail` state directly. The action carrier remains
+  absolute, the row stays 30 px high, and the title's top offset does not move.
+  Confirm the rule is scoped to `[data-app-action-sidebar-thread-row]` and does
+  not alter New Chat, Sites, Plugins, or other generic sidebar navigation rows.
 - Selected-state artwork stays attached to the title label, ahead of its text, when thread action controls appear or disappear.
 - The complete selected-row background keeps its center low-detail, does not repeat or distort recognizably, and leaves the unread indicator plus pin/archive actions unobstructed.
 - Trigger conversation mutations while the current thread is selected; its marker must not be removed and re-added or visibly flash.
-- Switch rapidly between adjacent tasks and inspect every animation frame around
-  the native `aria-current` handoff. At most one row may match either the native
-  selected state or `.dream-selected-thread`; no stale crescent, border, or
-  filled strip may remain on the previous row while the new row is selected.
 - Hover repeatedly between the current task title and its pin/archive actions; the native `[aria-current="page"].sidebar-item` fallback must keep the same border and background on every frame.
 - Navigate from a selected conversation back to New Task; no previous conversation may retain the themed selected-task marker or label artwork.
 - Output/environment panels preserve links, expanders, source rows, and pointer behavior.

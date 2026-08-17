@@ -14,7 +14,7 @@
   const STORAGE_KEY = "codex-dream-theme-active";
   const MOTION_STORAGE_KEY = "codex-dream-motion-level";
   const MOTION_LEVELS = ["off", "low", "high"];
-  const RUNTIME_VERSION = "2.3.29-selected-thread-handoff";
+  const RUNTIME_VERSION = "2.3.31-selected-trailing-rail";
   const THEME_SEARCH_THRESHOLD = 6;
   const MUTATION_COALESCE_MS = 180;
   const VIDEO_BINDING_NAME = "__CODEX_DREAM_SKIN_VIDEO__";
@@ -1709,43 +1709,6 @@
       : mutation.target?.parentElement;
     return Boolean(element?.closest?.('.ProseMirror[contenteditable="true"], textarea, input'));
   };
-  /* Native selection paints immediately from aria-current/aria-selected, while
-     the runtime marker used to wait for the coalesced full ensure. During a
-     React row handoff that left the old marker and the new native row visible
-     together for one or more frames. Reconcile only an affirmative native
-     selection here; transient removal still keeps the cached marker until the
-     ordinary semantic scan can identify the replacement safely. */
-  const reconcileNativeSelectedThreadMutation = (mutations) => {
-    const changedCurrentRows = [];
-    const sidebars = new Set();
-    for (const mutation of mutations) {
-      if (mutation.type !== "attributes" ||
-          (mutation.attributeName !== "aria-current" && mutation.attributeName !== "aria-selected")) continue;
-      const target = mutation.target?.nodeType === Node.ELEMENT_NODE ? mutation.target : null;
-      const sidebar = target?.closest?.("aside.app-shell-left-panel");
-      if (!sidebar) continue;
-      sidebars.add(sidebar);
-      const row = target.closest?.(".sidebar-item");
-      if (row?.matches?.('[aria-current="page"], [aria-selected="true"]')) changedCurrentRows.push(row);
-    }
-    for (const sidebar of sidebars) {
-      const nativeCurrentRow = [...changedCurrentRows].reverse().find((row) => sidebar.contains(row)) ||
-        sidebar.querySelector('[aria-current="page"].sidebar-item, [aria-selected="true"].sidebar-item');
-      if (!nativeCurrentRow) continue;
-      sidebar.querySelectorAll(".dream-selected-thread").forEach((node) => {
-        if (node !== nativeCurrentRow) node.classList.remove("dream-selected-thread");
-      });
-      nativeCurrentRow.classList.add("dream-selected-thread");
-      detailState.selectedThread = nativeCurrentRow;
-      if (detailState.selectedLabel && !nativeCurrentRow.contains(detailState.selectedLabel)) {
-        detailState.selectedLabel.classList.remove("dream-selected-thread-label");
-        detailState.selectedLabel = null;
-      }
-      sidebar.querySelectorAll(".dream-selected-thread-label").forEach((node) => {
-        if (!nativeCurrentRow.contains(node)) node.classList.remove("dream-selected-thread-label");
-      });
-    }
-  };
   const requestDetailScansFor = (mutations) => {
     let requested = false;
     for (const mutation of mutations) {
@@ -1804,7 +1767,6 @@
     else queueFrame();
   };
   const observer = new MutationObserver((mutations) => {
-    reconcileNativeSelectedThreadMutation(mutations);
     const relevantMutations = mutations.filter((mutation) =>
       !mutationIsRuntimeOwned(mutation) && !mutationIsComposerTyping(mutation));
     const detailRequested = requestDetailScansFor(relevantMutations);
