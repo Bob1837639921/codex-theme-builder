@@ -14,7 +14,7 @@
   const STORAGE_KEY = "codex-dream-theme-active";
   const MOTION_STORAGE_KEY = "codex-dream-motion-level";
   const MOTION_LEVELS = ["off", "low", "high"];
-  const RUNTIME_VERSION = "2.3.27-duration-fallback";
+  const RUNTIME_VERSION = "2.3.28-output-section-surfaces";
   const THEME_SEARCH_THRESHOLD = 6;
   const MUTATION_COALESCE_MS = 180;
   const VIDEO_BINDING_NAME = "__CODEX_DREAM_SKIN_VIDEO__";
@@ -690,7 +690,10 @@
       while (node && node !== document.body) {
         const rect = node.getBoundingClientRect();
         const style = getComputedStyle(node);
-        const isDropdownSurface = node.classList?.contains("bg-token-dropdown-background") &&
+        const isDropdownSurface = (
+          node.classList?.contains("bg-token-dropdown-background") ||
+          node.classList?.contains("bg-surface-elevated-secondary")
+        ) &&
           rect.width >= 240 && rect.width <= 560 && rect.height >= 80 && rect.height <= 720;
         if (isDropdownSurface) return node;
         const isFloatingShell = style.position === "absolute" || style.position === "fixed" ||
@@ -720,7 +723,12 @@
           return (value === "\u8f93\u51fa" || value === "\u73af\u5883\u4fe1\u606f" ||
             /^(?:output|environment information)$/i.test(value)) && node.children.length === 0;
         });
-      const outputCandidates = [...new Set(outputTexts.map(findOutputContainer).filter(Boolean))];
+      const outputStructureSeeds = [...document.querySelectorAll(
+        '[data-slot="thread-summary-panel-section-actions"]'
+      )];
+      const outputCandidates = [...new Set(
+        [...outputStructureSeeds, ...outputTexts].map(findOutputContainer).filter(Boolean)
+      )];
       const output = outputCandidates.find(intersectsViewport) || outputCandidates[0] || null;
       document.querySelectorAll(".dream-output-panel").forEach((node) => {
         if (node !== output) node.classList.remove("dream-output-panel");
@@ -1705,6 +1713,12 @@
     let requested = false;
     for (const mutation of mutations) {
       for (const node of mutation.addedNodes) {
+        if (node.nodeType === Node.ELEMENT_NODE &&
+            (node.matches?.('[data-slot="thread-summary-panel-section-actions"]') ||
+             node.querySelector?.('[data-slot="thread-summary-panel-section-actions"]'))) {
+          detailState.outputScanRequested = true;
+          requested = true;
+        }
         const value = (node.textContent || "").trim();
         if (!value || value.length > 4000) continue;
         if (!document.querySelector(".dream-progress-pill") &&
@@ -1713,7 +1727,7 @@
           requested = true;
         }
         if (!document.querySelector(".dream-output-panel") &&
-            /(?:^|\n)(?:\u8f93\u51fa|\u73af境\u4fe1\u606f|output|environment information)(?:\n|$)/i.test(value)) {
+            /(?:^|\n)(?:\u8f93\u51fa|\u73af\u5883\u4fe1\u606f|output|environment information)(?:\n|$)/i.test(value)) {
           detailState.outputScanRequested = true;
           requested = true;
         }

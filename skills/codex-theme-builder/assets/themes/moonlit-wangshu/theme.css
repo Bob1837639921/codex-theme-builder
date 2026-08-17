@@ -850,7 +850,16 @@ html.codex-dream-skin[data-codex-window-type] .composer-surface-chrome {
   -webkit-text-fill-color: #7899aa !important;
 }
 
-:root.codex-dream-skin .dream-output-panel,
+:root.codex-dream-skin .dream-output-panel {
+  color: #e8f7ff !important;
+  background: rgb(5 23 41 / 94%) !important;
+  border: 1px solid rgb(117 203 234 / 22%) !important;
+  border-left: 2px solid rgb(117 203 234 / 46%) !important;
+  border-radius: 22px !important;
+  box-shadow: 0 12px 30px rgb(0 8 18 / 22%) !important;
+  backdrop-filter: none !important;
+}
+
 :root.codex-dream-skin main.dream-conversation-shell .dream-file-changes-summary,
 :root.codex-dream-skin main.dream-conversation-shell .dream-queued-message-list {
   color: #e8f7ff !important;

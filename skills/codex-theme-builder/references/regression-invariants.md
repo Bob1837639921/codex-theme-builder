@@ -110,6 +110,16 @@ artwork, motion, or theme identity.
   menus, dialogs, and popovers as explicit semantic surfaces. Set descendant
   `color` and `-webkit-text-fill-color` where native utility classes override
   inheritance, especially for dark themes.
+- Discover the thread-summary/output panel through the stable
+  `thread-summary-panel-section-actions` slot and accept both legacy
+  `bg-token-dropdown-background` and current `bg-surface-elevated-secondary`
+  shells. Nested sticky section headings and their overscan pseudo-elements
+  must be transparent to the theme-owned panel surface; never leave opaque
+  white Environment information or Sources bands inside a themed panel.
+- Keep the output panel's complete outer radius when adapting nested section
+  headers. Do not group `.dream-output-panel` with compact file-change or queued
+  message cards whose intentionally smaller radius would flatten the floating
+  panel into a near-rectangular block.
 - Diff-card undo/review actions must be marked as `.dream-diff-action-undo` or
   `.dream-diff-action-review` and receive an explicit surface plus foreground
   in dark themes. Keep the full-row review hit target and file-row buttons

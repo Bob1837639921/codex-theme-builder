@@ -146,7 +146,13 @@
 - Hover repeatedly between the current task title and its pin/archive actions; the native `[aria-current="page"].sidebar-item` fallback must keep the same border and background on every frame.
 - Navigate from a selected conversation back to New Task; no previous conversation may retain the themed selected-task marker or label artwork.
 - Output/environment panels preserve links, expanders, source rows, and pointer behavior.
-- Inspect the output panel's outer container and sticky child headers. They must resolve to one intended surface color rather than mixed white and cream layers.
+- Inspect the output panel's outer container and every sticky child header,
+  including Environment information and Sources. The runtime marker must be
+  present through the stable section-actions slot; headers and their top
+  overscan pseudo-elements must reveal one theme-owned surface and accent edge,
+  never opaque white or cream bands. Confirm the complete floating shell keeps
+  its intended rounded corners after theme-local file-change and queued-message
+  rules cascade.
 
 ## Portaled overlays
 

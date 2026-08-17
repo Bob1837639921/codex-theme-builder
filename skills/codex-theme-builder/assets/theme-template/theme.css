@@ -334,7 +334,9 @@ html.codex-dream-skin main.dream-conversation-shell .sticky.bottom-0 [class~="bg
 }
 
 :root.codex-dream-skin .dream-output-panel > *,
-:root.codex-dream-skin .dream-output-panel [class~="bg-token-dropdown-background"] {
+:root.codex-dream-skin .dream-output-panel [class~="bg-token-dropdown-background"],
+:root.codex-dream-skin .dream-output-panel [class~="bg-surface-elevated-secondary"],
+:root.codex-dream-skin .dream-output-panel [class~="bg-surface-elevated-secondary"]::before {
   color: inherit !important;
   background-color: transparent !important;
   background-image: none !important;

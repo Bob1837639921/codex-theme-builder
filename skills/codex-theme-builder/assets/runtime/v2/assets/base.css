@@ -31,6 +31,18 @@ html.codex-dream-skin [role="dialog"] {
   background-color: var(--dream-surface) !important;
 }
 
+/* Current Codex thread-summary panels use elevated-surface utilities on both
+   the outer shell and each sticky section heading. The runtime marks only the
+   complete shell; clear nested native paint (including the sticky overscan
+   pseudo-element) so every theme's own panel surface and accent edge remain
+   continuous instead of alternating with opaque white heading strips. */
+html.codex-dream-skin .dream-output-panel [class~="bg-surface-elevated-secondary"],
+html.codex-dream-skin .dream-output-panel [class~="bg-surface-elevated-secondary"]::before,
+html.codex-dream-skin .dream-output-panel [class~="bg-token-dropdown-background"] {
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
 /* Home action cards are runtime-owned controls. Keep their icon, title and
    supporting copy in an explicit vertical stack so native button typography
    changes cannot collapse the three parts into one inline sentence. */

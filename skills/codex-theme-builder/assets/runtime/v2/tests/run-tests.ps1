@@ -212,6 +212,7 @@ if ($templateCss -notmatch '(?s)body\s*\{[^}]*--dream-conversation-art' -or
     $templateCss -notmatch '(?s)\.composer-surface-chrome::after\s*\{' -or
     $templateCss -notmatch 'button\[class~="bg-token-foreground"\]' -or
     $templateCss -notmatch 'dream-output-panel' -or
+    $templateCss -notmatch 'bg-surface-elevated-secondary' -or
     $templateCss -notmatch 'dream-plugin-search-shell') {
   throw 'The generic template must retain the Tidal-quality shared canvas, scalable composer, explicit control, output, and plugin-search contracts.'
 }
@@ -476,9 +477,16 @@ if ($runtimeJs -notmatch 'markDetailSurfaces' -or
   $runtimeJs -notmatch 'dream-queued-message-list' -or
   $runtimeJs -notmatch 'max-h-\[30dvh\]' -or
   $runtimeJs -notmatch 'classList\?\.contains\("bg-token-dropdown-background"\)' -or
+  $runtimeJs -notmatch 'classList\?\.contains\("bg-surface-elevated-secondary"\)' -or
+  $runtimeJs -notmatch 'thread-summary-panel-section-actions' -or
   $runtimeJs -notmatch 'outputCandidates\.find\(intersectsViewport\)' -or
-  $runtimeJs -notmatch 'document\.querySelectorAll\("\.dream-output-panel"\)\.forEach') {
+  $runtimeJs -notmatch 'document\.querySelectorAll\("\.dream-output-panel"\)\.forEach' -or
+  $baseCss -notmatch '(?s)dream-output-panel.*?bg-surface-elevated-secondary.*?::before.*?background-color:\s*transparent\s*!important') {
   throw 'Detail-surface markers must remain scoped, stable, cleared on home, prefix-safe across task changes, frame-coalesced, and available for theme polish.'
+}
+if ($moonlitCss -match '(?s)\.dream-output-panel\s*,\s*:root\.codex-dream-skin\s+main\.dream-conversation-shell\s+\.dream-file-changes-summary.*?border-radius:\s*3px\s*!important' -or
+    $moonlitCss -notmatch '(?s)\.dream-output-panel\s*\{.*?border-radius:\s*22px\s*!important') {
+  throw 'Moonlit Wangshu must keep the floating output panel rounded instead of inheriting the compact card radius.'
 }
 if ($frostleafCss -notmatch '(?s)\.dream-queued-message-list\s*\{[^}]*background:.*?border:' -or
     $frostleafCss -notmatch '(?s)\.dream-queued-message-list.*?text-token-text-secondary.*?-webkit-text-fill-color:' -or
