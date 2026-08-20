@@ -11,10 +11,11 @@
   const BACKGROUND_VIDEO_ID = "codex-dream-background-video";
   const BACKGROUND_VIDEO_LAYER_CLASS = "codex-dream-background-video-layer";
   const VIDEO_HANDOFF_SHIELD_ID = "codex-dream-video-handoff-shield";
+  const TOOLBAR_GLASS_CLASS = "dream-toolbar-glass";
   const STORAGE_KEY = "codex-dream-theme-active";
   const MOTION_STORAGE_KEY = "codex-dream-motion-level";
   const MOTION_LEVELS = ["off", "low", "high"];
-  const RUNTIME_VERSION = "2.3.35-low-latency-detail-scan";
+  const RUNTIME_VERSION = "2.3.39-toolbar-canvas-continuity";
   const THEME_SEARCH_THRESHOLD = 6;
   const MUTATION_COALESCE_MS = 180;
   const VIDEO_BINDING_NAME = "__CODEX_DREAM_SKIN_VIDEO__";
@@ -71,6 +72,12 @@
       header.classList.add("app-header-tint");
       header.dataset.dreamCompatHeaderTint = "true";
     }
+    if (header && !header.querySelector(`:scope > .${TOOLBAR_GLASS_CLASS}`)) {
+      const glass = document.createElement("div");
+      glass.className = TOOLBAR_GLASS_CLASS;
+      glass.setAttribute("aria-hidden", "true");
+      header.prepend(glass);
+    }
     const composerSurfaces = new Set([
       ...document.querySelectorAll('[data-codex-composer-root] [data-composer-surface-variant]'),
       document.querySelector('[data-codex-composer="true"]')?.closest('[data-composer-surface-variant]'),
@@ -84,6 +91,7 @@
     return shell;
   };
   const restoreCompatibilityMarkers = () => {
+    document.querySelectorAll(`.${TOOLBAR_GLASS_CLASS}`).forEach((node) => node.remove());
     document.querySelectorAll('[data-dream-compat-main-surface="true"]').forEach((node) => {
       node.classList.remove("main-surface");
       delete node.dataset.dreamCompatMainSurface;
@@ -1702,7 +1710,7 @@
   };
 
   const scheduler = { frame: null, timeout: null, lastRun: 0, pending: false, runCount: 0 };
-  const runtimeOwnerSelector = `#${BASE_STYLE_ID}, #${STYLE_ID}, #${CHROME_ID}, #${HOME_OVERLAY_ID}, #${SWITCHER_ID}, #${MOTION_LAYER_ID}, #${BACKGROUND_VIDEO_ID}, #${VIDEO_HANDOFF_SHIELD_ID}, .${BACKGROUND_VIDEO_LAYER_CLASS}`;
+  const runtimeOwnerSelector = `#${BASE_STYLE_ID}, #${STYLE_ID}, #${CHROME_ID}, #${HOME_OVERLAY_ID}, #${SWITCHER_ID}, #${MOTION_LAYER_ID}, #${BACKGROUND_VIDEO_ID}, #${VIDEO_HANDOFF_SHIELD_ID}, .${BACKGROUND_VIDEO_LAYER_CLASS}, .${TOOLBAR_GLASS_CLASS}`;
   const isRuntimeOwnedNode = (node) => {
     const element = node?.nodeType === Node.ELEMENT_NODE ? node : node?.parentElement;
     return Boolean(element?.matches?.(runtimeOwnerSelector) || element?.closest?.(runtimeOwnerSelector));

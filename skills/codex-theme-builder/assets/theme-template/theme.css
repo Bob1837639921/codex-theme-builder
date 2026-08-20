@@ -8,7 +8,8 @@
   --theme-border: color-mix(in srgb, var(--dream-ink, #26332f) 14%, transparent);
   --theme-shadow: 0 18px 48px rgb(25 35 32 / 10%);
   --theme-canvas-wash: color-mix(in srgb, var(--dream-surface, #f4f0e6) 16%, transparent);
-  --theme-toolbar-surface: color-mix(in srgb, var(--dream-surface, #f4f0e6) 68%, transparent);
+  /* Required theme identity tint. Shared runtime owns glass transparency. */
+  --theme-toolbar-surface: #7e938b;
   --theme-toolbar-ink: var(--dream-ink, #26332f);
   --theme-app-menu-ink: var(--theme-toolbar-ink);
   --theme-dark-caption-start: transparent;
@@ -29,8 +30,8 @@
   --theme-message-editor-primary-surface: var(--dream-accent, #58766c);
   --theme-message-editor-primary-ink: #ffffff;
   --theme-message-editor-shadow: 0 10px 28px rgb(0 0 0 / 12%);
-  --theme-home-top-fade-display: block;
-  --theme-main-content-top-fade-display: block;
+  --theme-home-top-fade-display: none;
+  --theme-main-content-top-fade-display: none;
   --theme-composer-host-edge-display: block;
   --theme-composer-surface: color-mix(in srgb, var(--dream-surface, #f4f0e6) 88%, transparent);
   --theme-composer-control: color-mix(in srgb, var(--dream-ink, #26332f) 92%, transparent);
@@ -151,18 +152,19 @@
    window chrome above it are system-owned and intentionally left native. */
 :root.codex-dream-skin main.main-surface > header.app-header-tint {
   color: var(--dream-ink, #26332f) !important;
-  background:
-    linear-gradient(
-      100deg,
-      color-mix(in srgb, var(--theme-toolbar-surface) 34%, transparent),
-      color-mix(in srgb, var(--theme-toolbar-surface) 22%, transparent)
-    ) !important;
+  background: transparent !important;
   /* Keep viewport-fixed native toolbar layers (including Chat / Work) anchored
      to the viewport rather than turning this header into a containing block. */
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
-  border-bottom: 1px solid var(--theme-border) !important;
-  box-shadow: inset 0 -1px rgb(255 255 255 / 12%) !important;
+  border-bottom-color: transparent !important;
+  box-shadow: none !important;
+}
+
+:root.codex-dream-skin main.main-surface > header.app-header-tint::before,
+:root.codex-dream-skin main.main-surface > header.app-header-tint::after {
+  content: none !important;
+  display: none !important;
 }
 
 :root.codex-dream-skin main.main-surface > header.app-header-tint :is(button, span, svg),

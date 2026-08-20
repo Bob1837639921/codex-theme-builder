@@ -14,6 +14,7 @@
   --dream-paper: #dcecf3;
   --dream-panel: rgba(239, 248, 252, .88);
   --dream-line: rgba(45, 98, 119, .18);
+  --theme-toolbar-surface: #4d91a8;
   --dream-sidebar-control-text: #eaf7fc;
   --dream-motion-fast: 180ms;
   --dream-motion-panel: 200ms;
@@ -116,15 +117,15 @@
 html.codex-dream-skin body {
   color: #193246 !important;
   background-color: #dcecf3 !important;
-  background-image: linear-gradient(180deg, #f4f9fc 0, #f4f9fc 36px, transparent 36px), var(--dream-conversation-art) !important;
+  background-image: var(--dream-conversation-art) !important;
   background-repeat: no-repeat !important;
-  background-position: center, center !important;
-  background-size: 100% 100%, cover !important;
-  background-attachment: fixed, fixed !important;
+  background-position: center !important;
+  background-size: cover !important;
+  background-attachment: fixed !important;
 }
 
 html.codex-dream-skin body:has(main.dream-home-shell) {
-  background-image: linear-gradient(180deg, #f4f9fc 0, #f4f9fc 36px, transparent 36px), var(--dream-art) !important;
+  background-image: var(--dream-art) !important;
 }
 
 html.codex-dream-skin main.main-surface,

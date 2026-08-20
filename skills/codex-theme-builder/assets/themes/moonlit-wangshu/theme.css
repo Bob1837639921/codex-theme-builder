@@ -8,7 +8,7 @@
   --theme-border: color-mix(in srgb, var(--dream-ink, #26332f) 14%, transparent);
   --theme-shadow: 0 18px 48px rgb(25 35 32 / 10%);
   --theme-canvas-wash: color-mix(in srgb, var(--dream-surface, #f4f0e6) 16%, transparent);
-  --theme-toolbar-surface: color-mix(in srgb, var(--dream-surface, #f4f0e6) 68%, transparent);
+  --theme-toolbar-surface: #041425;
   --theme-toolbar-ink: #e8f7ff;
   --theme-app-menu-ink: #e8f7ff;
   --theme-window-controls-backdrop: linear-gradient(90deg, transparent 0%, rgb(105 168 196 / 38%) 34%, rgb(168 215 232 / 80%) 100%);
@@ -541,7 +541,7 @@ html.codex-dream-skin main.dream-conversation-shell .sticky.bottom-0 [class~="bg
   --theme-border: rgb(130 211 239 / 22%);
   --theme-shadow: 0 12px 30px rgb(0 8 18 / 24%);
   --theme-canvas-wash: rgb(2 13 26 / 4%);
-  --theme-toolbar-surface: rgb(4 20 37 / 72%);
+  --theme-toolbar-surface: #041425;
   --theme-composer-surface: rgb(5 23 41 / 94%);
   --theme-composer-control: #d8f3fc;
   --theme-composer-placeholder: #7899aa;

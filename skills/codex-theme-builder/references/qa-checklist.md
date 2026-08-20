@@ -95,6 +95,16 @@
 - Treat Tidal Hymn's conversation treatment as the completeness benchmark, not as an art-direction dependency: every theme must provide an equally coherent canvas, readable mask, composer hierarchy, and control treatment in its own visual language.
 - Background covers the full task surface, including the right side and lower area.
 - Conversation artwork remains continuous behind the content and operation areas; the task-title toolbar is translucent, readable, and does not introduce an opaque band or change native geometry.
+- Inspect `.dream-toolbar-glass` separately from the native header: pale and dark
+  artwork must remain clearly visible through the five-percent tint, the layer must be
+  pointer-free, and both layers must compute to no backdrop filter. Reject any
+  wide gray/white strip, body-level 36–48px compensating gradient, hard divider,
+  theme-local header pseudo-element, or a visible `_MainContentTopFade_` layer.
+  Confirm Chat / Work remains centered before and after
+  hot reload.
+- Confirm every bundled theme explicitly declares a distinct
+  `--theme-toolbar-surface` palette tint. Compare themes in sequence; none may
+  fall back to the same neutral glass or compound theme alpha with shared alpha.
 - Switch through every bundled theme on both home and conversation routes and confirm the direct content toolbar continues to reveal the active scene. No theme-local late rule may repaint it as an opaque white, cream, colored, or dark band.
 - At normal, narrow, and largest target viewports, the protected character's complete head, face, crown/ears, hair silhouette, and defining ornament remain below the Windows menu and Codex content toolbar. Confirm the source master reserved the upper chrome safe zone instead of compensating with runtime offsets.
 - Sidebar and conversation content read as one coordinated full-window scene; the content column must not restart, tile, or crop a second copy of the same raster.

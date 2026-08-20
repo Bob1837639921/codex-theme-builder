@@ -91,13 +91,26 @@ artwork, motion, or theme identity.
 - Keep the direct Codex content toolbar translucent on every themed home and
   conversation route. The shared runtime owns its low-opacity glass paint so a
   theme cannot accidentally restore a solid white, cream, or dark strip.
-  Theme CSS owns only readable text/icon, divider, and hover colors. Preserve
+  Theme CSS owns only readable text/icon and hover colors. Preserve
   native height, drag behavior, buttons, pointer targets, and the system-owned
   Windows/Electron menu above it.
+- Mount the transparent tint on the runtime-owned `.dream-toolbar-glass` child,
+  never on the native header. The child is absolute, pointer-free,
+  paint-contained, and removed with compatibility markers. Keep backdrop blur
+  disabled on both layers: pale artwork must not turn into a solid gray/white
+  band, and the viewport-fixed Chat / Work switch must remain untrapped.
+- Require every bundled theme and the starter template to declare an explicit
+  `--theme-toolbar-surface` palette tint. Prefer a solid six-digit value and let
+  the shared glass layer apply opacity; a catalog-wide generic surface fallback
+  is not a completed visual adaptation.
 - Verify that the same scene artwork or active video remains visually
   continuous beneath the content toolbar. Do not add a second header crop or
+  an opaque 36–48px body gradient, header pseudo-element, or hard divider. Do not
   compensate for an opaque toolbar by shifting protected characters downward
   at runtime; reserve the chrome safe zone in the source artwork instead.
+- Disable the native `.app-shell-main-content-top-fade` / hashed
+  `_MainContentTopFade_` layer in the shared runtime on every themed route. It
+  is a light-mode surface, not a theme-owned toolbar effect.
 
 - Keep long native task lists cheap to scroll without removing theme detail.
   Apply `content-visibility: auto` and a 30 px intrinsic block size to the

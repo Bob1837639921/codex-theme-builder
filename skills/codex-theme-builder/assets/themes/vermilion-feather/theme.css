@@ -12,6 +12,7 @@
   --theme-composer-control: color-mix(in srgb, var(--dream-ink, #26332f) 92%, transparent);
   --theme-composer-placeholder: color-mix(in srgb, var(--dream-ink, #26332f) 54%, transparent);
   --theme-focus-ring: color-mix(in srgb, var(--dream-accent, #58766c) 28%, transparent);
+  --theme-toolbar-surface: #b16b30;
   --theme-atmosphere-duration: 16s;
   --theme-atmosphere-opacity: 0.42;
   --theme-atmosphere-distance: 16px;

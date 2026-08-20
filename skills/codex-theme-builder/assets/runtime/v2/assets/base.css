@@ -443,20 +443,46 @@ html.codex-dream-skin .composer-surface-chrome > * {
 html:root.codex-dream-skin[data-dream-route]
   main.main-surface:is(.dream-home-shell, .dream-conversation-shell)
   > header.app-header-tint {
-  background:
-    linear-gradient(
-      100deg,
-      color-mix(in srgb, var(--theme-toolbar-surface, var(--dream-surface, #f4f0e6)) 34%, transparent),
-      color-mix(in srgb, var(--theme-toolbar-surface, var(--dream-surface, #f4f0e6)) 22%, transparent)
-    ) !important;
-  /* A backdrop filter on this fixed header creates a containing block for the
-     native ChatGPT home-mode layer. That layer is viewport-fixed and already
-     reserves the sidebar once; trapping it here reserves the sidebar twice
-     and shifts Chat / Work half a sidebar width to the right. */
+  background: transparent !important;
+  /* Keep the header itself geometry-neutral. The isolated child below owns
+     the small-area glass sampling without trapping viewport-fixed native UI. */
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
-  border-bottom-color: color-mix(in srgb, var(--theme-border, var(--dream-ink, #26332f)) 42%, transparent) !important;
-  box-shadow: inset 0 -1px rgb(255 255 255 / 12%) !important;
+  border-bottom-color: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Theme files must not paint their own toolbar plates or ornamental rules.
+   Those legacy pseudo-elements turn into hard white/dark bands when the
+   route artwork is bright or when themes are switched without a reload. */
+html:root.codex-dream-skin[data-dream-route]
+  main.main-surface:is(.dream-home-shell, .dream-conversation-shell)
+  > header.app-header-tint::before,
+html:root.codex-dream-skin[data-dream-route]
+  main.main-surface:is(.dream-home-shell, .dream-conversation-shell)
+  > header.app-header-tint::after {
+  content: none !important;
+  display: none !important;
+  background: none !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+html:root.codex-dream-skin[data-dream-route]
+  main.main-surface:is(.dream-home-shell, .dream-conversation-shell)
+  > header.app-header-tint
+  > .dream-toolbar-glass {
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: -1 !important;
+  display: block !important;
+  pointer-events: none !important;
+  background:
+    color-mix(in srgb, var(--theme-toolbar-surface, var(--dream-surface, #f4f0e6)) 5%, transparent) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+  contain: paint !important;
 }
 
 /* The compact shell can expose a native "open with app" action in this
@@ -707,24 +733,19 @@ html.codex-dream-skin .dream-home section[class~="group/home-suggestions"] {
   pointer-events: none !important;
 }
 
-html.codex-dream-skin[data-dream-route="home"]
-  :is(.app-shell-main-content-top-fade, [class*="_MainContentTopFade_"]),
-html.codex-dream-skin[data-dream-route="home"]
-  :is(.app-shell-main-content-top-fade, [class*="_MainContentTopFade_"])::before,
-html.codex-dream-skin[data-dream-route="home"]
-  :is(.app-shell-main-content-top-fade, [class*="_MainContentTopFade_"])::after {
-  display: var(--theme-home-top-fade-display, block) !important;
-}
-
-/* Current Codex also mounts the same light fade on conversation routes. Dark
-   themes can disable it for the full app surface without route assumptions. */
+/* Current Codex mounts a light-mode top fade above both home and conversation
+   content. It paints 46px of opaque white over the themed route artwork, so
+   the shared runtime removes it instead of requiring every dark theme to know
+   the current hashed class name. The native toolbar remains intact. */
 html.codex-dream-skin[data-dream-route]
   :is(.app-shell-main-content-top-fade, [class*="_MainContentTopFade_"]),
 html.codex-dream-skin[data-dream-route]
   :is(.app-shell-main-content-top-fade, [class*="_MainContentTopFade_"])::before,
 html.codex-dream-skin[data-dream-route]
   :is(.app-shell-main-content-top-fade, [class*="_MainContentTopFade_"])::after {
-  display: var(--theme-main-content-top-fade-display, block) !important;
+  display: none !important;
+  background: none !important;
+  box-shadow: none !important;
 }
 
 html.codex-dream-skin main.dream-conversation-shell

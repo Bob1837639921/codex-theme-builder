@@ -10,6 +10,7 @@
   --dream-paper: #e7eaf3;
   --dream-panel: rgb(247 248 253 / 76%);
   --dream-line: rgb(92 84 137 / 19%);
+  --theme-toolbar-surface: #77799b;
   --dream-sidebar-control-text: #f5f3ff;
   --dream-light-overlay-ink: #30384a;
   --dream-usage-ink: #30384a;
@@ -98,7 +99,6 @@ html.codex-dream-skin body {
   color: var(--dream-ink) !important;
   background-color: #dfe4ef !important;
   background-image:
-    linear-gradient(180deg, rgb(242 245 251 / 97%) 0 36px, transparent 36px),
     linear-gradient(90deg, rgb(235 239 248 / 16%), rgb(228 233 244 / 5%)),
     var(--dream-conversation-art) !important;
   background-repeat: no-repeat !important;
@@ -108,9 +108,7 @@ html.codex-dream-skin body {
 }
 
 html.codex-dream-skin body:has(main.dream-home-shell) {
-  background-image:
-    linear-gradient(180deg, rgb(242 245 251 / 97%) 0 36px, transparent 36px),
-    var(--dream-art) !important;
+  background-image: var(--dream-art) !important;
 }
 
 html.codex-dream-skin main.main-surface,
@@ -229,8 +227,7 @@ html.codex-dream-skin aside.app-shell-left-panel .dream-selected-thread-label {
 :root.codex-dream-skin[data-dream-motion="high"]
   body:has(main.main-surface:is(.dream-home-shell, .dream-conversation-shell) > #codex-dream-background-video.is-covering) {
   background-color: #dfe4ef !important;
-  background-image:
-    linear-gradient(180deg, rgb(242 245 251 / 97%) 0 36px, transparent 36px) !important;
+  background-image: none !important;
 }
 
 :root.codex-dream-skin[data-dream-motion="high"]

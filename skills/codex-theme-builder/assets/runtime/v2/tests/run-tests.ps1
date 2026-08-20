@@ -129,6 +129,27 @@ $luminousCss = Get-Content -LiteralPath (Join-Path $Root '..\..\themes\luminous-
 $frostleafCss = Get-Content -LiteralPath (Join-Path $Root '..\..\themes\frostleaf-illusionist\theme.css') -Raw
 $moonlitCss = Get-Content -LiteralPath (Join-Path $Root '..\..\themes\moonlit-wangshu\theme.css') -Raw
 $blossomCss = Get-Content -LiteralPath (Join-Path $Root '..\..\themes\blossom-dancer\theme.css') -Raw
+$toolbarThemeRoot = [System.IO.Path]::GetFullPath((Join-Path $Root '..\..\themes'))
+$toolbarThemeTints = @{}
+foreach ($themeDirectory in Get-ChildItem -LiteralPath $toolbarThemeRoot -Directory) {
+  $candidateCssPath = Join-Path $themeDirectory.FullName 'theme.css'
+  if (-not (Test-Path -LiteralPath $candidateCssPath -PathType Leaf)) { continue }
+  $candidateCss = Get-Content -LiteralPath $candidateCssPath -Raw -Encoding UTF8
+  $tintMatch = [regex]::Match($candidateCss, '--theme-toolbar-surface:\s*(#[0-9a-fA-F]{6})\s*;')
+  if (-not $tintMatch.Success) {
+    throw "Theme '$($themeDirectory.Name)' must declare a solid six-digit --theme-toolbar-surface tint."
+  }
+  $toolbarThemeTints[$themeDirectory.Name] = $tintMatch.Groups[1].Value.ToUpperInvariant()
+  if ($candidateCss -match '(?is)background-image\s*:\s*linear-gradient\([^;]*?\b(?:3[0-9]|4[0-9])px\s*,\s*transparent\s+\b(?:3[0-9]|4[0-9])px\s*\)') {
+    throw "Theme '$($themeDirectory.Name)' must not paint an opaque toolbar-height strip into the body canvas."
+  }
+}
+if (($toolbarThemeTints.Values | Select-Object -Unique).Count -ne $toolbarThemeTints.Count) {
+  throw 'Every bundled theme must own a distinct toolbar glass tint instead of sharing the generic fallback.'
+}
+if ($templateCss -notmatch '--theme-toolbar-surface:\s*#[0-9a-fA-F]{6}\s*;') {
+  throw 'The starter template must require an explicit solid toolbar glass tint.'
+}
 if ($baseCss -notmatch '(?s)\.dream-action-button\s*\{[^}]*display:\s*flex\s*!important[^}]*flex-direction:\s*column\s*!important' -or
     $baseCss -notmatch '(?s)\.dream-action-button\s*>\s*:is\(strong,\s*span\)\s*\{[^}]*display:\s*block\s*!important' -or
     $moonlitCss -notmatch '(?s)\.dream-action-button\s*\{[^}]*gap:\s*6px\s*!important' -or
@@ -207,15 +228,23 @@ if ($templateCss -notmatch 'data-dream-motion="low"' -or
 if ($templateCss -notmatch '(?s)body\s*\{[^}]*--dream-conversation-art' -or
     $templateCss -notmatch '(?s)\[data-dream-route="home"\]\s+body\s*\{[^}]*--dream-art' -or
     $templateCss -notmatch '--theme-toolbar-surface:' -or
-    $templateCss -notmatch '(?s)header\.app-header-tint\s*\{[^}]*background:.*?color-mix\(in srgb,\s*var\(--theme-toolbar-surface\)\s*34%,\s*transparent\).*?color-mix\(in srgb,\s*var\(--theme-toolbar-surface\)\s*22%,\s*transparent\).*?backdrop-filter:\s*none\s*!important' -or
-    $baseCss -notmatch '(?s)html:root\.codex-dream-skin\[data-dream-route\].*?main\.main-surface:is\(\.dream-home-shell, \.dream-conversation-shell\).*?>\s*header\.app-header-tint\s*\{[^}]*background:.*?color-mix\(in srgb,\s*var\(--theme-toolbar-surface.*?34%,\s*transparent\).*?color-mix\(in srgb,\s*var\(--theme-toolbar-surface.*?22%,\s*transparent\).*?backdrop-filter:\s*none\s*!important' -or
+    $templateCss -notmatch '(?s)header\.app-header-tint\s*\{[^}]*background:\s*transparent\s*!important.*?backdrop-filter:\s*none\s*!important' -or
+    $baseCss -notmatch '(?s)>\s*header\.app-header-tint\s*\{[^}]*background:\s*transparent\s*!important[^}]*backdrop-filter:\s*none\s*!important' -or
+    $baseCss -notmatch '(?s)>\s*header\.app-header-tint\s*>\s*\.dream-toolbar-glass\s*\{[^}]*position:\s*absolute\s*!important[^}]*pointer-events:\s*none\s*!important[^}]*color-mix\(in srgb, var\(--theme-toolbar-surface[^}]*5%, transparent\)[^}]*backdrop-filter:\s*none\s*!important.*?contain:\s*paint\s*!important' -or
+    $baseCss -notmatch '(?s)>\s*header\.app-header-tint::before,.*?>\s*header\.app-header-tint::after\s*\{[^}]*content:\s*none\s*!important[^}]*display:\s*none\s*!important' -or
+    $baseCss -notmatch '(?s)app-shell-main-content-top-fade.*?_MainContentTopFade_.*?display:\s*none\s*!important[^}]*background:\s*none\s*!important' -or
+    $runtimeJs -notmatch 'TOOLBAR_GLASS_CLASS\s*=\s*"dream-toolbar-glass"' -or
+    $runtimeJs -notmatch 'header\.prepend\(glass\)' -or
+    $runtimeJs -notmatch 'querySelectorAll\(`\.\$\{TOOLBAR_GLASS_CLASS\}`\).*?node\.remove' -or
+    $injectorText -notmatch 'toolbarGlassPresent' -or
+    $injectorText -notmatch 'nativeToolbarBackdropFilter' -or
     $templateCss -notmatch '(?s)\.composer-surface-chrome::before\s*\{' -or
     $templateCss -notmatch '(?s)\.composer-surface-chrome::after\s*\{' -or
     $templateCss -notmatch 'button\[class~="bg-token-foreground"\]' -or
     $templateCss -notmatch 'dream-output-panel' -or
     $templateCss -notmatch 'bg-surface-elevated-secondary' -or
     $templateCss -notmatch 'dream-plugin-search-shell') {
-  throw 'The generic template must retain the Tidal-quality shared canvas, scalable composer, explicit control, output, and plugin-search contracts.'
+  throw 'The generic template must retain the shared canvas, isolated toolbar glass, scalable composer, explicit control, output, and plugin-search contracts.'
 }
 if ($tidalManifest.motionImage -ne 'motion-caustics.webp' -or
     -not (Test-Path (Join-Path $tidalTheme $tidalManifest.motionImage)) -or
@@ -626,14 +655,12 @@ if ($manifest.composerEdge.image -ne 'composer-edge.png' -or
     $templateCss -notmatch '--theme-composer-host-edge-display:\s*block') {
   throw 'The theme-specific composer-edge raster contract and shared rendering hook must remain validated and bundled.'
 }
-if ($baseCss -notmatch '--theme-home-top-fade-display' -or
-    $baseCss -notmatch '(?s)\[class\*="_ApplicationMenuTopBar_"\].*?--theme-app-menu-ink' -or
+if ($baseCss -notmatch '(?s)\[class\*="_ApplicationMenuTopBar_"\].*?--theme-app-menu-ink' -or
     $baseCss -notmatch '(?s)data-dream-color-scheme="dark".*?\[class\*="_ApplicationMenuTopBar_"\]::after.*?z-index:\s*1\s*!important.*?--theme-window-controls-backdrop.*?--theme-dark-caption-start.*?--theme-dark-caption-mid.*?--theme-dark-caption-end.*?pointer-events:\s*none\s*!important' -or
     $runtimeJs -notmatch 'root\.dataset\.dreamColorScheme\s*=\s*getComputedStyle\(root\)\.colorScheme' -or
     $moonlitCss -notmatch '(?s)--theme-window-controls-backdrop:\s*linear-gradient\(90deg,\s*transparent\s+0%,\s*rgb\(105 168 196 / 38%\)' -or
     $sunkenCss -notmatch '(?s)--theme-dark-caption-start:\s*transparent.*?--theme-dark-caption-mid:\s*rgb\(91 132 170 / 40%\).*?--theme-dark-caption-end:\s*rgb\(164 194 219 / 84%\)' -or
     $baseCss -notmatch '(?s)composer-surface-chrome button\[class~="bg-token-foreground"\].*?--theme-composer-submit-surface' -or
-    $baseCss -notmatch '(?s)\[data-dream-route\].*?\[class\*="_MainContentTopFade_"\].*?--theme-main-content-top-fade-display' -or
     $baseCss -notmatch '--theme-conversation-code-ink' -or
     $baseCss -notmatch '(?s)group\\/activity-header.*?svg\[class\*="text-token-conversation-body"\].*?--theme-conversation-activity-icon' -or
     $baseCss -notmatch '(?s)group\\/activity-header.*?svg\[class\*="text-text/"\].*?--theme-conversation-activity-icon' -or
@@ -705,10 +732,9 @@ if ($baseCss -notmatch '--theme-home-top-fade-display' -or
     $templateCss -notmatch '--theme-conversation-activity-ink' -or
     $templateCss -notmatch '--theme-conversation-activity-highlight' -or
     $templateCss -notmatch '--theme-composer-submit-surface' -or
-    $templateCss -notmatch '--theme-main-content-top-fade-display' -or
     $templateCss -notmatch '--theme-conversation-code-ink' -or
     $templateCss -notmatch '--theme-conversation-muted-ink' -or
-    $templateCss -notmatch '--theme-home-top-fade-display') {
+    $baseCss -notmatch '(?s)app-shell-main-content-top-fade.*?_MainContentTopFade_.*?display:\s*none\s*!important') {
   throw 'Home/content fades, nested tool output, Electron/content toolbar, native caption, and composer submit contrast regressions must remain guarded by shared semantic tokens.'
 }
 $themesRoot = [System.IO.Path]::GetFullPath((Join-Path $Root '..\..\themes'))

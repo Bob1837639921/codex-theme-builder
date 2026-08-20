@@ -140,8 +140,17 @@ containment to the header itself: ChatGPT New Chat mounts its `聊天 / 工作`
 switch in a viewport-fixed descendant that already subtracts the sidebar. If
 the themed header traps that descendant, the sidebar is subtracted twice and
 the switch moves right and down. Use translucent toolbar paint without a
-header-level backdrop filter; decorative pseudo layers must not change native
-fixed-position geometry.
+header-level backdrop filter. The runtime prepends one absolute, pointer-free
+`.dream-toolbar-glass` child for a five-percent theme tint, but that child must also keep
+its backdrop filter disabled: bright artwork must remain visible instead of
+being smeared into a gray/white strip. Keep paint containment on the child,
+remove it at the native/authentication boundary, and never position native
+controls through the layer. The shared stylesheet suppresses theme-local header
+pseudo-elements and hard dividers. Theme body canvases must not contain an
+opaque toolbar-height gradient stop; they must expose the route artwork itself.
+The shared stylesheet also suppresses Codex's light-mode
+`_MainContentTopFade_` layer on every themed route; this must not be delegated
+to individual dark-theme flags.
 
 ## Native authentication boundary
 

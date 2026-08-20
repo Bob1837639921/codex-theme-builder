@@ -10,6 +10,7 @@
   --dream-paper: #fbf4f1;
   --dream-panel: rgb(247 248 253 / 76%);
   --dream-line: rgb(92 84 137 / 19%);
+  --theme-toolbar-surface: #b8758b;
   --dream-sidebar-control-text: #fff8f8;
   --dream-light-overlay-ink: #3f3439;
   --dream-usage-ink: #3f3439;
@@ -101,7 +102,6 @@ html.codex-dream-skin body {
   color: var(--dream-ink) !important;
   background-color: #f1e6e6 !important;
   background-image:
-    linear-gradient(180deg, rgb(242 245 251 / 97%) 0 36px, transparent 36px),
     linear-gradient(90deg, rgb(235 239 248 / 16%), rgb(228 233 244 / 5%)),
     var(--dream-conversation-art) !important;
   background-repeat: no-repeat !important;
@@ -111,9 +111,7 @@ html.codex-dream-skin body {
 }
 
 html.codex-dream-skin[data-dream-route="home"] body {
-  background-image:
-    linear-gradient(180deg, rgb(242 245 251 / 97%) 0 36px, transparent 36px),
-    var(--dream-art) !important;
+  background-image: var(--dream-art) !important;
 }
 
 html.codex-dream-skin main.main-surface,
@@ -232,8 +230,7 @@ html.codex-dream-skin aside.app-shell-left-panel .dream-selected-thread-label {
 
 :root.codex-dream-skin[data-dream-motion="high"].dream-video-covering body {
   background-color: #f1e6e6 !important;
-  background-image:
-    linear-gradient(180deg, rgb(242 245 251 / 97%) 0 36px, transparent 36px) !important;
+  background-image: none !important;
 }
 
 :root.codex-dream-skin[data-dream-motion="high"].dream-video-covering
@@ -997,15 +994,12 @@ html.codex-dream-skin [role="option"]:is(:hover, :focus, [data-highlighted]) {
 html.codex-dream-skin body {
   background-color: #f1e6e6 !important;
   background-image:
-    linear-gradient(180deg, rgb(255 251 250 / 96%) 0 36px, transparent 36px),
     linear-gradient(90deg, rgb(253 236 239 / 12%), rgb(255 247 244 / 8%)),
     var(--dream-conversation-art) !important;
 }
 
 html.codex-dream-skin[data-dream-route="home"] body {
-  background-image:
-    linear-gradient(180deg, rgb(255 251 250 / 96%) 0 36px, transparent 36px),
-    var(--dream-art) !important;
+  background-image: var(--dream-art) !important;
 }
 
 html.codex-dream-skin main.main-surface > header.app-header-tint {

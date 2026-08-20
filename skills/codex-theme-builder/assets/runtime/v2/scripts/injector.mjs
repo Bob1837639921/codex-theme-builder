@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, "..");
-const SKIN_VERSION = "2.3.35-low-latency-detail-scan";
+const SKIN_VERSION = "2.3.39-toolbar-canvas-continuity";
 const MAX_ART_BYTES = 8 * 1024 * 1024;
 const MAX_VIDEO_BYTES = 8 * 1024 * 1024;
 const DIRECT_EVALUATE_LIMIT = 8 * 1024 * 1024;
@@ -780,6 +780,7 @@ async function removeFromSession(session) {
     document.getElementById('codex-dream-skin-actions')?.remove();
     document.getElementById('codex-dream-skin-title')?.remove();
     document.getElementById('codex-dream-home-overlay')?.remove();
+    document.querySelectorAll('.dream-toolbar-glass').forEach((node) => node.remove());
     document.querySelectorAll('.dream-project-picker').forEach((node) => node.classList.remove('dream-project-picker'));
     document.getElementById('codex-dream-theme-switcher')?.remove();
     delete window.__CODEX_DREAM_SKIN_VIDEO_RESOLVE__;
@@ -830,6 +831,10 @@ async function verifySession(session) {
     const backgroundVideoRect = backgroundVideo?.getBoundingClientRect() ?? null;
     const backgroundVideoParentRect = backgroundVideo?.parentElement?.getBoundingClientRect() ?? null;
     const outputPanel = document.querySelector('.dream-output-panel');
+    const nativeToolbar = document.querySelector('main.main-surface > header.app-header-tint');
+    const toolbarGlass = nativeToolbar?.querySelector(':scope > .dream-toolbar-glass') ?? null;
+    const nativeToolbarStyle = nativeToolbar ? getComputedStyle(nativeToolbar) : null;
+    const toolbarGlassStyle = toolbarGlass ? getComputedStyle(toolbarGlass) : null;
     const composerNode = document.querySelector('.composer-surface-chrome') ??
       document.querySelector('[data-codex-composer-root] [data-composer-surface-variant]') ??
       document.querySelector('[data-codex-composer="true"]')?.closest('[data-composer-surface-variant]') ??
@@ -902,6 +907,61 @@ async function verifySession(session) {
       const hit = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
       return hit === button || button.contains(hit);
     });
+    const toolbarLayers = nativeToolbar ? [nativeToolbar, ...nativeToolbar.children].map((node) => {
+      const style = getComputedStyle(node);
+      const before = getComputedStyle(node, '::before');
+      const after = getComputedStyle(node, '::after');
+      return {
+        tag: node.tagName,
+        className: typeof node.className === 'string' ? node.className.slice(0, 240) : '',
+        box: box(node),
+        backgroundColor: style.backgroundColor,
+        backgroundImage: style.backgroundImage.slice(0, 240),
+        opacity: style.opacity,
+        zIndex: style.zIndex,
+        before: { display: before.display, content: before.content, background: before.background.slice(0, 240) },
+        after: { display: after.display, content: after.content, background: after.background.slice(0, 240) },
+      };
+    }) : [];
+    const canvasLayers = [document.documentElement, document.body, nativeToolbar?.parentElement].filter(Boolean).map((node) => {
+      const style = getComputedStyle(node);
+      return {
+        tag: node.tagName,
+        className: typeof node.className === 'string' ? node.className.slice(0, 240) : '',
+        backgroundColor: style.backgroundColor,
+        backgroundImage: style.backgroundImage.slice(0, 360),
+        backgroundPosition: style.backgroundPosition,
+        backgroundSize: style.backgroundSize,
+        backgroundAttachment: style.backgroundAttachment,
+      };
+    });
+    const toolbarIntersectingPaintLayers = nativeToolbar ? (() => {
+      const toolbarRect = nativeToolbar.getBoundingClientRect();
+      const x = toolbarRect.left + toolbarRect.width / 2;
+      const y = toolbarRect.top + toolbarRect.height / 2;
+      return [...document.querySelectorAll('*')].map((node) => {
+        const rect = node.getBoundingClientRect();
+        if (rect.width <= 0 || rect.height <= 0 || x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) return null;
+        const style = getComputedStyle(node);
+        const before = getComputedStyle(node, '::before');
+        const after = getComputedStyle(node, '::after');
+        const painted = style.backgroundColor !== 'rgba(0, 0, 0, 0)' || style.backgroundImage !== 'none' ||
+          style.boxShadow !== 'none' || before.content !== 'none' || after.content !== 'none';
+        if (!painted) return null;
+        return {
+          tag: node.tagName,
+          className: typeof node.className === 'string' ? node.className.slice(0, 240) : '',
+          box: box(node),
+          backgroundColor: style.backgroundColor,
+          backgroundImage: style.backgroundImage.slice(0, 240),
+          boxShadow: style.boxShadow,
+          position: style.position,
+          zIndex: style.zIndex,
+          before: { display: before.display, content: before.content, background: before.background.slice(0, 160) },
+          after: { display: after.display, content: after.content, background: after.background.slice(0, 160) },
+        };
+      }).filter(Boolean).slice(-30);
+    })() : [];
     const result = {
       installed: document.documentElement.classList.contains('codex-dream-skin'),
       version: window.__CODEX_DREAM_SKIN_STATE__?.version ?? null,
@@ -911,6 +971,17 @@ async function verifySession(session) {
       chromePointerEvents: getComputedStyle(document.getElementById('codex-dream-skin-chrome') || document.body).pointerEvents,
       toolbarButtonCount: toolbarButtons.length,
       toolbarButtonsInteractive,
+      toolbarGlassPresent: Boolean(toolbarGlass),
+      toolbarGlassPointerEvents: toolbarGlassStyle?.pointerEvents ?? null,
+      toolbarGlassBackdropFilter: toolbarGlassStyle?.backdropFilter ?? null,
+      nativeToolbarBackdropFilter: nativeToolbarStyle?.backdropFilter ?? null,
+      toolbarLayers,
+      canvasLayers,
+      toolbarIntersectingPaintLayers,
+      toolbarPointStack: nativeToolbar ? (() => {
+        const rect = nativeToolbar.getBoundingClientRect();
+        return inspectPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
+      })() : [],
       homePresent: Boolean(home),
       routeKind: home ? 'home' : (conversation ? 'conversation' : 'native'),
       actionGridPresent: Boolean(actionGrid),
@@ -1016,6 +1087,8 @@ async function verifySession(session) {
     result.pass = result.installed && result.version === result.expectedVersion &&
       result.stylePresent && result.chromePresent &&
       result.chromePointerEvents === 'none' && result.toolbarButtonsInteractive &&
+      result.toolbarGlassPresent && result.toolbarGlassPointerEvents === 'none' &&
+      result.toolbarGlassBackdropFilter === 'none' && result.nativeToolbarBackdropFilter === 'none' &&
       Boolean(result.shell) && result.composerReady &&
       ((!result.sidebar && !result.switcherPresent && result.themeCardCount === 0) ||
         (Boolean(result.sidebar) &&
