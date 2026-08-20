@@ -117,7 +117,7 @@
   background-repeat: no-repeat !important;
   background-position: center !important;
   background-size: cover !important;
-  background-attachment: fixed !important;
+  background-attachment: scroll !important;
 }
 
 :root.codex-dream-skin[data-dream-route="home"] body {
@@ -125,7 +125,7 @@
   background-repeat: no-repeat !important;
   background-position: center !important;
   background-size: cover !important;
-  background-attachment: fixed !important;
+  background-attachment: scroll !important;
 }
 
 :root.codex-dream-skin main.main-surface.dream-home-shell,
@@ -157,8 +157,10 @@
       color-mix(in srgb, var(--theme-toolbar-surface) 34%, transparent),
       color-mix(in srgb, var(--theme-toolbar-surface) 22%, transparent)
     ) !important;
-  backdrop-filter: blur(4px) saturate(.96) !important;
-  -webkit-backdrop-filter: blur(4px) saturate(.96) !important;
+  /* Keep viewport-fixed native toolbar layers (including Chat / Work) anchored
+     to the viewport rather than turning this header into a containing block. */
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   border-bottom: 1px solid var(--theme-border) !important;
   box-shadow: inset 0 -1px rgb(255 255 255 / 12%) !important;
 }
@@ -184,7 +186,8 @@
   border: 2px solid transparent !important;
   border-radius: 22px !important;
   box-shadow: var(--theme-shadow) !important;
-  backdrop-filter: blur(14px) saturate(0.96);
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   transition: box-shadow 180ms cubic-bezier(.2, .8, .2, 1) !important;
 }
 
@@ -330,7 +333,8 @@ html.codex-dream-skin main.dream-conversation-shell .sticky.bottom-0 [class~="bg
   border: 1px solid var(--theme-border) !important;
   border-radius: 22px !important;
   box-shadow: var(--theme-shadow) !important;
-  backdrop-filter: blur(14px) saturate(.94) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
 :root.codex-dream-skin .dream-output-panel > *,
@@ -352,7 +356,8 @@ html.codex-dream-skin main.dream-conversation-shell .sticky.bottom-0 [class~="bg
   color: var(--dream-plugin-ink) !important;
   background: var(--dream-plugin-surface) !important;
   border-color: var(--dream-plugin-border) !important;
-  backdrop-filter: blur(12px) saturate(.94) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
 :root.codex-dream-skin .dream-plugin-search,

@@ -128,6 +128,7 @@ $tidalCss = Get-Content -LiteralPath (Join-Path $Root '..\..\themes\tidal-hymn\t
 $luminousCss = Get-Content -LiteralPath (Join-Path $Root '..\..\themes\luminous-spirit-garden\theme.css') -Raw
 $frostleafCss = Get-Content -LiteralPath (Join-Path $Root '..\..\themes\frostleaf-illusionist\theme.css') -Raw
 $moonlitCss = Get-Content -LiteralPath (Join-Path $Root '..\..\themes\moonlit-wangshu\theme.css') -Raw
+$blossomCss = Get-Content -LiteralPath (Join-Path $Root '..\..\themes\blossom-dancer\theme.css') -Raw
 if ($baseCss -notmatch '(?s)\.dream-action-button\s*\{[^}]*display:\s*flex\s*!important[^}]*flex-direction:\s*column\s*!important' -or
     $baseCss -notmatch '(?s)\.dream-action-button\s*>\s*:is\(strong,\s*span\)\s*\{[^}]*display:\s*block\s*!important' -or
     $moonlitCss -notmatch '(?s)\.dream-action-button\s*\{[^}]*gap:\s*6px\s*!important' -or
@@ -206,8 +207,8 @@ if ($templateCss -notmatch 'data-dream-motion="low"' -or
 if ($templateCss -notmatch '(?s)body\s*\{[^}]*--dream-conversation-art' -or
     $templateCss -notmatch '(?s)\[data-dream-route="home"\]\s+body\s*\{[^}]*--dream-art' -or
     $templateCss -notmatch '--theme-toolbar-surface:' -or
-    $templateCss -notmatch '(?s)header\.app-header-tint\s*\{[^}]*background:.*?color-mix\(in srgb,\s*var\(--theme-toolbar-surface\)\s*34%,\s*transparent\).*?color-mix\(in srgb,\s*var\(--theme-toolbar-surface\)\s*22%,\s*transparent\).*?backdrop-filter:\s*blur\(4px\)' -or
-    $baseCss -notmatch '(?s)html:root\.codex-dream-skin\[data-dream-route\].*?main\.main-surface:is\(\.dream-home-shell, \.dream-conversation-shell\).*?>\s*header\.app-header-tint\s*\{[^}]*background:.*?color-mix\(in srgb,\s*var\(--theme-toolbar-surface.*?34%,\s*transparent\).*?color-mix\(in srgb,\s*var\(--theme-toolbar-surface.*?22%,\s*transparent\).*?backdrop-filter:\s*blur\(4px\)' -or
+    $templateCss -notmatch '(?s)header\.app-header-tint\s*\{[^}]*background:.*?color-mix\(in srgb,\s*var\(--theme-toolbar-surface\)\s*34%,\s*transparent\).*?color-mix\(in srgb,\s*var\(--theme-toolbar-surface\)\s*22%,\s*transparent\).*?backdrop-filter:\s*none\s*!important' -or
+    $baseCss -notmatch '(?s)html:root\.codex-dream-skin\[data-dream-route\].*?main\.main-surface:is\(\.dream-home-shell, \.dream-conversation-shell\).*?>\s*header\.app-header-tint\s*\{[^}]*background:.*?color-mix\(in srgb,\s*var\(--theme-toolbar-surface.*?34%,\s*transparent\).*?color-mix\(in srgb,\s*var\(--theme-toolbar-surface.*?22%,\s*transparent\).*?backdrop-filter:\s*none\s*!important' -or
     $templateCss -notmatch '(?s)\.composer-surface-chrome::before\s*\{' -or
     $templateCss -notmatch '(?s)\.composer-surface-chrome::after\s*\{' -or
     $templateCss -notmatch 'button\[class~="bg-token-foreground"\]' -or
@@ -523,6 +524,14 @@ if ($baseCss -match ':has\(' -or
     $runtimeJs -notmatch 'dream-composer-host') {
   throw 'The runtime performance guard must avoid dynamic :has selectors, editor blur repaint, fixed backgrounds, and main-thread video composition.'
 }
+if ($templateCss -match 'background-attachment:\s*fixed' -or
+    $templateCss -match '(?s)\.composer-surface-chrome\s*\{[^}]*backdrop-filter:\s*blur' -or
+    $blossomCss -match 'background-attachment:\s*fixed' -or
+    $blossomCss -match 'body:has\(' -or
+    $blossomCss -match 'app-shell-left-panel\s+\*' -or
+    $blossomCss -match '(?s)\.composer-surface-chrome\s*\{[^}]*backdrop-filter:\s*blur') {
+  throw 'The low-latency theme contract must avoid fixed canvas repaint, dynamic body :has, universal sidebar descendants, and composer blur.'
+}
 if ($templateCss -match '(?s):is\(\.dream-selected-thread,\s*\[aria-current="page"\]\.sidebar-item\)\s*>\s*\*\s*\{[^}]*position\s*:\s*relative\s*!important' -or
     $templateCss -notmatch '(?s)\[data-codex-window-type\]\s+\.composer-surface-chrome\s*\{[^}]*border-width:\s*2px\s*!important[^}]*border-color:\s*transparent\s*!important' -or
     $templateCss -notmatch '(?s)main\.dream-conversation-shell\s+\.sticky\.bottom-0\s+\[class~="bg-gradient-to-t"\]\s*\{[^}]*background-image:\s*none\s*!important') {
@@ -543,10 +552,12 @@ if ($runtimeJs -notmatch 'dream-native-home-heading' -or
 }
 if ($runtimeJs -notmatch 'mutationNeedsFullEnsure' -or
     $runtimeJs -notmatch 'Streaming long conversations' -or
-    $runtimeJs -notmatch '!document\.querySelector\("\.dream-progress-pill"\)' -or
-    $runtimeJs -notmatch '!document\.querySelector\("\.dream-output-panel"\)' -or
+    $runtimeJs -notmatch 'progressMissing\s*=\s*!document\.querySelector\("\.dream-progress-pill"\)' -or
+    $runtimeJs -notmatch 'outputMissing\s*=\s*!document\.querySelector\("\.dream-output-panel"\)' -or
+    $runtimeJs -notmatch 'childElementCount\s*>\s*80' -or
+    $runtimeJs -notmatch 'stepGuideScanRequested' -or
     $runtimeJs -notmatch 'setInterval\(\(\) => scheduleEnsure\(\), 30000\)') {
-  throw 'Long streaming tasks must bypass full compatibility scans while retaining slow structural reconciliation.'
+  throw 'Long streaming tasks must bypass full compatibility scans, bound text inspection, and request layout-heavy guide discovery only when needed.'
 }
 if ($sunkenCss -notmatch '(?s)\.dream-file-changes-summary\s*\{[^}]*background:.*?border:' -or
     $sunkenCss -notmatch '(?s)\.dream-file-changes-summary.*?group\\\/turn-diff-header\s*\{[^}]*background:' -or
@@ -636,14 +647,18 @@ if ($baseCss -notmatch '--theme-home-top-fade-display' -or
     $runtimeJs -notmatch 'turnDurationPattern' -or
     $runtimeJs -notmatch 'span\.tabular-nums' -or
     $runtimeJs -notmatch '\\u5df2\\u5904\\u7406' -or
+    $runtimeJs -notmatch '\\u8017\\u65f6' -or
     $baseCss -notmatch '(?s)dream-turn-duration.*?--theme-conversation-muted-ink.*?-webkit-text-fill-color' -or
     $runtimeJs -notmatch 'dream-conversation-status-line' -or
     $runtimeJs -notmatch 'conversationLifecyclePattern' -or
-    $runtimeJs -notmatch '\\u4f60\\u5728.*?\\u505c\\u6b62\\u4e86' -or
+    $runtimeJs -notmatch '\\u4f60\\u5728.*?\\u5c0f\\u65f6.*?\\u5206\\u949f.*?\\u79d2.*?\\u505c\\u6b62\\u4e86' -or
     $runtimeJs -notmatch '\\u6a21\\u578b\\u5df2\\u4ece' -or
     $runtimeJs -notmatch '\\u6b63\\u5728\\u601d\\u8003' -or
     $baseCss -notmatch '(?s)dream-conversation-status-line.*?--theme-conversation-status-ink.*?-webkit-text-fill-color' -or
+    ([regex]::Matches($baseCss, 'dream-conversation-status-line\.dream-conversation-status-line')).Count -lt 2 -or
     $moonlitCss -notmatch '--theme-conversation-status-ink:\s*#cceefa' -or
+    $blossomCss -notmatch '--theme-conversation-muted-ink:\s*#765861' -or
+    $blossomCss -notmatch '--theme-conversation-status-ink:\s*#9b4f64' -or
     $runtimeJs -notmatch 'dream-diff-action' -or
     $runtimeJs -notmatch 'dream-diff-action-undo' -or
     $runtimeJs -notmatch 'dream-diff-action-review' -or

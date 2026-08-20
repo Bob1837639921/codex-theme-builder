@@ -41,6 +41,12 @@ artwork, motion, or theme identity.
   conversation canvas. Avoid `backdrop-filter` on the composer itself because
   every caret and glyph update can repaint the pixels behind it; use an
   optically equivalent translucent solid surface instead.
+- Do not recolor the sidebar with `aside.app-shell-left-panel *`. Scope text
+  contrast to the small set of native text, control, and SVG elements so a
+  streaming conversation does not invalidate style matching across the whole
+  sidebar subtree. Cache progress/output marker presence once per mutation
+  batch, bound text inspection for newly added subtrees, and run layout-heavy
+  walkthrough discovery only after a dialog/status/portal structural change.
 - Background video is a route-scoped scene asset. Keep the route-local main
   surface as the default; only a theme that explicitly declares
   `windowVideoCanvas` may mount its video on the stable window canvas to prevent
@@ -73,6 +79,14 @@ artwork, motion, or theme identity.
   not flash or briefly lose its border.
 
 ## Shell, sidebar, and canvas continuity
+
+- Keep the direct native content toolbar free of `transform`, `filter`,
+  `backdrop-filter`, `perspective`, or containment that creates a containing
+  block for fixed descendants. ChatGPT's native `聊天 / 工作` layer is
+  viewport-fixed and already reserves the sidebar once; trapping it inside the
+  toolbar shifts it right by half a sidebar width and drops it one toolbar row.
+  Preserve glass styling with translucent paint that does not alter containing
+  block geometry.
 
 - Keep the direct Codex content toolbar translucent on every themed home and
   conversation route. The shared runtime owns its low-opacity glass paint so a
@@ -193,7 +207,8 @@ Additional paint invariants:
 - Thinking duration, timestamps, collapsed reasoning labels, and muted execution
   summaries must resolve to `--theme-conversation-muted-ink`; current Codex
   applies light-mode tertiary utilities directly to these descendants. Completed
-  turn duration disclosures may instead use the newer `text-text/60` label and
+  turn duration disclosures may begin with either `已处理` or the newer `耗时`
+  copy and use the `text-text/60` label and
   `text-text/40` chevron utilities; runtime must mark the exact disclosure as
   `.dream-turn-duration` rather than recoloring those broad utilities globally.
   Mark the live standalone `span.tabular-nums` duration too, since it has no
@@ -205,7 +220,9 @@ Additional paint invariants:
   resolve to `--theme-conversation-status-ink`. Mark the smallest stable row so
   its adjacent glyph inherits the same readable foreground; never fix these
   lines with a universal conversation-descendant color rule because that
-  recolors light cards, diff semantics, and native controls.
+  recolors light cards, diff semantics, and native controls. Accept compound
+  elapsed values such as `4分钟12秒` or `1小时3分钟` instead of recognizing only
+  a seconds-only stopped notice.
 - Every nested content-toolbar label and icon resolves to
   `--theme-toolbar-ink`; new muted utility wrappers must not hide actions.
 - Command/tool activity headers use a separate conversation-body foreground.

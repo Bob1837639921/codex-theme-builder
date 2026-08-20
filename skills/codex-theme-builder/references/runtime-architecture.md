@@ -134,6 +134,15 @@ content viewport; flattening both to the same layer lets the viewport intercept
 toolbar pointer events. Keep only injected video and shield layers explicitly
 stacked, and verify native toolbar buttons with `elementFromPoint`.
 
+The direct native content toolbar must also remain a viewport-neutral containing
+block. Do not apply `transform`, `filter`, `backdrop-filter`, `perspective`, or
+containment to the header itself: ChatGPT New Chat mounts its `聊天 / 工作`
+switch in a viewport-fixed descendant that already subtracts the sidebar. If
+the themed header traps that descendant, the sidebar is subtracted twice and
+the switch moves right and down. Use translucent toolbar paint without a
+header-level backdrop filter; decorative pseudo layers must not change native
+fixed-position geometry.
+
 ## Native authentication boundary
 
 Theme visuals may run only while the semantic main shell and its direct native

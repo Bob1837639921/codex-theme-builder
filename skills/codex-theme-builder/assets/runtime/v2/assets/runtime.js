@@ -14,7 +14,7 @@
   const STORAGE_KEY = "codex-dream-theme-active";
   const MOTION_STORAGE_KEY = "codex-dream-motion-level";
   const MOTION_LEVELS = ["off", "low", "high"];
-  const RUNTIME_VERSION = "2.3.31-selected-trailing-rail";
+  const RUNTIME_VERSION = "2.3.35-low-latency-detail-scan";
   const THEME_SEARCH_THRESHOLD = 6;
   const MUTATION_COALESCE_MS = 180;
   const VIDEO_BINDING_NAME = "__CODEX_DREAM_SKIN_VIDEO__";
@@ -192,6 +192,7 @@
     lastOutputScan: 0,
     progressScanRequested: true,
     outputScanRequested: true,
+    stepGuideScanRequested: true,
     usagePanel: document.querySelector(".dream-usage-panel"),
     createProjectDialog: document.querySelector(".dream-create-project-dialog"),
     sitesIntroDialog: document.querySelector(".dream-sites-intro-dialog"),
@@ -350,12 +351,6 @@
        step badge, then mark only the actually light surfaces near that badge so
        unrelated menus and dark popovers retain their own palette. */
     const stepGuidePattern = /^(?:(?:\u7b2c\s*)?\d+\s*\/\s*\d+(?:\s*\u6b65)?|step\s*\d+\s*(?:of|\/)\s*\d+)$/i;
-    const stepBadge = [...document.querySelectorAll(
-      '[role="status"], [class*="rounded-full"], [data-radix-popper-content-wrapper] :is(div, span, p)'
-    )].find((node) => {
-      const rect = node.getBoundingClientRect();
-      return rect.width > 0 && rect.height > 0 && stepGuidePattern.test(normalizeProjectText(node.textContent));
-    }) || null;
     const parseLightSurface = (node) => {
       if (!node) return false;
       const match = getComputedStyle(node).backgroundColor.match(/[\d.]+/g)?.map(Number) || [];
@@ -363,8 +358,21 @@
       const [red, green, blue] = match;
       return ((.2126 * red) + (.7152 * green) + (.0722 * blue)) / 255 >= .68;
     };
-    const nextStepGuideSurfaces = new Set();
-    if (stepBadge) {
+    const nextStepGuideSurfaces = new Set(
+      [...detailState.stepGuideSurfaces].filter((node) => node.isConnected)
+    );
+    if (detailState.stepGuideScanRequested || detailState.stepGuideSurfaces.size > nextStepGuideSurfaces.size) {
+      detailState.stepGuideScanRequested = false;
+      nextStepGuideSurfaces.clear();
+      const stepBadge = [...document.querySelectorAll(
+        '[role="status"], [class*="rounded-full"], [data-radix-popper-content-wrapper] :is(div, span, p)'
+      )].find((node) => {
+        const text = normalizeProjectText(node.textContent);
+        if (!stepGuidePattern.test(text)) return false;
+        const rect = node.getBoundingClientRect();
+        return rect.width > 0 && rect.height > 0;
+      }) || null;
+      if (stepBadge) {
       const badgeRect = stepBadge.getBoundingClientRect();
       let guideRoot = stepBadge.closest("[data-radix-popper-content-wrapper]");
       if (!guideRoot) {
@@ -402,6 +410,7 @@
           .sort((left, right) => Math.abs(badgeRect.top - left.getBoundingClientRect().bottom) - Math.abs(badgeRect.top - right.getBoundingClientRect().bottom))[0];
         if (nearbyLightSurface) nextStepGuideSurfaces.add(nearbyLightSurface);
       }
+      }
     }
     detailState.stepGuideSurfaces.forEach((node) => {
       if (!nextStepGuideSurfaces.has(node)) node.classList.remove("dream-step-guide-surface");
@@ -413,7 +422,7 @@
        and text-text/40 utilities rather than the older token-text tertiary
        classes. Mark the semantic disclosure button so dark themes can provide
        one readable muted foreground without broad utility-class overrides. */
-    const turnDurationPattern = /^(?:\u5df2\u5904\u7406|processed)\s+\d/i;
+    const turnDurationPattern = /^(?:\u5df2\u5904\u7406|\u8017\u65f6|processed)\s+\d/i;
     const conversationShellForDuration = document.querySelector("main.dream-conversation-shell");
     const nextTurnDurationControls = new Set(conversationShellForDuration ?
       [...conversationShellForDuration.querySelectorAll('button[aria-expanded], span.tabular-nums')].filter((node) =>
@@ -429,7 +438,7 @@
        dark conversation. Mark the smallest stable row instead of recoloring
        every conversation descendant, which would also damage icons and light
        portaled cards. */
-    const conversationLifecyclePattern = /^(?:\u4f60\u5728\s*\d+\s*\u79d2\s*\u540e\u505c\u6b62\u4e86|you stopped after\s*\d+\s*seconds?|\u6a21\u578b\u5df2\u4ece.+(?:\u66f4\u6539|\u5207\u6362)\u4e3a.+|model (?:was )?changed from.+to.+|\u6b63\u5728\u601d\u8003(?:\u2026|\.{3})?|thinking(?:\u2026|\.{3})?)$/i;
+    const conversationLifecyclePattern = /^(?:\u4f60\u5728\s*(?:\d+\s*(?:\u5c0f\u65f6|\u5206\u949f|\u79d2)\s*)+\u540e\u505c\u6b62\u4e86|you stopped after\s*(?:\d+\s*(?:hours?|hrs?|h|minutes?|mins?|m|seconds?|secs?|s)\s*)+|\u6a21\u578b\u5df2\u4ece.+(?:\u66f4\u6539|\u5207\u6362)\u4e3a.+|model (?:was )?changed from.+to.+|\u6b63\u5728\u601d\u8003(?:\u2026|\.{3})?|thinking(?:\u2026|\.{3})?)$/i;
     const normalizeConversationStatusText = (node) => node?.matches?.("span.loading-shimmer-pure-text") ?
       normalizeProjectText([...node.childNodes].filter((child) => child.nodeType === Node.TEXT_NODE).map((child) => child.textContent).join(" ")) :
       normalizeProjectText(node?.textContent);
@@ -1711,24 +1720,37 @@
   };
   const requestDetailScansFor = (mutations) => {
     let requested = false;
+    let progressMissing = !document.querySelector(".dream-progress-pill");
+    let outputMissing = !document.querySelector(".dream-output-panel");
     for (const mutation of mutations) {
       for (const node of mutation.addedNodes) {
-        if (node.nodeType === Node.ELEMENT_NODE &&
-            (node.matches?.('[data-slot="thread-summary-panel-section-actions"]') ||
-             node.querySelector?.('[data-slot="thread-summary-panel-section-actions"]'))) {
-          detailState.outputScanRequested = true;
-          requested = true;
+        if (node.nodeType === Node.ELEMENT_NODE) {
+          if (node.matches?.('[role="dialog"], [role="status"], [data-radix-popper-content-wrapper]') ||
+              node.querySelector?.('[role="dialog"], [role="status"], [data-radix-popper-content-wrapper]')) {
+            detailState.stepGuideScanRequested = true;
+            requested = true;
+          }
+          if (node.matches?.('[data-slot="thread-summary-panel-section-actions"]') ||
+              node.querySelector?.('[data-slot="thread-summary-panel-section-actions"]')) {
+            detailState.outputScanRequested = true;
+            outputMissing = false;
+            requested = true;
+          }
         }
+        if (!progressMissing && !outputMissing) continue;
+        if (node.nodeType === Node.ELEMENT_NODE && node.childElementCount > 80) continue;
         const value = (node.textContent || "").trim();
         if (!value || value.length > 4000) continue;
-        if (!document.querySelector(".dream-progress-pill") &&
+        if (progressMissing &&
             /\u7b2c\s*\d+\s*\/\s*\d+\s*\u6b65|\d+\s*\u4e2a?\u6587\u4ef6\u5df2\u66f4/.test(value)) {
           detailState.progressScanRequested = true;
+          progressMissing = false;
           requested = true;
         }
-        if (!document.querySelector(".dream-output-panel") &&
+        if (outputMissing &&
             /(?:^|\n)(?:\u8f93\u51fa|\u73af\u5883\u4fe1\u606f|output|environment information)(?:\n|$)/i.test(value)) {
           detailState.outputScanRequested = true;
+          outputMissing = false;
           requested = true;
         }
       }

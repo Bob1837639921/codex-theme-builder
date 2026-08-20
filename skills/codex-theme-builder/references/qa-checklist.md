@@ -20,10 +20,13 @@
   disclosure copy retain the same readable base tone instead of turning black.
 - Inspect thinking duration, timestamps, collapsed reasoning, and untagged
   execution summaries through `--theme-conversation-muted-ink`. Confirm every
-  completed-turn `已处理 / Processed` disclosure and its chevron remain readable
+  completed-turn `已处理 / 耗时 / Processed` disclosure and its chevron remain readable
   at rest, then expand and collapse one without changing nearby message colors.
   During a running turn, confirm the standalone live duration uses the same tone
   from its first paint, before and after the semantic marker attaches.
+- Inspect a stopped-turn notice containing compound units such as `4分钟12秒`;
+  its complete label and adjacent glyph use `--theme-conversation-status-ink`,
+  including on pale artwork where a dark-theme fallback color is too faint.
 - Inspect every content-toolbar label and SVG wrapper through
   `--theme-toolbar-ink`, including disabled and muted native utilities.
 - On dark Home themes, confirm stable and CSS-module top-fade carriers plus
@@ -123,6 +126,10 @@
   shell. Switch between both modes and confirm neither geometry leaks.
 - Running progress uses only small-area motion and stops under reduced-motion preferences.
 - Current thread remains legible when pin/archive controls appear; controls do not shift the title.
+- In ChatGPT New Chat, inspect the native `聊天 / 工作` switch at normal and
+  narrow widths. Its group center must equal the main-surface center and its
+  top position must match the native toolbar row; enabling the theme must not
+  add half a sidebar-width horizontal offset or a second toolbar-height offset.
 - Switch through every bundled theme and verify the current-task row retains
   that theme's own ornament, silhouette, or emblem; shared runtime CSS must not
   reduce the catalog to the same border with only a color change.
@@ -179,6 +186,11 @@
 - Open a multi-step walkthrough on a dark theme and verify every instruction,
   radio marker, muted line, and `current / total` badge remains dark and readable
   on its native light card while neighboring dark popovers keep their palette.
+- With the walkthrough closed, stream a long response and type continuously in
+  the composer. Confirm no walkthrough layout scan runs until a dialog, status,
+  or portal node is added; the composer must not use backdrop blur, the global
+  canvas must not use fixed attachment, and sidebar contrast rules must not use
+  a universal descendant selector.
 - Open Plugin discovery and verify the sticky search rail, search field, icon, text, and placeholder use the active theme instead of an opaque white band.
 - Open the full-access confirmation dialog and independently verify the title, explanatory paragraph, three permission descriptions, risk warning, link, cancel action, primary action, and disabled states.
 - Check headings, secondary copy, close buttons, progress indicators, and links independently.
