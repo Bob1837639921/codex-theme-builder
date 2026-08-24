@@ -422,9 +422,11 @@ if ($runtimeJs -notmatch 'locateNativeShellMain' -or
 }
 if ($runtimeJs -notmatch 'data-codex-composer-root' -or
     $runtimeJs -notmatch 'data-composer-surface-variant' -or
-    $runtimeJs -notmatch 'dreamCompatComposerSurface' -or
-    $runtimeJs -notmatch 'classList\.add\("composer-surface-chrome"\)' -or
-    $runtimeJs -notmatch 'classList\.remove\("composer-surface-chrome"\)' -or
+    $runtimeJs -notmatch 'compileNativeComposerSelectors' -or
+    $runtimeJs -notmatch 'COMPILED_COMPOSER_SELECTOR' -or
+    $runtimeJs -notmatch 'baseStyle\.textContent\s*=\s*compileNativeComposerSelectors\(baseCss\)' -or
+    $runtimeJs -notmatch 'style\.textContent\s*=\s*compileNativeComposerSelectors\(theme\.cssText\)' -or
+    $runtimeJs -match 'classList\.add\("composer-surface-chrome"\)' -or
     $injectorText -notmatch 'data-codex-composer-root' -or
     $injectorText -notmatch 'data-codex-composer="true"') {
   throw 'Runtime and verification must preserve themed composer styling through the native semantic composer contract.'
@@ -446,6 +448,16 @@ if ($frostleafCss -notmatch 'height:\s*10px\s*!important' -or
 }
 if ($themeCss -notmatch '(?s)main\.dream-conversation-shell\s+\.sticky\.bottom-0\s+\[class~="bg-gradient-to-t"\]\s*\{[^}]*background-image:\s*none\s*!important') {
   throw 'Conversation composer fades must stay transparent, including the in-progress file-summary state.'
+}
+if ($templateCss -notmatch '(?s)\.dream-composer-native-fade.*?background-color:\s*transparent\s*!important.*?background-image:\s*none\s*!important' -or
+    $runtimeJs -notmatch 'dream-composer-rail' -or
+    $runtimeJs -notmatch 'dream-composer-native-fade' -or
+    $runtimeJs -notmatch 'dreamComposerFadeInline\s*===\s*"true"') {
+  throw 'Updated Codex absolute composer rails must mark and neutralize only the native file-summary fade.'
+}
+if ($runtimeJs -notmatch 'markCompatibleComposersIn' -or
+    $runtimeJs -notmatch '(?s)new MutationObserver\(\(mutations\) => \{.*?mutation\.addedNodes\.forEach.*?markCompatibleComposersIn\(node\).*?const relevantMutations') {
+  throw 'Route-switch composer host decorations must receive their lightweight hook before the coalesced full ensure.'
 }
 if ($themeCss -notmatch '(?s)main\.main-surface\s*>\s*header\.app-header-tint\s*\{[^}]*color:\s*[^;]+\s*!important[^}]*background:\s*.+?\s*!important[^}]*border-bottom:' -or
     $themeCss -notmatch '(?s)header\.app-header-tint\s+:is\(button,\s*span,\s*svg\)\s*\{[^}]*color:\s*[^;]+\s*!important' -or
@@ -595,6 +607,7 @@ if ($sunkenCss -notmatch '(?s)\.dream-file-changes-summary\s*\{[^}]*background:.
 }
 if ($templateCss -notmatch '(?s)\.dream-file-changes-summary\s*\{[^}]*background:\s*var\(--theme-solid-panel\)\s*!important[^}]*border:' -or
     $templateCss -notmatch '(?s)\.dream-file-changes-summary.*?group\\\/turn-diff-header\s*\{[^}]*background:' -or
+    $templateCss -notmatch '(?s)\.dream-file-changes-summary.*?group\\\/turn-diff-file-row\s+button\s*\{[^}]*background:' -or
     $templateCss -notmatch '(?s)\[role="dialog"\]\s+:is\(div,\s*h1.*?color:\s*var\(--theme-panel-text\)\s*!important.*?-webkit-text-fill-color:\s*var\(--theme-panel-text\)\s*!important' -or
     $templateCss -notmatch '(?s)\[role="dialog"\]\s+button\[class~="bg-token-foreground"\].*?color:\s*var\(--theme-primary-text\)\s*!important' -or
     $templateCss -notmatch '(?s)\[role="dialog"\]\s+:disabled\s*\{[^}]*opacity:') {

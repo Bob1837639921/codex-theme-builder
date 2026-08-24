@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, "..");
-const SKIN_VERSION = "2.3.39-toolbar-canvas-continuity";
+const SKIN_VERSION = "2.3.42-native-composer-selector";
 const MAX_ART_BYTES = 8 * 1024 * 1024;
 const MAX_VIDEO_BYTES = 8 * 1024 * 1024;
 const DIRECT_EVALUATE_LIMIT = 8 * 1024 * 1024;
@@ -840,9 +840,10 @@ async function verifySession(session) {
       document.querySelector('[data-codex-composer="true"]')?.closest('[data-composer-surface-variant]') ??
       null;
     const composerRect = composerNode?.getBoundingClientRect() ?? null;
-    const stickyComposer = composerNode ? [...composerNode.closest('.thread-scroll-container')?.querySelectorAll('.sticky') ?? []]
-      .find((node) => node.contains(composerNode)) : null;
-    const composerEffects = stickyComposer ? [...stickyComposer.querySelectorAll('*')].slice(0, 500).map((node) => {
+    const composerRail = composerNode?.closest('.dream-composer-rail') ??
+      (composerNode ? [...composerNode.closest('.thread-scroll-container')?.querySelectorAll('.sticky') ?? []]
+        .find((node) => node.contains(composerNode)) : null);
+    const composerEffects = composerRail ? [...composerRail.querySelectorAll('*')].slice(0, 500).map((node) => {
       const style = getComputedStyle(node);
       return {
         tag: node.tagName,
@@ -888,6 +889,32 @@ async function verifySession(session) {
         after: { display: after.display, content: after.content, background: after.background.slice(0, 160), boxShadow: after.boxShadow },
       });
     }
+    const fileChangeCandidates = [...document.querySelectorAll('span, div, button')]
+      .filter((node) => /\\+\\d+[\\s\\S]*-\\d+/.test(node.textContent || '') &&
+        (node.textContent || '').length < 360 &&
+        ![...node.children].some((child) => /\\+\\d+[\\s\\S]*-\\d+/.test(child.textContent || '')))
+      .slice(0, 4)
+      .map((counter) => {
+        const layers = [];
+        for (let node = counter; node && layers.length < 9; node = node.parentElement) {
+          const style = getComputedStyle(node);
+          const before = getComputedStyle(node, '::before');
+          const after = getComputedStyle(node, '::after');
+          layers.push({
+            tag: node.tagName,
+            className: typeof node.className === 'string' ? node.className.slice(0, 300) : '',
+            text: (node.textContent || '').trim().replace(/\\s+/g, ' ').slice(0, 240),
+            box: box(node),
+            backgroundColor: style.backgroundColor,
+            backgroundImage: style.backgroundImage.slice(0, 200),
+            boxShadow: style.boxShadow,
+            position: style.position,
+            before: { display: before.display, content: before.content, background: before.background.slice(0, 160) },
+            after: { display: after.display, content: after.content, background: after.background.slice(0, 160) },
+          });
+        }
+        return layers;
+      });
     const iconsPresent = actionGrid ? [...actionGrid.querySelectorAll('button')].every((button) => {
       const image = button.querySelector('img');
       const source = image?.currentSrc || image?.src || '';
@@ -1045,6 +1072,7 @@ async function verifySession(session) {
         })),
       } : null,
       composerAncestors,
+      fileChangeCandidates,
       composerEffects,
       composerSideStacks: composerRect ? {
         left: inspectPoint(Math.max(0, composerRect.left - 10), composerRect.top + composerRect.height / 2),

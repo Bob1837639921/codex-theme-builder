@@ -22,6 +22,14 @@ artwork, motion, or theme identity.
 - Remove the native conversation-only sticky `bg-gradient-to-t` fade behind the
   composer. Scope this reset to `main.dream-conversation-shell`; do not use a
   broad home-page reset.
+- Updated Codex builds may mount file-change summaries inside an absolute bottom
+  composer rail instead of `.sticky.bottom-0`. Shared runtime must mark the
+  semantic rail and neutralize only its wide painted fade layer, preserving the
+  summary pill, composer surface, layout, and pointer events. Once claimed, the
+  fade remains suppressed until that native node is actually removed; do not
+  alternate between detecting its paint and restoring it, which causes flashing.
+- File rows inside a runtime-marked file-change card must use theme panel tokens
+  rather than Codex's light `bg-surface` token.
 - Verify all four composer edges in a populated conversation, then repeat with a
   multiline composer, file-change summary, running/stop state, and narrow window.
   A fix that hides only the left and right rails is incomplete.
@@ -37,6 +45,11 @@ artwork, motion, or theme identity.
   pass. Route and composer-host state belong on stable runtime classes or data
   attributes; do not use `:has()` selectors that are invalidated by every
   message or editor mutation.
+- Compile `.composer-surface-chrome` selectors once at theme activation into
+  `:is(.composer-surface-chrome, [data-composer-surface-variant])`. React's new
+  composer nodes must match the resident stylesheet without a surface-class
+  rewrite. Only the native host, which has no stable attribute, receives the
+  lightweight mutation-microtask marker needed by outside-edge decoration.
 - Do not combine `background-attachment: fixed` with a transparent scrolling
   conversation canvas. Avoid `backdrop-filter` on the composer itself because
   every caret and glyph update can repaint the pixels behind it; use an

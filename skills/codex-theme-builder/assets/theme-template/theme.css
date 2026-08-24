@@ -286,6 +286,17 @@ html.codex-dream-skin main.dream-conversation-shell .sticky.bottom-0 [class~="bg
   background-image: none !important;
 }
 
+/* Newer Codex builds use an absolute composer rail and create a wide native
+   light fade only while the compact file-change summary is present. Runtime
+   marks the painted fade layer; keep the summary pill and composer untouched. */
+html.codex-dream-skin .dream-composer-rail .dream-composer-native-fade,
+html.codex-dream-skin .dream-composer-rail .dream-composer-native-fade::before,
+html.codex-dream-skin .dream-composer-rail .dream-composer-native-fade::after {
+  background-color: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
 /* Native queued follow-ups sit above the composer and may otherwise retain a
    light Codex surface while inheriting dark-theme text tokens. New themes get
    a complete, palette-driven surface by default. */
@@ -416,6 +427,15 @@ html.codex-dream-skin main.dream-conversation-shell .sticky.bottom-0 [class~="bg
 :root.codex-dream-skin main.dream-conversation-shell .dream-file-changes-summary .group\/turn-diff-header {
   color: var(--theme-panel-text) !important;
   background: color-mix(in srgb, var(--dream-surface, #f4f0e6) 88%, transparent) !important;
+  border-color: var(--theme-border) !important;
+}
+
+/* Codex 2026.08 moved file rows to the light bg-surface token. Override only
+   rows inside the runtime-marked diff card so dark themes never show a white
+   strip while light themes still use their own palette. */
+:root.codex-dream-skin main.dream-conversation-shell .dream-file-changes-summary
+  .group\/turn-diff-file-row button {
+  background: color-mix(in srgb, var(--theme-solid-panel) 88%, var(--dream-surface, transparent)) !important;
   border-color: var(--theme-border) !important;
 }
 

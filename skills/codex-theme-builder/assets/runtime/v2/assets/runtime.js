@@ -15,7 +15,7 @@
   const STORAGE_KEY = "codex-dream-theme-active";
   const MOTION_STORAGE_KEY = "codex-dream-motion-level";
   const MOTION_LEVELS = ["off", "low", "high"];
-  const RUNTIME_VERSION = "2.3.39-toolbar-canvas-continuity";
+  const RUNTIME_VERSION = "2.3.42-native-composer-selector";
   const THEME_SEARCH_THRESHOLD = 6;
   const MUTATION_COALESCE_MS = 180;
   const VIDEO_BINDING_NAME = "__CODEX_DREAM_SKIN_VIDEO__";
@@ -60,6 +60,40 @@
   ));
   const locateNativeShellMain = () =>
     [...document.querySelectorAll("main")].find(hasNativeShellHeader) || null;
+  const COMPOSER_SURFACE_SELECTOR = "[data-composer-surface-variant]";
+  const COMPILED_COMPOSER_SELECTOR = ":is(.composer-surface-chrome, [data-composer-surface-variant])";
+  const compileNativeComposerSelectors = (cssText) => String(cssText || "").replace(
+    /\.composer-surface-chrome(?!,\s*\[data-composer-surface-variant\]\))/g,
+    COMPILED_COMPOSER_SELECTOR,
+  );
+  const isCodexComposerSurface = (surface) => Boolean(surface &&
+    (surface.closest("[data-codex-composer-root]") || surface.querySelector('[data-codex-composer="true"]')));
+  const markCompatibleComposerSurface = (composerSurface) => {
+    if (!composerSurface?.matches?.(COMPOSER_SURFACE_SELECTOR) || !isCodexComposerSurface(composerSurface)) return null;
+    const host = composerSurface.parentElement;
+    if (host && !host.classList.contains("dream-composer-host")) {
+      host.classList.add("dream-composer-host");
+      host.dataset.dreamCompatComposerHost = "true";
+    }
+    return composerSurface;
+  };
+  const markCompatibleComposersIn = (node) => {
+    if (!node?.matches) return [];
+    const composerSurfaces = new Set();
+    if (node.matches(COMPOSER_SURFACE_SELECTOR) && isCodexComposerSurface(node)) composerSurfaces.add(node);
+    node.querySelectorAll?.(COMPOSER_SURFACE_SELECTOR).forEach((surface) => {
+      if (isCodexComposerSurface(surface)) composerSurfaces.add(surface);
+    });
+    const composerRoots = [];
+    if (node.matches('[data-codex-composer="true"]')) composerRoots.push(node);
+    node.querySelectorAll?.('[data-codex-composer="true"]').forEach((rootNode) => composerRoots.push(rootNode));
+    composerRoots.forEach((rootNode) => {
+      const surface = rootNode.closest(COMPOSER_SURFACE_SELECTOR);
+      if (surface) composerSurfaces.add(surface);
+    });
+    composerSurfaces.forEach(markCompatibleComposerSurface);
+    return [...composerSurfaces];
+  };
   const ensureCompatibilityMarkers = () => {
     const shell = locateNativeShellMain();
     if (!shell) return null;
@@ -78,17 +112,42 @@
       glass.setAttribute("aria-hidden", "true");
       header.prepend(glass);
     }
-    const composerSurfaces = new Set([
-      ...document.querySelectorAll('[data-codex-composer-root] [data-composer-surface-variant]'),
-      document.querySelector('[data-codex-composer="true"]')?.closest('[data-composer-surface-variant]'),
-    ].filter(Boolean));
-    composerSurfaces.forEach((composerSurface) => {
-      if (!composerSurface.classList.contains("composer-surface-chrome")) {
-        composerSurface.classList.add("composer-surface-chrome");
-        composerSurface.dataset.dreamCompatComposerSurface = "true";
-      }
-    });
+    markCompatibleComposersIn(document.documentElement);
     return shell;
+  };
+  const restoreComposerFade = (node) => {
+    if (!node) return;
+    const restore = (property, valueKey, priorityKey) => {
+      const value = node.dataset[valueKey] || "";
+      const priority = node.dataset[priorityKey] || "";
+      if (value) node.style.setProperty(property, value, priority);
+      else node.style.removeProperty(property);
+      delete node.dataset[valueKey];
+      delete node.dataset[priorityKey];
+    };
+    if (node.dataset.dreamComposerFadeInline === "true") {
+      restore("background-color", "dreamComposerFadeBackgroundColor", "dreamComposerFadeBackgroundColorPriority");
+      restore("background-image", "dreamComposerFadeBackgroundImage", "dreamComposerFadeBackgroundImagePriority");
+      restore("box-shadow", "dreamComposerFadeBoxShadow", "dreamComposerFadeBoxShadowPriority");
+      delete node.dataset.dreamComposerFadeInline;
+    }
+    node.classList.remove("dream-composer-native-fade");
+  };
+  const suppressComposerFade = (node) => {
+    if (node.dataset.dreamComposerFadeInline !== "true") {
+      const remember = (property, valueKey, priorityKey) => {
+        node.dataset[valueKey] = node.style.getPropertyValue(property);
+        node.dataset[priorityKey] = node.style.getPropertyPriority(property);
+      };
+      remember("background-color", "dreamComposerFadeBackgroundColor", "dreamComposerFadeBackgroundColorPriority");
+      remember("background-image", "dreamComposerFadeBackgroundImage", "dreamComposerFadeBackgroundImagePriority");
+      remember("box-shadow", "dreamComposerFadeBoxShadow", "dreamComposerFadeBoxShadowPriority");
+      node.dataset.dreamComposerFadeInline = "true";
+    }
+    node.classList.add("dream-composer-native-fade");
+    node.style.setProperty("background-color", "transparent", "important");
+    node.style.setProperty("background-image", "none", "important");
+    node.style.setProperty("box-shadow", "none", "important");
   };
   const restoreCompatibilityMarkers = () => {
     document.querySelectorAll(`.${TOOLBAR_GLASS_CLASS}`).forEach((node) => node.remove());
@@ -104,6 +163,12 @@
       node.classList.remove("composer-surface-chrome");
       delete node.dataset.dreamCompatComposerSurface;
     });
+    document.querySelectorAll('[data-dream-compat-composer-host="true"]').forEach((node) => {
+      node.classList.remove("dream-composer-host");
+      delete node.dataset.dreamCompatComposerHost;
+    });
+    document.querySelectorAll(".dream-composer-rail").forEach((node) => node.classList.remove("dream-composer-rail"));
+    document.querySelectorAll(".dream-composer-native-fade, [data-dream-composer-fade-inline='true']").forEach(restoreComposerFade);
   };
   const isNativeAppSurfaceAvailable = (
     shell = locateNativeShellMain(),
@@ -191,6 +256,7 @@
     sitesSurface: document.querySelector(".dream-sites-surface"),
     sitesSearch: document.querySelector(".dream-sites-search"),
     composerHost: document.querySelector(".dream-composer-host"),
+    composerRail: document.querySelector(".dream-composer-rail"),
     quickJumpRail: document.querySelector(".dream-quick-jump-rail"),
   };
   const detailState = {
@@ -261,6 +327,7 @@
     document.querySelectorAll(".dream-progress-indicator").forEach((node) => node.classList.remove("dream-progress-indicator"));
     clearSelectedThreadMarkers();
     document.querySelectorAll(".dream-file-changes-summary").forEach((node) => node.classList.remove("dream-file-changes-summary"));
+    document.querySelectorAll(".dream-composer-native-fade, [data-dream-composer-fade-inline='true']").forEach(restoreComposerFade);
     document.querySelectorAll(".dream-output-panel").forEach((node) => node.classList.remove("dream-output-panel"));
     document.querySelectorAll(".dream-usage-panel").forEach((node) => node.classList.remove("dream-usage-panel"));
     document.querySelectorAll(".dream-create-project-dialog").forEach((node) => node.classList.remove("dream-create-project-dialog"));
@@ -1156,7 +1223,7 @@
       (document.head || root).appendChild(baseStyle);
     }
     if (baseStyle.dataset.dreamVersion !== RUNTIME_VERSION) {
-      baseStyle.textContent = baseCss;
+      baseStyle.textContent = compileNativeComposerSelectors(baseCss);
       baseStyle.dataset.dreamVersion = RUNTIME_VERSION;
     }
     let style = document.getElementById(STYLE_ID);
@@ -1165,7 +1232,7 @@
       style.id = STYLE_ID;
       (document.head || root).appendChild(style);
     }
-    style.textContent = theme.cssText;
+    style.textContent = compileNativeComposerSelectors(theme.cssText);
     style.dataset.dreamVersion = RUNTIME_VERSION;
     style.dataset.dreamThemeId = theme.id;
     root.classList.add("codex-dream-skin");
@@ -1503,8 +1570,48 @@
       ?.closest("nav") ?? null : null;
     syncMarker("quickJumpRail", quickJumpRail, "dream-quick-jump-rail");
 
-    const composerSurface = document.querySelector(".composer-surface-chrome");
-    syncMarker("composerHost", composerSurface?.parentElement ?? null, "dream-composer-host");
+    const composerSurface = [...document.querySelectorAll(COMPOSER_SURFACE_SELECTOR)].find(isCodexComposerSurface) ?? null;
+    const composerHost = composerSurface?.parentElement ?? null;
+    syncMarker("composerHost", composerHost, "dream-composer-host");
+
+    /* Codex 2026.08 replaced the sticky bottom composer wrapper with an
+       absolutely positioned rail. When a file-change summary is mounted the
+       native rail also mounts a light, full-width fade behind the summary.
+       Discover the rail from layout semantics instead of volatile utility
+       class names, then mark only painted layers above the composer. */
+    const threadScroller = composerSurface?.closest(".thread-scroll-container") ?? null;
+    let composerRail = null;
+    for (let node = composerHost?.parentElement; node && node !== threadScroller; node = node.parentElement) {
+      const style = getComputedStyle(node);
+      if (["absolute", "fixed", "sticky"].includes(style.position) && node.contains(composerSurface)) {
+        composerRail = node;
+        break;
+      }
+    }
+    syncMarker("composerRail", composerRail, "dream-composer-rail");
+    const nextComposerFades = new Set();
+    if (composerRail && composerSurface) {
+      const composerRect = composerSurface.getBoundingClientRect();
+      [...composerRail.querySelectorAll("*")].forEach((node) => {
+        if (composerHost?.contains(node)) return;
+        const rect = node.getBoundingClientRect();
+        if (rect.width < composerRect.width * 0.72 || rect.height < 18 ||
+            rect.bottom < composerRect.top - 120 || rect.top > composerRect.top + 6) return;
+        const style = getComputedStyle(node);
+        const before = getComputedStyle(node, "::before");
+        const after = getComputedStyle(node, "::after");
+        const painted = node.dataset.dreamComposerFadeInline === "true" ||
+          style.backgroundColor !== "rgba(0, 0, 0, 0)" || style.backgroundImage !== "none" ||
+          style.boxShadow !== "none" || before.backgroundImage !== "none" ||
+          before.backgroundColor !== "rgba(0, 0, 0, 0)" || after.backgroundImage !== "none" ||
+          after.backgroundColor !== "rgba(0, 0, 0, 0)";
+        if (painted) nextComposerFades.add(node);
+      });
+    }
+    document.querySelectorAll(".dream-composer-native-fade").forEach((node) => {
+      if (!nextComposerFades.has(node)) restoreComposerFade(node);
+    });
+    nextComposerFades.forEach(suppressComposerFade);
 
     const pluginSearchInput = [...document.querySelectorAll('input[type="text"], input[type="search"]')]
       .find((input) => /(?:\u641c\u7d22\u63d2\u4ef6|search\s+plugins?)/i.test(input.placeholder || ""));
@@ -1773,7 +1880,7 @@
        second. Those additions do not change route or stable theme hosts, so a
        full compatibility scan would only force expensive style resolution.
        Still wake immediately for structural/portaled surfaces. */
-    const structuralSelector = '[role="dialog"], [role="menu"], [role="main"], [data-testid="home-icon"], .composer-surface-chrome, aside.app-shell-left-panel';
+    const structuralSelector = '[role="dialog"], [role="menu"], [role="main"], [data-testid="home-icon"], [data-composer-surface-variant], aside.app-shell-left-panel';
     return [...mutation.addedNodes].some((node) => node.nodeType === Node.ELEMENT_NODE &&
       (node.matches?.(structuralSelector) || node.querySelector?.(structuralSelector)));
   };
@@ -1797,6 +1904,14 @@
     else queueFrame();
   };
   const observer = new MutationObserver((mutations) => {
+    /* React replaces the composer node when tasks/routes switch. Attach the
+       stable theme hooks during the mutation microtask, before the browser's
+       next paint, instead of waiting for the coalesced 180 ms full scan. */
+    if (root.classList.contains("codex-dream-skin") && !themeSuspendedForNativeSurface) {
+      mutations.forEach((mutation) => mutation.addedNodes.forEach((node) => {
+        if (node.nodeType === Node.ELEMENT_NODE) markCompatibleComposersIn(node);
+      }));
+    }
     const relevantMutations = mutations.filter((mutation) =>
       !mutationIsRuntimeOwned(mutation) && !mutationIsComposerTyping(mutation));
     const detailRequested = requestDetailScansFor(relevantMutations);

@@ -212,6 +212,19 @@ marker. Discovery is scoped to the conversation shell and the native
 utility identifies `QueuedMessageList`; do not depend on localized labels such as
 `Steer` or `引导`. Remove the marker immediately when the queue is emptied.
 
+Composer-fade discovery is layout-semantic: locate the positioned bottom rail
+that owns the composer, then mark only wide painted siblings above the composer
+as `.dream-composer-native-fade`. This covers legacy sticky rails and newer
+absolute rails without depending on generated utility-class names.
+
+Task and route switches may replace only the native composer subtree while the
+theme stylesheet remains installed. At activation, runtime compiles legacy
+`.composer-surface-chrome` selectors to include the native stable
+`[data-composer-surface-variant]` contract, so replacement surfaces match without
+DOM rewriting. The mutation observer applies only the decoration-host hook,
+which lacks a native attribute; the 180 ms coalesced `ensure()` pass remains
+responsible for heavier route, detail-surface, and layout reconciliation.
+
 Home Fast-mode promotion discovery uses its semantic `aside`/status-card
 boundary. Theme layout can temporarily flex-shrink the native card before the
 marker is attached, so a positive rendered-height threshold is not a valid
