@@ -135,6 +135,11 @@ artwork, motion, or theme identity.
   collapsed. The sidebar switcher may disappear with its anchor, but background,
   motion tier, composer, and content styling must remain active and be restored
   without resetting state when the sidebar returns.
+- Codex may reconcile a still-visible sidebar by deleting only the injected
+  switcher child. Treat that exact removal as a lightweight recovery signal and
+  recreate the switcher through the coalesced ensure pass while the native
+  sidebar anchor remains present. Do not wait for the slow safety timer, and do
+  not turn ordinary runtime-owned mutations into full document scans.
 - Mount a continuous scene once on the correct stable canvas. Do not paint the
   same raster independently on sidebar and conversation containers, because
   separate `cover` crops split characters and scenery and expose solid-color

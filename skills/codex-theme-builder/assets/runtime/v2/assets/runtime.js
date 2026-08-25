@@ -15,7 +15,7 @@
   const STORAGE_KEY = "codex-dream-theme-active";
   const MOTION_STORAGE_KEY = "codex-dream-motion-level";
   const MOTION_LEVELS = ["off", "low", "high"];
-  const RUNTIME_VERSION = "2.3.42-native-composer-selector";
+  const RUNTIME_VERSION = "2.3.43-switcher-recovery";
   const THEME_SEARCH_THRESHOLD = 6;
   const MUTATION_COALESCE_MS = 180;
   const VIDEO_BINDING_NAME = "__CODEX_DREAM_SKIN_VIDEO__";
@@ -1833,6 +1833,9 @@
       : mutation.target?.parentElement;
     return Boolean(element?.closest?.('.ProseMirror[contenteditable="true"], textarea, input'));
   };
+  const mutationRemovedSwitcher = (mutation) => [...mutation.removedNodes].some((node) =>
+    node?.nodeType === Node.ELEMENT_NODE &&
+    (node.id === SWITCHER_ID || node.querySelector?.(`#${SWITCHER_ID}`)));
   const requestDetailScansFor = (mutations) => {
     let requested = false;
     let progressMissing = !document.querySelector(".dream-progress-pill");
@@ -1915,7 +1918,19 @@
     const relevantMutations = mutations.filter((mutation) =>
       !mutationIsRuntimeOwned(mutation) && !mutationIsComposerTyping(mutation));
     const detailRequested = requestDetailScansFor(relevantMutations);
-    if (detailRequested || relevantMutations.some(mutationNeedsFullEnsure)) scheduleEnsure();
+    /* Codex may reconcile the sidebar and remove an injected child without
+       replacing the sidebar element itself. That removal is runtime-owned, so
+       it is intentionally absent from relevantMutations; recover the switcher
+       through the existing coalesced ensure pass while the native anchor still
+       exists, instead of waiting for the 30-second safety reconciliation. */
+    const switcherRecoveryRequested = root.classList.contains("codex-dream-skin") &&
+      themeCatalog.length >= 2 &&
+      !document.getElementById(SWITCHER_ID) &&
+      Boolean(document.querySelector("aside.app-shell-left-panel")) &&
+      mutations.some(mutationRemovedSwitcher);
+    if (switcherRecoveryRequested || detailRequested || relevantMutations.some(mutationNeedsFullEnsure)) {
+      scheduleEnsure();
+    }
   });
   observer.observe(document.documentElement, {
     childList: true,

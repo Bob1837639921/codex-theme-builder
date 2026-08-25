@@ -187,6 +187,12 @@ background, motion level, and selected theme while the sidebar is absent. Remove
 the sidebar-owned switcher naturally with the sidebar and recreate it when the
 sidebar returns without resetting the rest of the themed shell.
 
+When React reconciles a still-mounted native sidebar and removes only the injected
+switcher child, the mutation observer treats that exact removal as a coalesced
+switcher-recovery signal. Keep this path separate from ordinary runtime-owned
+mutations so it neither waits for the 30-second safety pass nor turns theme DOM
+changes into repeated full scans.
+
 ## Change placement
 
 Before adding code, choose exactly one owner:

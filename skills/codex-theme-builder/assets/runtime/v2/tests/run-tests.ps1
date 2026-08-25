@@ -459,6 +459,11 @@ if ($runtimeJs -notmatch 'markCompatibleComposersIn' -or
     $runtimeJs -notmatch '(?s)new MutationObserver\(\(mutations\) => \{.*?mutation\.addedNodes\.forEach.*?markCompatibleComposersIn\(node\).*?const relevantMutations') {
   throw 'Route-switch composer host decorations must receive their lightweight hook before the coalesced full ensure.'
 }
+if ($runtimeJs -notmatch 'mutationRemovedSwitcher' -or
+    $runtimeJs -notmatch '(?s)switcherRecoveryRequested\s*=.*?themeCatalog\.length\s*>=\s*2.*?!document\.getElementById\(SWITCHER_ID\).*?aside\.app-shell-left-panel.*?mutations\.some\(mutationRemovedSwitcher\)' -or
+    $runtimeJs -notmatch '(?s)if\s*\(switcherRecoveryRequested\s*\|\|.*?\)\s*\{\s*scheduleEnsure\(\)') {
+  throw 'A native sidebar reconciliation must restore a removed theme switcher through the coalesced ensure pass.'
+}
 if ($themeCss -notmatch '(?s)main\.main-surface\s*>\s*header\.app-header-tint\s*\{[^}]*color:\s*[^;]+\s*!important[^}]*background:\s*.+?\s*!important[^}]*border-bottom:' -or
     $themeCss -notmatch '(?s)header\.app-header-tint\s+:is\(button,\s*span,\s*svg\)\s*\{[^}]*color:\s*[^;]+\s*!important' -or
     $baseCss -notmatch '--theme-toolbar-ink' -or
