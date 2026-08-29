@@ -88,6 +88,10 @@ artwork, motion, or theme identity.
   absolutely overlaid. Its generated `relative` utility must never consume a
   first line and push the title below the fixed 30 px row. Never apply this
   task-only geometry to generic sidebar navigation items.
+- Accept both the legacy direct action carrier and the current carrier nested
+  beneath the native `display: contents` hover-card wrapper. Theme hover paint
+  must stay on the row or a pointer-free underlay; never make every direct child
+  positioned merely to lift text above a hover background.
 - Style both the runtime marker and native ARIA fallback so row replacement does
   not flash or briefly lose its border.
 
@@ -100,6 +104,11 @@ artwork, motion, or theme identity.
   toolbar shifts it right by half a sidebar width and drops it one toolbar row.
   Preserve glass styling with translucent paint that does not alter containing
   block geometry.
+- Keep the native `header-shell-slot` carrier pointer-transparent. Newer Codex
+  builds stretch this nominal right-side slot across a split Review toolbar; if
+  theme CSS forces the carrier to `pointer-events: auto`, it intercepts the
+  Review tab, close action, and new-tab control. Restore interaction only on the
+  real descendant buttons and role-buttons, never on the full slot rectangle.
 
 - Keep the direct Codex content toolbar translucent on every themed home and
   conversation route. The shared runtime owns its low-opacity glass paint so a
@@ -131,6 +140,10 @@ artwork, motion, or theme identity.
   sidebar text shadows to actual text-bearing elements instead of the complete
   SVG/div subtree; preserve the same visible shadow, selected-row artwork,
   unread glow, hover actions, and native scroll container.
+- Codex light-mode builds may add a full-height sidebar carrier named either
+  `bg-token-bg-secondary/40` or `bg-surface-secondary/40`. Keep both variants
+  transparent inside the themed sidebar; otherwise a 40% pale native wash
+  veils every theme, with the strongest regression on dark artwork.
 - Keep the active theme on the semantic shell when the native sidebar is
   collapsed. The sidebar switcher may disappear with its anchor, but background,
   motion tier, composer, and content styling must remain active and be restored
@@ -155,6 +168,13 @@ artwork, motion, or theme identity.
   below roughly 18%, then test both narrow and wide `cover` crops.
 
 ## Native and portaled surfaces
+
+- Code and tool text must fall back to the theme reading ink (`--dream-ink`),
+  never primary-button text (`--theme-primary-text`). Native Markdown
+  `data-markdown-copy="code-block"` surfaces pair theme background with explicit
+  body/header/icon foregrounds, including nested unhighlighted spans and sticky
+  action bars. Preserve native radius, scrolling, wrap/copy controls, and layout;
+  this is resident CSS, not a new mutation scan.
 
 - Keep output panels, file-change summaries, queued follow-ups, usage panels,
   menus, dialogs, and popovers as explicit semantic surfaces. Set descendant

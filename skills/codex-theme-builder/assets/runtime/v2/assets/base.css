@@ -38,6 +38,10 @@ html.codex-dream-skin [role="dialog"] {
    layer overlaid without assigning any shared selected-task artwork. */
 html.codex-dream-skin aside.app-shell-left-panel
   [data-app-action-sidebar-thread-row].sidebar-item[data-title-aligned-trailing-rail="true"]
+  > [class~="absolute"][class~="end-0"][class~="z-10"],
+html.codex-dream-skin aside.app-shell-left-panel
+  [data-app-action-sidebar-thread-row].sidebar-item[data-title-aligned-trailing-rail="true"]
+  > :is(.contents, [data-hover-card-open-immediately="true"])
   > [class~="absolute"][class~="end-0"][class~="z-10"] {
   position: absolute !important;
   inset-inline-end: 0 !important;
@@ -496,7 +500,7 @@ html.codex-dream-skin main.main-surface > header.app-header-tint
   visibility: visible !important;
   opacity: 1 !important;
   overflow: visible !important;
-  pointer-events: auto !important;
+  pointer-events: none !important;
 }
 
 html.codex-dream-skin main.main-surface > header.app-header-tint
@@ -751,8 +755,28 @@ html.codex-dream-skin[data-dream-route]
 html.codex-dream-skin main.dream-conversation-shell
   :is(pre, code, [data-testid*="tool"], [data-testid*="command"])
   :is(span, div, p, code) {
-  color: var(--theme-conversation-code-ink, var(--theme-primary-text, #ffffff)) !important;
-  -webkit-text-fill-color: var(--theme-conversation-code-ink, var(--theme-primary-text, #ffffff)) !important;
+  color: var(--theme-conversation-code-ink, var(--dream-ink, #26332f)) !important;
+  -webkit-text-fill-color: var(--theme-conversation-code-ink, var(--dream-ink, #26332f)) !important;
+}
+
+/* Markdown code blocks are reading surfaces, not primary-action buttons.
+   Native ChatGPT blocks own a separate light palette even in a dark scene. */
+html.codex-dream-skin main.dream-conversation-shell [data-markdown-copy="code-block"] {
+  background: color-mix(in srgb, var(--dream-surface) 94%, transparent) !important;
+  border-color: color-mix(in srgb, var(--dream-ink) 20%, transparent) !important;
+}
+
+html.codex-dream-skin main.dream-conversation-shell
+  [data-markdown-copy="code-block"] > [data-markdown-copy="exclude"] {
+  background: var(--dream-surface) !important;
+}
+
+html.codex-dream-skin main.dream-conversation-shell
+  [data-markdown-copy="code-block"] :is(code, [data-markdown-copy="exclude"]),
+html.codex-dream-skin main.dream-conversation-shell
+  [data-markdown-copy="code-block"] [data-markdown-copy="exclude"] :is(div, span, button, svg) {
+  color: var(--theme-conversation-code-ink, var(--dream-ink, #26332f)) !important;
+  -webkit-text-fill-color: var(--theme-conversation-code-ink, var(--dream-ink, #26332f)) !important;
 }
 
 /* Thinking duration, timestamps, collapsed reasoning, and untagged execution
@@ -973,7 +997,7 @@ html.codex-dream-skin aside.app-shell-left-panel
    The theme already owns the outer sidebar artwork and surface, so keep this
    structural carrier transparent instead of letting it veil every theme. */
 html.codex-dream-skin aside.app-shell-left-panel
-  [class~="bg-token-bg-secondary/40"] {
+  :is([class~="bg-token-bg-secondary/40"], [class~="bg-surface-secondary/40"]) {
   background-color: transparent !important;
   background-image: none !important;
 }

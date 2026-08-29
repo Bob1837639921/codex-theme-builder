@@ -2,6 +2,11 @@
 
 ## Current Codex paint regressions
 
+- Inspect a plain-text Markdown code block in every light and dark theme.
+  Its nested spans, language header, wrap/copy icons, and sticky header remain
+  readable on the theme-owned surface. Light themes must not inherit pale
+  primary-button text; verify the block geometry and controls stay native.
+
 - Confirm composer-edge artwork is painted on exactly one intended layer. If a
   theme paints it on `.composer-surface-chrome`, its parent-host copy is off;
   no duplicate ornament crosses the conversation body.
@@ -122,6 +127,9 @@
 - Click every visible conversation-toolbar control, including output, bottom
   panel, pinned summary, and sidebar toggles. The native content viewport must
   never be the top `elementFromPoint` result at a toolbar button center.
+- Open the Review split panel and click its active tab, close action, and new-tab
+  control. At each control center, `elementFromPoint` must resolve to the native
+  control or one of its descendants, never the wide `header-shell-slot` carrier.
 - Every composer control, placeholder, tooltip, disabled state, and filled submit/stop icon has an explicit readable color in both soft and full tiers.
 - Grow the composer to multiple lines and trigger file-change summaries; decorative borders remain attached to the composer box and never depend on a fixed viewport position.
 - Type continuously for at least 15 seconds and scroll a long conversation while the active route is idle. Verify character echo remains immediate, scroll stays smooth, runtime ensure-count does not rise for editor-only mutations, and the composer has no computed backdrop blur.
@@ -156,12 +164,19 @@
   unread glow, loading state, pin/archive actions, and hover styling remain
   visually unchanged. Off-screen rows must retain their native 30 px height
   when scrolled into view.
+- Inspect the sidebar's full-height inner carrier on current Codex builds. Both
+  `bg-token-bg-secondary/40` and `bg-surface-secondary/40` variants must compute
+  to a transparent background so light mode cannot gray out dark themes or
+  bleach light-theme sidebar palettes.
 - Start a turn so the selected task shows its loading spinner. The spinner remains overlaid at the right edge and the title stays on the same single-line vertical center before, during, and after loading.
 - Hover the selected row until pin/archive controls appear and verify the
   `data-title-aligned-trailing-rail` state directly. The action carrier remains
   absolute, the row stays 30 px high, and the title's top offset does not move.
   Confirm the rule is scoped to `[data-app-action-sidebar-thread-row]` and does
   not alter New Chat, Sites, Plugins, or other generic sidebar navigation rows.
+- Repeat on an unselected task that opens the native hover-card. Confirm the
+  current `display: contents` wrapper remains layout-neutral, the title stays
+  vertically centered, and theme hover paint does not position every row child.
 - Selected-state artwork stays attached to the title label, ahead of its text, when thread action controls appear or disappear.
 - The complete selected-row background keeps its center low-detail, does not repeat or distort recognizably, and leaves the unread indicator plus pin/archive actions unobstructed.
 - Trigger conversation mutations while the current thread is selected; its marker must not be removed and re-added or visibly flash.

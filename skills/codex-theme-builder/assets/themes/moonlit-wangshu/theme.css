@@ -610,21 +610,10 @@ html.codex-dream-skin main.dream-conversation-shell .sticky.bottom-0 [class~="bg
    A row-owned underlay avoids the half-width pill produced when only the
    nested draggable title carrier receives the native hover utility. */
 :root.codex-dream-skin aside.app-shell-left-panel
-  [role="button"].sidebar-item:not(.dream-selected-thread):hover::before {
-  content: "" !important;
-  position: absolute !important;
-  z-index: 0 !important;
-  inset: 1px 0 !important;
+  [role="button"].sidebar-item:not(.dream-selected-thread):not([aria-current="page"]):not([data-app-action-sidebar-thread-selected="true"]):hover {
   border-radius: 6px !important;
   background: linear-gradient(90deg, rgb(73 148 181 / 27%), rgb(93 176 207 / 18%)) !important;
-  border: 1px solid rgb(129 211 239 / 14%) !important;
-  pointer-events: none !important;
-}
-
-:root.codex-dream-skin aside.app-shell-left-panel
-  [role="button"].sidebar-item:not(.dream-selected-thread):hover > * {
-  position: relative !important;
-  z-index: 1 !important;
+  box-shadow: inset 0 0 0 1px rgb(129 211 239 / 14%) !important;
 }
 
 :root.codex-dream-skin aside.app-shell-left-panel

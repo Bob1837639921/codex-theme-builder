@@ -134,6 +134,12 @@ content viewport; flattening both to the same layer lets the viewport intercept
 toolbar pointer events. Keep only injected video and shield layers explicitly
 stacked, and verify native toolbar buttons with `elementFromPoint`.
 
+The native `header-shell-slot` is a pointer-transparent layout carrier, not an
+interactive surface. Codex may stretch it across the complete Review tab strip
+when a split panel opens. Shared CSS may keep its real descendant buttons above
+theme paint, but must leave the carrier at `pointer-events: none`; otherwise the
+invisible slot wins hit testing over Review, close, and new-tab controls.
+
 The direct native content toolbar must also remain a viewport-neutral containing
 block. Do not apply `transform`, `filter`, `backdrop-filter`, `perspective`, or
 containment to the header itself: ChatGPT New Chat mounts its `聊天 / 工作`
@@ -193,6 +199,12 @@ switcher-recovery signal. Keep this path separate from ordinary runtime-owned
 mutations so it neither waits for the 30-second safety pass nor turns theme DOM
 changes into repeated full scans.
 
+The shared stylesheet neutralizes Codex's full-height light-mode sidebar wash.
+Current builds have used both `bg-token-bg-secondary/40` and
+`bg-surface-secondary/40`; scope both exact carrier classes beneath
+`aside.app-shell-left-panel` and make only their background transparent. Theme
+CSS continues to own the actual sidebar artwork and palette.
+
 ## Change placement
 
 Before adding code, choose exactly one owner:
@@ -211,6 +223,11 @@ row only while the native `aria-current`/`aria-selected` row is unchanged and th
 normalized header title matches exactly. Prefix-related titles such as `Task` and
 `Task 2` are distinct; a substring match can leave the previous label marker and its
 decorative padding attached after navigation or a theme switch.
+
+Thread hover actions may be nested below a native `display: contents` hover-card
+wrapper. Trailing-rail geometry must cover both that structure and the legacy direct
+carrier without positioning all row children; the latter can turn a transient hover
+state into an extra layout line and move the title outside the fixed-height row.
 
 Queued follow-up guidance uses the runtime-owned `.dream-queued-message-list`
 marker. Discovery is scoped to the conversation shell and the native

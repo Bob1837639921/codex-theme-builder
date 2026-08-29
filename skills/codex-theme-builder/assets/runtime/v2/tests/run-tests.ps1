@@ -210,6 +210,10 @@ if ($runtimeJs -notmatch 'codex-dream-theme-switcher' -or
     $injectorText -notmatch 'Theme switcher interaction test failed') {
   throw 'The catalog-driven switcher must keep persistence, rollback, keyboard handling, and live interaction coverage.'
 }
+if ($baseCss -notmatch '(?s):is\(\[data-test-id="header-shell-slot"\],\s*\[data-testid="header-shell-slot"\]\)\s*\{[^}]*pointer-events:\s*none\s*!important' -or
+    $baseCss -notmatch '(?s):is\(\[data-test-id="header-shell-slot"\],\s*\[data-testid="header-shell-slot"\]\).*?:is\(button,\s*\[role="button"\]\)\s*\{[^}]*pointer-events:\s*auto\s*!important') {
+  throw 'Header shell slots must stay pointer-transparent while their real native controls remain interactive.'
+}
 if ($templateCss -notmatch 'data-dream-motion="low"' -or
     $templateCss -notmatch 'data-dream-motion="high"' -or
     $templateCss -notmatch 'data-dream-motion="off"' -or
@@ -475,8 +479,8 @@ if ($themeCss -match 'group\\/project-selector' -or
     $baseCss -match '(?s)\.dream-project-picker\s*\{[^}]*(?:background|border(?:-radius)?|box-shadow|clip-path|margin|padding|position|z-index|width|height)\s*:') {
   throw 'Themes and shared CSS must leave the native project selector geometry and styling untouched.'
 }
-if ($baseCss -notmatch '(?s)aside\.app-shell-left-panel\s+\[class~="bg-token-bg-secondary/40"\]\s*\{[^}]*background-color:\s*transparent\s*!important[^}]*background-image:\s*none\s*!important') {
-  throw 'The native light-mode sidebar carrier must stay transparent so it cannot veil theme artwork.'
+if ($baseCss -notmatch '(?s)aside\.app-shell-left-panel\s+:is\(\[class~="bg-token-bg-secondary/40"\],\s*\[class~="bg-surface-secondary/40"\]\)\s*\{[^}]*background-color:\s*transparent\s*!important[^}]*background-image:\s*none\s*!important') {
+  throw 'Both current native light-mode sidebar carrier class variants must stay transparent so they cannot veil theme artwork.'
 }
 if ($baseCss -notmatch '(?s)\[role="dialog"\]\s*\{[^}]*color:\s*var\(--dream-ink\)\s*!important[^}]*background-color:\s*var\(--dream-surface\)\s*!important') {
   throw 'Portaled dialogs must keep a readable theme-aware foreground and surface after Codex updates.'
@@ -557,8 +561,9 @@ if ($baseCss -match 'dream-selected-thread' -or
     $baseCss -match '\[aria-current="page"\]\.sidebar-item') {
   throw 'Shared runtime CSS must not override theme-local selected-task artwork.'
 }
-if ($baseCss -notmatch '(?s)\[data-app-action-sidebar-thread-row\]\.sidebar-item\[data-title-aligned-trailing-rail="true"\].*?\[class~="absolute"\]\[class~="end-0"\]\[class~="z-10"\].*?position:\s*absolute\s*!important.*?inset-inline-end:\s*0\s*!important.*?height:\s*100%\s*!important' -or
-    $baseCss -match '(?s)aside\.app-shell-left-panel\s+\.sidebar-item\[data-title-aligned-trailing-rail="true"\]') {
+if ($baseCss -notmatch '(?s)\[data-app-action-sidebar-thread-row\]\.sidebar-item\[data-title-aligned-trailing-rail="true"\].*?>\s*:is\(\.contents,\s*\[data-hover-card-open-immediately="true"\]\)\s*>\s*\[class~="absolute"\]\[class~="end-0"\]\[class~="z-10"\].*?position:\s*absolute\s*!important.*?inset-inline-end:\s*0\s*!important.*?height:\s*100%\s*!important' -or
+    $baseCss -match '(?s)aside\.app-shell-left-panel\s+\.sidebar-item\[data-title-aligned-trailing-rail="true"\]' -or
+    $moonlitCss -match '(?s)sidebar-item[^}]*:hover\s*>\s*\*\s*\{[^}]*position:\s*relative\s*!important') {
   throw 'The native title-aligned trailing rail must remain an absolute overlay so pin/archive controls cannot push thread titles below fixed-height rows.'
 }
 if ($baseCss -match ':has\(' -or
@@ -768,3 +773,10 @@ if ($windowCanvasThemes.Count -ne 2 -or
   throw 'Only vermilion-feather and moonlit-wangshu may opt into the full-window video canvas in the current catalog.'
 }
 Write-Host 'PASS: syntax, CDP validation, selected theme payload, composer fade regression, dialog contrast regression, detail polish, reduced motion, Store activation bridge, launch defaults, and zero-config-invasion checks.'
+if ($baseCss -match '--theme-conversation-code-ink, var\(--theme-primary-text, #ffffff\)\) !important;' -or
+    $baseCss -notmatch 'data-markdown-copy="code-block"' -or
+    $baseCss -notmatch '--theme-conversation-code-ink, var\(--dream-ink, #26332f\)' -or
+    $baseCss -notmatch '(?s)data-markdown-copy="code-block".*?data-markdown-copy="exclude".*?background: var\(--dream-surface\)') {
+  throw 'Markdown code blocks must pair a themed reading surface with reading ink, never primary-button text.'
+}
+Write-Host 'PASS: light/dark Markdown code-block reading contrast.'
