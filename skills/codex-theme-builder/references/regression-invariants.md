@@ -175,6 +175,11 @@ artwork, motion, or theme identity.
   body/header/icon foregrounds, including nested unhighlighted spans and sticky
   action bars. Preserve native radius, scrolling, wrap/copy controls, and layout;
   this is resident CSS, not a new mutation scan.
+- Current Markdown tables assign a light-palette foreground directly to the
+  semantic `table`, `th`/`td`, and inline-code isolates. On dark themes, scope
+  reading ink to tables beneath the Markdown root and explicitly cover
+  `[data-markdown-copy="inline-code"]`; never repair this with a universal
+  conversation descendant selector.
 
 - Keep output panels, file-change summaries, queued follow-ups, usage panels,
   menus, dialogs, and popovers as explicit semantic surfaces. Set descendant

@@ -205,6 +205,11 @@ Current builds have used both `bg-token-bg-secondary/40` and
 `aside.app-shell-left-panel` and make only their background transparent. Theme
 CSS continues to own the actual sidebar artwork and palette.
 
+Dark-theme Markdown table contrast is also resident shared CSS. It targets only
+semantic tables beneath the native Markdown root, including `th`, `td`, and
+`data-markdown-copy="inline-code"` values. Do not add runtime scans or universal
+conversation descendant selectors for this reading-surface correction.
+
 ## Change placement
 
 Before adding code, choose exactly one owner:

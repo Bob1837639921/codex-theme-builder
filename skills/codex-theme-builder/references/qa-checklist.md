@@ -6,6 +6,10 @@
   Its nested spans, language header, wrap/copy icons, and sticky header remain
   readable on the theme-owned surface. Light themes must not inherit pale
   primary-button text; verify the block geometry and controls stay native.
+- Inspect a Markdown table on dark artwork, including header cells, ordinary
+  cells, and inline-code values. Every cell must use the theme reading ink;
+  nearby prose, links, diff colors, light cards, and native controls must keep
+  their own semantic foregrounds.
 
 - Confirm composer-edge artwork is painted on exactly one intended layer. If a
   theme paints it on `.composer-surface-chrome`, its parent-host copy is off;

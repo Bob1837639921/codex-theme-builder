@@ -779,4 +779,8 @@ if ($baseCss -match '--theme-conversation-code-ink, var\(--theme-primary-text, #
     $baseCss -notmatch '(?s)data-markdown-copy="code-block".*?data-markdown-copy="exclude".*?background: var\(--dream-surface\)') {
   throw 'Markdown code blocks must pair a themed reading surface with reading ink, never primary-button text.'
 }
+if ($baseCss -notmatch '(?s)data-dream-color-scheme="dark".*?main\.dream-conversation-shell \[class\*="_MarkdownRoot_"\] table.*?:is\(th, td\).*?data-markdown-copy="inline-code".*?--theme-conversation-code-ink.*?-webkit-text-fill-color' -or
+    $baseCss -match '(?s)main\.dream-conversation-shell\s+\*\s*\{[^}]*--theme-conversation-code-ink') {
+  throw 'Dark Markdown tables and their inline-code cells must use scoped reading ink without a universal conversation override.'
+}
 Write-Host 'PASS: light/dark Markdown code-block reading contrast.'

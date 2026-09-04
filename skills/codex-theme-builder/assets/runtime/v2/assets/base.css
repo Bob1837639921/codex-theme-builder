@@ -779,6 +779,21 @@ html.codex-dream-skin main.dream-conversation-shell
   -webkit-text-fill-color: var(--theme-conversation-code-ink, var(--dream-ink, #26332f)) !important;
 }
 
+/* Current Markdown tables assign the light-palette foreground directly to the
+   table, cells, and inline-code isolates. Override only this semantic reading
+   surface in dark themes; broad conversation recoloring would damage mixed
+   light cards, diff semantics, and native controls. */
+html.codex-dream-skin[data-dream-color-scheme="dark"]
+  main.dream-conversation-shell [class*="_MarkdownRoot_"] table,
+html.codex-dream-skin[data-dream-color-scheme="dark"]
+  main.dream-conversation-shell [class*="_MarkdownRoot_"] table :is(th, td),
+html.codex-dream-skin[data-dream-color-scheme="dark"]
+  main.dream-conversation-shell [class*="_MarkdownRoot_"] table
+  [data-markdown-copy="inline-code"] {
+  color: var(--theme-conversation-code-ink, var(--dream-ink, #dff5ff)) !important;
+  -webkit-text-fill-color: var(--theme-conversation-code-ink, var(--dream-ink, #dff5ff)) !important;
+}
+
 /* Thinking duration, timestamps, collapsed reasoning, and untagged execution
    summaries often retain light-mode token utilities on dark artwork. */
 html.codex-dream-skin main.dream-conversation-shell
