@@ -52,6 +52,15 @@
 
 final result: passed
 
+## 2026-08-20 超宽屏比例修复
+
+- 复现视口：3442 × 1394；修复前对话背景计算为 `100% 100%, 100% 100%`，16:9 人物画布被强制横向拉伸。
+- 根因：两层 `background-image` 误配了三组 position/size/attachment，第三组 `cover` 被浏览器丢弃；首页切换为单层图片后也继承了第一组拉伸尺寸。
+- 修复：对话使用 `100% 100%, cover`，首页显式使用 `cover`；只改变裁切策略，不修改或重新编码已批准的 3840 × 2160 图片。
+- 自动回归检查覆盖错误三层声明、对话 raster cover 和首页 cover。
+
+final result: passed
+
 ## 2026-08-11 motion video delivery
 
 - `home-motion.mp4`: approved home/full clip, 2,558,690 bytes.

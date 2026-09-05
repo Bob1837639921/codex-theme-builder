@@ -15,7 +15,7 @@
   const STORAGE_KEY = "codex-dream-theme-active";
   const MOTION_STORAGE_KEY = "codex-dream-motion-level";
   const MOTION_LEVELS = ["off", "low", "high"];
-  const RUNTIME_VERSION = "2.3.48-dark-markdown-table";
+  const RUNTIME_VERSION = "2.3.50-mutation-fast-path";
   const THEME_SEARCH_THRESHOLD = 6;
   const MUTATION_COALESCE_MS = 180;
   const VIDEO_BINDING_NAME = "__CODEX_DREAM_SKIN_VIDEO__";
@@ -1837,6 +1837,7 @@
     node?.nodeType === Node.ELEMENT_NODE &&
     (node.id === SWITCHER_ID || node.querySelector?.(`#${SWITCHER_ID}`)));
   const requestDetailScansFor = (mutations) => {
+    if (!mutations.length) return false;
     let requested = false;
     let progressMissing = !document.querySelector(".dream-progress-pill");
     let outputMissing = !document.querySelector(".dream-output-panel");
@@ -1907,27 +1908,27 @@
     else queueFrame();
   };
   const observer = new MutationObserver((mutations) => {
+    // Filter before subtree discovery: editor input and theme-owned updates
+    // cannot introduce native composer hosts or detail surfaces.
+    const relevantMutations = mutations.filter((mutation) =>
+      !mutationIsRuntimeOwned(mutation) && !mutationIsComposerTyping(mutation));
+    // React can remove just the injected switcher. Check that rare signal
+    // before querying the document, even when all mutations are runtime-owned.
+    const switcherRecoveryRequested = mutations.some(mutationRemovedSwitcher) &&
+      root.classList.contains("codex-dream-skin") &&
+      themeCatalog.length >= 2 &&
+      !document.getElementById(SWITCHER_ID) &&
+      Boolean(document.querySelector("aside.app-shell-left-panel"));
+    if (!relevantMutations.length && !switcherRecoveryRequested) return;
     /* React replaces the composer node when tasks/routes switch. Attach the
        stable theme hooks during the mutation microtask, before the browser's
        next paint, instead of waiting for the coalesced 180 ms full scan. */
     if (root.classList.contains("codex-dream-skin") && !themeSuspendedForNativeSurface) {
-      mutations.forEach((mutation) => mutation.addedNodes.forEach((node) => {
+      relevantMutations.forEach((mutation) => mutation.addedNodes.forEach((node) => {
         if (node.nodeType === Node.ELEMENT_NODE) markCompatibleComposersIn(node);
       }));
     }
-    const relevantMutations = mutations.filter((mutation) =>
-      !mutationIsRuntimeOwned(mutation) && !mutationIsComposerTyping(mutation));
     const detailRequested = requestDetailScansFor(relevantMutations);
-    /* Codex may reconcile the sidebar and remove an injected child without
-       replacing the sidebar element itself. That removal is runtime-owned, so
-       it is intentionally absent from relevantMutations; recover the switcher
-       through the existing coalesced ensure pass while the native anchor still
-       exists, instead of waiting for the 30-second safety reconciliation. */
-    const switcherRecoveryRequested = root.classList.contains("codex-dream-skin") &&
-      themeCatalog.length >= 2 &&
-      !document.getElementById(SWITCHER_ID) &&
-      Boolean(document.querySelector("aside.app-shell-left-panel")) &&
-      mutations.some(mutationRemovedSwitcher);
     if (switcherRecoveryRequested || detailRequested || relevantMutations.some(mutationNeedsFullEnsure)) {
       scheduleEnsure();
     }

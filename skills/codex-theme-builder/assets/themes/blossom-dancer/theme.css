@@ -105,13 +105,15 @@ html.codex-dream-skin body {
     linear-gradient(90deg, rgb(235 239 248 / 16%), rgb(228 233 244 / 5%)),
     var(--dream-conversation-art) !important;
   background-repeat: no-repeat !important;
-  background-position: center, center, center !important;
-  background-size: 100% 100%, 100% 100%, cover !important;
-  background-attachment: scroll, scroll, scroll !important;
+  background-position: center, center !important;
+  background-size: 100% 100%, cover !important;
+  background-attachment: scroll, scroll !important;
 }
 
 html.codex-dream-skin[data-dream-route="home"] body {
   background-image: var(--dream-art) !important;
+  background-position: center !important;
+  background-size: cover !important;
 }
 
 html.codex-dream-skin main.main-surface,

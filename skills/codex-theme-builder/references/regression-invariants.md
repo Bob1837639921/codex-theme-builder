@@ -1,5 +1,16 @@
 # Shared regression invariants
 
+## Mutation fast path and toolbar verification
+
+- Filter editor-only and runtime-owned mutation batches before composer subtree
+  discovery or document-wide marker queries. Preserve the separate removed-switcher
+  recovery signal and the immediate hook for newly mounted native composer hosts.
+- Toolbar hit-test verification excludes native measurement replicas beneath
+  `[aria-hidden="true"].invisible`. Continue checking every real visible toolbar
+  button with `elementFromPoint`; do not hide actual obstruction failures.
+- `assets/runtime/v2/tests/test-mutations.mjs` exercises ignored and mixed batches,
+  dialogs, selection changes, and switcher recovery, including a collapsed sidebar.
+
 Treat every verified visual fix as a reusable contract, not a theme-local patch. A
 fix is complete only when the shared template, an automated guard, and live QA
 cover the same failure mode. Preserve these invariants while changing palettes,
@@ -250,6 +261,12 @@ artwork, motion, or theme identity.
   to the active scene shell and do not silently change its approved crop.
 - Preserve approved static masters and large-display clarity. Optimize delivery
   assets offline; do not add runtime sharpening or full-screen blur filters.
+- Full-canvas character artwork must preserve its intrinsic aspect ratio on
+  ultrawide viewports. Match every comma-separated `background-size`,
+  `background-position`, and `background-attachment` entry to the actual
+  `background-image` layer count. Use `cover` for the raster scene and reserve
+  `100% 100%` only for a non-raster tint layer; explicitly restore `cover` when
+  a route changes from a layered conversation background to a single home image.
 
 ## Completion rule
 

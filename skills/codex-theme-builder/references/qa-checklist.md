@@ -1,5 +1,15 @@
 # Theme QA checklist
 
+## Mutation fast-path verification
+
+- Run `assets/runtime/v2/tests/run-tests.ps1`, including the executable mutation
+  scenarios. Editor-only and runtime-owned batches must avoid document queries,
+  composer discovery, and full ensure scheduling.
+- Verify live input-like mutations leave ensure-count unchanged, while native
+  composer replacement, dialogs, and removal of the sidebar switcher still recover.
+- Exclude native hidden toolbar measurement replicas from verification, while
+  retaining actual hit testing of the visible controls.
+
 ## Current Codex paint regressions
 
 - Inspect a plain-text Markdown code block in every light and dark theme.
@@ -118,6 +128,9 @@
 - At normal, narrow, and largest target viewports, the protected character's complete head, face, crown/ears, hair silhouette, and defining ornament remain below the Windows menu and Codex content toolbar. Confirm the source master reserved the upper chrome safe zone instead of compensating with runtime offsets.
 - Sidebar and conversation content read as one coordinated full-window scene; the content column must not restart, tile, or crop a second copy of the same raster.
 - Background detail remains crisp at the largest available target viewport without runtime sharpening or full-screen filters.
+- At an ultrawide viewport, inspect both Home and conversation computed styles:
+  every full-canvas raster uses `cover`, retains its source aspect ratio, and is
+  cropped rather than stretched; layered CSS list lengths match the image count.
 - Text, code, diffs, tool output, links, and image previews remain legible.
 - Edit an existing user message and verify the inline editor text, caret,
   placeholder, cancel button, and send button all remain readable. Confirm the

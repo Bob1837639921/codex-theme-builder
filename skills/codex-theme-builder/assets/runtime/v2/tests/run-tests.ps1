@@ -460,11 +460,11 @@ if ($templateCss -notmatch '(?s)\.dream-composer-native-fade.*?background-color:
   throw 'Updated Codex absolute composer rails must mark and neutralize only the native file-summary fade.'
 }
 if ($runtimeJs -notmatch 'markCompatibleComposersIn' -or
-    $runtimeJs -notmatch '(?s)new MutationObserver\(\(mutations\) => \{.*?mutation\.addedNodes\.forEach.*?markCompatibleComposersIn\(node\).*?const relevantMutations') {
+    $runtimeJs -notmatch '(?s)new MutationObserver\(\(mutations\) => \{.*?const relevantMutations.*?relevantMutations\.forEach.*?mutation\.addedNodes\.forEach.*?markCompatibleComposersIn\(node\).*?scheduleEnsure\(\)') {
   throw 'Route-switch composer host decorations must receive their lightweight hook before the coalesced full ensure.'
 }
 if ($runtimeJs -notmatch 'mutationRemovedSwitcher' -or
-    $runtimeJs -notmatch '(?s)switcherRecoveryRequested\s*=.*?themeCatalog\.length\s*>=\s*2.*?!document\.getElementById\(SWITCHER_ID\).*?aside\.app-shell-left-panel.*?mutations\.some\(mutationRemovedSwitcher\)' -or
+    $runtimeJs -notmatch '(?s)switcherRecoveryRequested\s*=\s*mutations\.some\(mutationRemovedSwitcher\).*?themeCatalog\.length\s*>=\s*2.*?!document\.getElementById\(SWITCHER_ID\).*?aside\.app-shell-left-panel' -or
     $runtimeJs -notmatch '(?s)if\s*\(switcherRecoveryRequested\s*\|\|.*?\)\s*\{\s*scheduleEnsure\(\)') {
   throw 'A native sidebar reconciliation must restore a removed theme switcher through the coalesced ensure pass.'
 }
@@ -582,6 +582,11 @@ if ($templateCss -match 'background-attachment:\s*fixed' -or
     $blossomCss -match 'app-shell-left-panel\s+\*' -or
     $blossomCss -match '(?s)\.composer-surface-chrome\s*\{[^}]*backdrop-filter:\s*blur') {
   throw 'The low-latency theme contract must avoid fixed canvas repaint, dynamic body :has, universal sidebar descendants, and composer blur.'
+}
+if ($blossomCss -match 'background-size:\s*100% 100%,\s*100% 100%,\s*cover' -or
+    $blossomCss -notmatch 'background-size:\s*100% 100%,\s*cover\s*!important' -or
+    $blossomCss -notmatch '(?s)\[data-dream-route="home"\]\s+body\s*\{[^}]*background-size:\s*cover\s*!important') {
+  throw 'Blossom Dancer must preserve full-canvas artwork aspect ratio with cover on home and conversation ultrawide viewports.'
 }
 if ($templateCss -match '(?s):is\(\.dream-selected-thread,\s*\[aria-current="page"\]\.sidebar-item\)\s*>\s*\*\s*\{[^}]*position\s*:\s*relative\s*!important' -or
     $templateCss -notmatch '(?s)\[data-codex-window-type\]\s+\.composer-surface-chrome\s*\{[^}]*border-width:\s*2px\s*!important[^}]*border-color:\s*transparent\s*!important' -or
@@ -784,3 +789,5 @@ if ($baseCss -notmatch '(?s)data-dream-color-scheme="dark".*?main\.dream-convers
   throw 'Dark Markdown tables and their inline-code cells must use scoped reading ink without a universal conversation override.'
 }
 Write-Host 'PASS: light/dark Markdown code-block reading contrast.'
+& $node.Path (Join-Path $PSScriptRoot 'test-mutations.mjs') (Join-Path $Root 'assets\runtime.js')
+if ($LASTEXITCODE -ne 0) { throw 'Mutation fast-path behavior checks failed.' }

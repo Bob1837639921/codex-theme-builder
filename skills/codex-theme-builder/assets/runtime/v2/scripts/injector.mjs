@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, "..");
-const SKIN_VERSION = "2.3.48-dark-markdown-table";
+const SKIN_VERSION = "2.3.50-mutation-fast-path";
 const MAX_ART_BYTES = 8 * 1024 * 1024;
 const MAX_VIDEO_BYTES = 8 * 1024 * 1024;
 const DIRECT_EVALUATE_LIMIT = 8 * 1024 * 1024;
@@ -923,6 +923,8 @@ async function verifySession(session) {
       return Boolean(image?.complete && image.naturalWidth > 0 && supportedSource);
     }) : false;
     const toolbarButtons = [...document.querySelectorAll('main.main-surface > header.app-header-tint button')]
+      // Native invisible aria-hidden replicas measure toolbar width only.
+      .filter((button) => !button.closest('[aria-hidden="true"].invisible'))
       .filter((button) => {
         const rect = button.getBoundingClientRect();
         const style = getComputedStyle(button);
