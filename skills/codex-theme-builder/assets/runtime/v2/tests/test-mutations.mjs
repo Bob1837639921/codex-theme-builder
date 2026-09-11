@@ -51,5 +51,20 @@ assert.ok(predicate, 'toolbar verifier excludes only native hidden measurement r
 for (const hidden of [true, false]) {
   assert.equal(vm.runInNewContext(predicate, {button:{closest:()=>hidden ? {} : null}}), !hidden);
 }
-assert.ok(injector.includes('return hit === button || button.contains(hit);'), 'real toolbar obstruction checks remain required');
-console.log('PASS: hidden toolbar replica filter and retained native hit-test guard.');
+const sameActionPredicate = injector.match(/const sameNativeAction = (Boolean\(hitButton[\s\S]*?toolbarButtonLabel\(button\)\));/)?.[1];
+assert.ok(sameActionPredicate, 'overlapping native toolbar actions require an exact accessible-label match');
+const button = {label: 'toggle-sidebar'};
+const matchingButton = {label: 'toggle-sidebar'};
+const differentButton = {label: 'toggle-panel'};
+const evaluateSameAction = (hitButton, toolbarButtons) => vm.runInNewContext(sameActionPredicate, {
+  button,
+  hitButton,
+  toolbarButtons,
+  toolbarButtonLabel: candidate => candidate?.label || '',
+  Boolean,
+});
+assert.equal(evaluateSameAction(matchingButton, [button, matchingButton]), true, 'same native action replica is accepted');
+assert.equal(evaluateSameAction(differentButton, [button, differentButton]), false, 'different toolbar action is rejected');
+assert.equal(evaluateSameAction(matchingButton, [button]), false, 'non-toolbar overlap is rejected');
+assert.ok(injector.includes('hit: hit === button || button.contains(hit) || sameNativeAction'), 'real toolbar obstruction checks remain required');
+console.log('PASS: hidden toolbar replicas, same-action overlap, and native obstruction guards.');

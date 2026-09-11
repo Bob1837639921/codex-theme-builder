@@ -331,6 +331,9 @@ if ($injectorText -notmatch 'MAX_VIDEO_BYTES\s*=\s*8\s*\*\s*1024\s*\*\s*1024' -o
     $injectorText -notmatch 'videoHandoffShieldPresent:\s*Boolean\(document\.getElementById\(''codex-dream-video-handoff-shield''\)\)' -or
     $injectorText -notmatch 'toolbarButtonsInteractive' -or
     $injectorText -notmatch 'elementFromPoint\(rect\.left \+ rect\.width / 2,\s*rect\.top \+ rect\.height / 2\)' -or
+    $injectorText -notmatch 'sameNativeAction' -or
+    $injectorText -notmatch 'toolbarButtons\.includes\(hitButton\)' -or
+    $injectorText -notmatch 'toolbarButtonLabel\(hitButton\) === toolbarButtonLabel\(button\)' -or
     $injectorText -notmatch 'result\.chromePointerEvents === ''none'' && result\.toolbarButtonsInteractive' -or
     $injectorText -notmatch '!result\.videoHandoffShieldPresent' -or
     $runtimeJs -notmatch 'BACKGROUND_VIDEO_ID\s*=\s*"codex-dream-background-video"' -or

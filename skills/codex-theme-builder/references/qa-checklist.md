@@ -144,6 +144,9 @@
 - Click every visible conversation-toolbar control, including output, bottom
   panel, pinned summary, and sidebar toggles. The native content viewport must
   never be the top `elementFromPoint` result at a toolbar button center.
+- If Codex temporarily mounts overlapping copies of the bottom-panel or sidebar
+  toggle, verify the center point resolves to a native toolbar button with the
+  same accessible label; a differently labeled or non-toolbar hit is a failure.
 - Open the Review split panel and click its active tab, close action, and new-tab
   control. At each control center, `elementFromPoint` must resolve to the native
   control or one of its descendants, never the wide `header-shell-slot` carrier.

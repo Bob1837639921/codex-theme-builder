@@ -120,6 +120,12 @@ artwork, motion, or theme identity.
   theme CSS forces the carrier to `pointer-events: auto`, it intercepts the
   Review tab, close action, and new-tab control. Restore interaction only on the
   real descendant buttons and role-buttons, never on the full slot rectangle.
+- Current Codex builds may briefly keep two overlapping instances of the same
+  toolbar action while a panel or responsive layout reconciles. Verification
+  must accept a center-point hit on the overlapping native toolbar button only
+  when its normalized accessible label matches the enumerated action. A content
+  viewport, theme layer, differently labeled button, or unrelated element must
+  still fail the interaction gate.
 
 - Keep the direct Codex content toolbar translucent on every themed home and
   conversation route. The shared runtime owns its low-opacity glass paint so a

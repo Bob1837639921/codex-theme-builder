@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, "..");
-const SKIN_VERSION = "2.3.50-mutation-fast-path";
+const SKIN_VERSION = "2.3.51-toolbar-overlap-verification";
 const MAX_ART_BYTES = 8 * 1024 * 1024;
 const MAX_VIDEO_BYTES = 8 * 1024 * 1024;
 const DIRECT_EVALUATE_LIMIT = 8 * 1024 * 1024;
@@ -931,11 +931,27 @@ async function verifySession(session) {
         return rect.width >= 20 && rect.height >= 20 && style.display !== 'none' &&
           style.visibility !== 'hidden' && Number.parseFloat(style.opacity || '1') > 0;
       });
-    const toolbarButtonsInteractive = toolbarButtons.every((button) => {
+    const toolbarButtonLabel = (button) => button?.getAttribute('aria-label') ||
+      button?.getAttribute('title') ||
+      (button?.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 80);
+    const toolbarButtonHits = toolbarButtons.map((button) => {
       const rect = button.getBoundingClientRect();
       const hit = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
-      return hit === button || button.contains(hit);
+      const hitButton = hit?.closest?.('button') ?? null;
+      const sameNativeAction = Boolean(hitButton && toolbarButtons.includes(hitButton) &&
+        toolbarButtonLabel(hitButton) && toolbarButtonLabel(hitButton) === toolbarButtonLabel(button));
+      return {
+        label: toolbarButtonLabel(button),
+        disabled: button.disabled || button.getAttribute('aria-disabled') === 'true',
+        pointerEvents: getComputedStyle(button).pointerEvents,
+        hit: hit === button || button.contains(hit) || sameNativeAction,
+        hitTag: hit?.tagName ?? null,
+        hitClassName: typeof hit?.className === 'string' ? hit.className.slice(0, 160) : '',
+        hitButtonLabel: toolbarButtonLabel(hitButton),
+      };
     });
+    const toolbarButtonsInteractive = toolbarButtonHits.every((button) =>
+      button.disabled || button.pointerEvents === 'none' || button.hit);
     const toolbarLayers = nativeToolbar ? [nativeToolbar, ...nativeToolbar.children].map((node) => {
       const style = getComputedStyle(node);
       const before = getComputedStyle(node, '::before');
@@ -1000,6 +1016,7 @@ async function verifySession(session) {
       chromePointerEvents: getComputedStyle(document.getElementById('codex-dream-skin-chrome') || document.body).pointerEvents,
       toolbarButtonCount: toolbarButtons.length,
       toolbarButtonsInteractive,
+      toolbarButtonHits,
       toolbarGlassPresent: Boolean(toolbarGlass),
       toolbarGlassPointerEvents: toolbarGlassStyle?.pointerEvents ?? null,
       toolbarGlassBackdropFilter: toolbarGlassStyle?.backdropFilter ?? null,
