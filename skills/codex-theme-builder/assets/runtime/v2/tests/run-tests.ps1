@@ -763,6 +763,9 @@ if ($baseCss -notmatch '(?s)\[class\*="_ApplicationMenuTopBar_"\].*?--theme-app-
     $templateCss -notmatch '--theme-conversation-activity-ink' -or
     $templateCss -notmatch '--theme-conversation-activity-highlight' -or
     $templateCss -notmatch '--theme-composer-submit-surface' -or
+    $templateCss -notmatch '--theme-user-message-surface' -or
+    $templateCss -notmatch '--theme-user-message-ink' -or
+    $baseCss -notmatch '(?s)data-user-message-bubble="true".*?--theme-user-message-ink.*?--theme-user-message-surface.*?--theme-user-message-border' -or
     $templateCss -notmatch '--theme-conversation-code-ink' -or
     $templateCss -notmatch '--theme-conversation-muted-ink' -or
     $baseCss -notmatch '(?s)app-shell-main-content-top-fade.*?_MainContentTopFade_.*?display:\s*none\s*!important') {

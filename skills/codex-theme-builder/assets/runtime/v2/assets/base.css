@@ -239,6 +239,33 @@ html.codex-dream-skin [role="dialog"].dream-sites-intro-dialog button[class~="bg
   background: var(--theme-composer-submit-surface, var(--dream-accent)) !important;
 }
 
+/* Current Codex builds give sent user messages their own native light bubble.
+   Keep the native geometry and stable semantic attribute, but remap its paint
+   to the active theme so dark artwork never receives a white capsule and all
+   message text keeps explicit contrast. */
+html.codex-dream-skin main.dream-conversation-shell
+  [data-user-message-bubble="true"] {
+  color: var(--theme-user-message-ink, var(--theme-panel-text, var(--dream-ink, #26332f))) !important;
+  -webkit-text-fill-color: currentColor !important;
+  background: var(
+    --theme-user-message-surface,
+    color-mix(in srgb, var(--theme-panel, var(--dream-surface, #f4f0e6)) 86%, transparent)
+  ) !important;
+  box-shadow:
+    inset 0 0 0 1px var(
+      --theme-user-message-border,
+      color-mix(in srgb, var(--dream-accent, #58766c) 34%, transparent)
+    ),
+    var(--theme-user-message-shadow, 0 4px 18px rgb(0 0 0 / 10%)) !important;
+}
+
+html.codex-dream-skin main.dream-conversation-shell
+  [data-user-message-bubble="true"]
+  :is(p, span, strong, em, code, a) {
+  color: inherit !important;
+  -webkit-text-fill-color: currentColor !important;
+}
+
 /* Native message editing is not the composer: Codex mounts a separate form
    whose ProseMirror and fog button carry light-mode foregrounds. Runtime marks
    only that form so dark themes receive explicit, localized contrast. */

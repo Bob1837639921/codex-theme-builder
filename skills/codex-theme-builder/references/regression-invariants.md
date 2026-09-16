@@ -26,6 +26,12 @@ artwork, motion, or theme identity.
 
 ## Composer and conversation chrome
 
+- Current Codex builds mark sent user bubbles with
+  `data-user-message-bubble="true"` and paint them with native light
+  `bg-user-message / text-user-message` utilities. Keep the native geometry,
+  but remap background, inset border, shadow, and foreground through the shared
+  `--theme-user-message-*` contract. Dark themes must never show an opaque
+  white capsule or lose the message text against it.
 - Keep `.composer-surface-chrome` on a transparent two-pixel border. Current
   Electron builds may force its semantic border width to zero; match the
   window-scoped selector and restore the transparent border so padding-box and

@@ -12,6 +12,11 @@
 
 ## Current Codex paint regressions
 
+- Inspect a sent user message in one light and one dark theme. The native
+  `data-user-message-bubble="true"` geometry remains unchanged, while its
+  surface, inset border, shadow, and text follow the active theme without
+  changing its measured box; no white capsule or invisible message text
+  remains.
 - Inspect a plain-text Markdown code block in every light and dark theme.
   Its nested spans, language header, wrap/copy icons, and sticky header remain
   readable on the theme-owned surface. Light themes must not inherit pale

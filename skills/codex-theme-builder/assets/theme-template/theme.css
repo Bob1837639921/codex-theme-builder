@@ -30,6 +30,10 @@
   --theme-message-editor-primary-surface: var(--dream-accent, #58766c);
   --theme-message-editor-primary-ink: #ffffff;
   --theme-message-editor-shadow: 0 10px 28px rgb(0 0 0 / 12%);
+  --theme-user-message-ink: var(--theme-panel-text);
+  --theme-user-message-surface: color-mix(in srgb, var(--theme-panel) 86%, transparent);
+  --theme-user-message-border: color-mix(in srgb, var(--dream-accent, #58766c) 34%, transparent);
+  --theme-user-message-shadow: 0 4px 18px rgb(0 0 0 / 10%);
   --theme-home-top-fade-display: none;
   --theme-main-content-top-fade-display: none;
   --theme-composer-host-edge-display: block;
