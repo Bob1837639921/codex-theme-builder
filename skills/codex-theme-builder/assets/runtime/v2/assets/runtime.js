@@ -15,7 +15,7 @@
   const STORAGE_KEY = "codex-dream-theme-active";
   const MOTION_STORAGE_KEY = "codex-dream-motion-level";
   const MOTION_LEVELS = ["off", "low", "high"];
-  const RUNTIME_VERSION = "2.3.53-user-message-bubble-geometry";
+  const RUNTIME_VERSION = "2.4.0-unified-shell-compat";
   const THEME_SEARCH_THRESHOLD = 6;
   const MUTATION_COALESCE_MS = 180;
   const VIDEO_BINDING_NAME = "__CODEX_DREAM_SKIN_VIDEO__";
@@ -56,9 +56,10 @@
   let themeSuspendedForNativeSurface = false;
   const usesWindowVideoCanvas = () => activeTheme?.windowVideoCanvas === true;
   const hasNativeShellHeader = (candidate) => Boolean(candidate?.querySelector(
-    ':scope > header [data-testid="app-shell-header-context-menu-surface"]',
+    ':scope > [data-app-shell-main-titlebar], :scope > header [data-testid="app-shell-header-context-menu-surface"]',
   ));
   const locateNativeShellMain = () =>
+    document.querySelector('main[data-app-shell-main-surface]') ||
     [...document.querySelectorAll("main")].find(hasNativeShellHeader) || null;
   const COMPOSER_SURFACE_SELECTOR = "[data-composer-surface-variant]";
   const COMPILED_COMPOSER_SELECTOR = ":is(.composer-surface-chrome, [data-composer-surface-variant])";
@@ -101,7 +102,7 @@
       shell.classList.add("main-surface");
       shell.dataset.dreamCompatMainSurface = "true";
     }
-    const header = shell.querySelector(":scope > header");
+    const header = shell.querySelector(":scope > [data-app-shell-main-titlebar], :scope > header");
     if (header && !header.classList.contains("app-header-tint")) {
       header.classList.add("app-header-tint");
       header.dataset.dreamCompatHeaderTint = "true";
@@ -1436,8 +1437,16 @@
         Math.max(12, window.innerWidth - panelWidth - 12),
         Math.max(12, rect.left - 54)
       );
+      const panelHeight = panel.getBoundingClientRect().height || Math.min(360, Math.max(0, window.innerHeight - 24));
+      const opensAbove = rect.bottom + 10 + panelHeight > window.innerHeight - 12;
+      const top = opensAbove
+        ? Math.max(12, rect.top - panelHeight - 10)
+        : Math.min(window.innerHeight - panelHeight - 12, rect.bottom + 10);
+      const arrowLeft = Math.min(panelWidth - 20, Math.max(12, rect.left + rect.width / 2 - left - 7));
       panel.style.setProperty("--dream-theme-panel-left", `${Math.round(left)}px`);
-      panel.style.setProperty("--dream-theme-panel-top", `${Math.round(rect.bottom + 10)}px`);
+      panel.style.setProperty("--dream-theme-panel-top", `${Math.round(top)}px`);
+      panel.style.setProperty("--dream-theme-panel-arrow-left", `${Math.round(arrowLeft)}px`);
+      panel.dataset.dreamPlacement = opensAbove ? "above" : "below";
     };
     const close = () => {
       if (panel.matches(":popover-open")) panel.hidePopover();
@@ -1449,8 +1458,8 @@
       }
     };
     const open = () => {
-      positionPanel();
       panel.hidden = false;
+      positionPanel();
       if (typeof panel.showPopover === "function" && !panel.matches(":popover-open")) {
         panel.showPopover();
       }
@@ -1539,8 +1548,19 @@
       style = document.getElementById(STYLE_ID);
     }
 
+    const composerSurface = [...document.querySelectorAll(COMPOSER_SURFACE_SELECTOR)].find(isCodexComposerSurface) ?? null;
+    const routeSurface = composerSurface?.closest('[role="main"]') ??
+      shellMain.querySelector('[role="main"]') ?? shellMain;
     const homeIcon = document.querySelector('[data-testid="home-icon"]');
-    const home = homeIcon?.closest('[role="main"]') ?? null;
+    const legacyHome = homeIcon?.closest('[role="main"]') ?? null;
+    const threadTimeline = shellMain.querySelector(
+      '[data-app-action-timeline-scroll], [data-thread-user-message-navigation-rail-list="true"], [data-content-search-turn-key]',
+    );
+    /* Codex 2026.09 removed the Home icon from the route surface and moved it
+       into the global navigation rail. A composer without thread timeline
+       semantics is the new-thread Home route; settings and other native pages
+       have no Codex composer and therefore remain outside this classification. */
+    const home = legacyHome || (composerSurface && !threadTimeline ? routeSurface : null);
     syncMarker("home", home, "dream-home");
     const homeStage = home?.querySelector(":scope > div:first-child > div:first-child") ?? null;
     const homeHero = homeStage?.querySelector(":scope > div:first-child") ?? null;
@@ -1558,7 +1578,7 @@
       return rect.width >= 480 && rect.height >= 72 && rect.height <= 240;
     }) ?? null : null;
     syncMarker("nativeHomeSuggestions", nativeHomeSuggestions, "dream-native-home-suggestions");
-    const conversation = !home ? document.querySelector('[role="main"]') : null;
+    const conversation = !home ? (threadTimeline?.closest('[role="main"]') ?? routeSurface) : null;
     syncMarker("conversation", conversation, "dream-conversation");
     root.dataset.dreamRoute = home ? "home" : "conversation";
 
@@ -1570,7 +1590,6 @@
       ?.closest("nav") ?? null : null;
     syncMarker("quickJumpRail", quickJumpRail, "dream-quick-jump-rail");
 
-    const composerSurface = [...document.querySelectorAll(COMPOSER_SURFACE_SELECTOR)].find(isCodexComposerSurface) ?? null;
     const composerHost = composerSurface?.parentElement ?? null;
     syncMarker("composerHost", composerHost, "dream-composer-host");
 
@@ -1579,9 +1598,9 @@
        native rail also mounts a light, full-width fade behind the summary.
        Discover the rail from layout semantics instead of volatile utility
        class names, then mark only painted layers above the composer. */
-    const threadScroller = composerSurface?.closest(".thread-scroll-container") ?? null;
+    const composerBoundary = composerSurface?.closest('[data-app-shell-main-content-layout]') ?? shellMain;
     let composerRail = null;
-    for (let node = composerHost?.parentElement; node && node !== threadScroller; node = node.parentElement) {
+    for (let node = composerHost?.parentElement; node && node !== composerBoundary; node = node.parentElement) {
       const style = getComputedStyle(node);
       if (["absolute", "fixed", "sticky"].includes(style.position) && node.contains(composerSurface)) {
         composerRail = node;

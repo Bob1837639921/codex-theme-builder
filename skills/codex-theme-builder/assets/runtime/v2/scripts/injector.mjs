@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, "..");
-const SKIN_VERSION = "2.3.53-user-message-bubble-geometry";
+const SKIN_VERSION = "2.4.0-unified-shell-compat";
 const MAX_ART_BYTES = 8 * 1024 * 1024;
 const MAX_VIDEO_BYTES = 8 * 1024 * 1024;
 const DIRECT_EVALUATE_LIMIT = 8 * 1024 * 1024;
@@ -689,11 +689,12 @@ async function loadPayload(themeDir, assetRegistry = null) {
 
 async function probeSession(session) {
   return session.evaluate(`(() => {
-    const shell = [...document.querySelectorAll('main')].find((candidate) =>
-      candidate.querySelector(':scope > header [data-testid="app-shell-header-context-menu-surface"]')) || null;
+    const shell = document.querySelector('main[data-app-shell-main-surface]') ||
+      [...document.querySelectorAll('main')].find((candidate) =>
+        candidate.querySelector(':scope > [data-app-shell-main-titlebar], :scope > header [data-testid="app-shell-header-context-menu-surface"]')) || null;
     const markers = {
       shell: Boolean(shell),
-      header: Boolean(shell?.querySelector(':scope > header [data-testid="app-shell-header-context-menu-surface"]')),
+      header: Boolean(shell?.querySelector(':scope > [data-app-shell-main-titlebar], :scope > header [data-testid="app-shell-header-context-menu-surface"]')),
       sidebar: Boolean(document.querySelector('aside.app-shell-left-panel')),
       composer: Boolean(document.querySelector('.composer-surface-chrome') ??
         document.querySelector('[data-codex-composer-root] [data-composer-surface-variant]') ??
@@ -831,7 +832,7 @@ async function verifySession(session) {
     const backgroundVideoRect = backgroundVideo?.getBoundingClientRect() ?? null;
     const backgroundVideoParentRect = backgroundVideo?.parentElement?.getBoundingClientRect() ?? null;
     const outputPanel = document.querySelector('.dream-output-panel');
-    const nativeToolbar = document.querySelector('main.main-surface > header.app-header-tint');
+    const nativeToolbar = document.querySelector('main.main-surface > .app-header-tint');
     const toolbarGlass = nativeToolbar?.querySelector(':scope > .dream-toolbar-glass') ?? null;
     const nativeToolbarStyle = nativeToolbar ? getComputedStyle(nativeToolbar) : null;
     const toolbarGlassStyle = toolbarGlass ? getComputedStyle(toolbarGlass) : null;

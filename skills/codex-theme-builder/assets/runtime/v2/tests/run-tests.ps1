@@ -421,11 +421,24 @@ if ($injectorText -notmatch "routeKind:\s*home\s*\?\s*'home'\s*:\s*\(conversatio
   throw 'Injection verification must require the composer only on conversation routes, not during a valid home or native-page mount.'
 }
 if ($runtimeJs -notmatch 'locateNativeShellMain' -or
+    $runtimeJs -notmatch 'main\[data-app-shell-main-surface\]' -or
+    $runtimeJs -notmatch 'data-app-shell-main-titlebar' -or
     $runtimeJs -notmatch 'app-shell-header-context-menu-surface' -or
     $runtimeJs -notmatch 'dreamCompatMainSurface' -or
     $runtimeJs -notmatch 'restoreCompatibilityMarkers' -or
     $injectorText -notmatch 'app-shell-header-context-menu-surface') {
   throw 'Runtime and verification must recognize the CSS-module Codex main surface through a reversible semantic compatibility marker.'
+}
+if ($runtimeJs -notmatch 'data-app-action-timeline-scroll' -or
+    $runtimeJs -notmatch 'composerSurface\s*&&\s*!threadTimeline' -or
+    $runtimeJs -notmatch 'data-app-shell-main-content-layout' -or
+    $baseCss -notmatch '(?s)data-app-shell-page-surface="true".*?data-app-shell-main-content-layout.*?background-color:\s*transparent\s*!important.*?background-image:\s*none\s*!important') {
+  throw 'The unified Codex shell must classify Home from composer/timeline semantics and keep its new page carrier transparent.'
+}
+if ($baseCss -notmatch '(?s)data-app-shell-left-panel-appearance.*?#codex-dream-theme-switcher.*?bottom:\s*72px.*?left:\s*10px' -or
+    $runtimeJs -notmatch 'panel\.dataset\.dreamPlacement\s*=\s*opensAbove\s*\?\s*"above"\s*:\s*"below"' -or
+    $baseCss -notmatch 'data-dream-placement="above"') {
+  throw 'The theme switcher must avoid the unified sidebar titlebar and open inside the viewport from its rail position.'
 }
 if ($runtimeJs -notmatch 'data-codex-composer-root' -or
     $runtimeJs -notmatch 'data-composer-surface-variant' -or

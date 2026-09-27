@@ -31,6 +31,15 @@ html.codex-dream-skin [role="dialog"] {
   background-color: var(--dream-surface) !important;
 }
 
+/* Codex 2026.09 introduced a rounded page-surface carrier behind the unified
+   navigation rail and content pane. The theme already paints both regions, so
+   the native light wash must stay transparent or it veils every scene. */
+html.codex-dream-skin [data-app-shell-page-surface="true"],
+html.codex-dream-skin [data-app-shell-main-content-layout] {
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
 /* Codex may temporarily opt a thread row into its title-aligned trailing rail.
    The native utility then changes the pin/archive carrier from absolute to
    relative positioning. A fixed-height block row treats that carrier as a new
@@ -1081,6 +1090,17 @@ html.codex-dream-skin aside.app-shell-left-panel
   font-family: "Microsoft YaHei UI", system-ui, sans-serif;
 }
 
+/* The unified sidebar reserves its top row for the Codex title, search and
+   notification controls. Keep the theme trigger in the navigation rail where
+   it no longer overlaps those native actions. */
+html.codex-dream-skin aside.app-shell-left-panel[data-app-shell-left-panel-appearance]
+  #codex-dream-theme-switcher {
+  top: auto;
+  right: auto;
+  bottom: 72px;
+  left: 10px;
+}
+
 html.codex-dream-skin aside.app-shell-left-panel #codex-dream-theme-switcher,
 html.codex-dream-skin aside.app-shell-left-panel #codex-dream-theme-switcher * {
   text-shadow: none !important;
@@ -1168,13 +1188,19 @@ html.codex-dream-skin aside.app-shell-left-panel
   content: "";
   position: absolute;
   top: -7px;
-  left: 67px;
+  left: var(--dream-theme-panel-arrow-left, 67px);
   width: 13px;
   height: 13px;
   border-top: 1px solid rgb(96 104 99 / 18%) !important;
   border-left: 1px solid rgb(96 104 99 / 18%) !important;
   background: rgb(250 249 245 / 96%) !important;
   transform: rotate(45deg);
+}
+
+#codex-dream-theme-switcher .dream-theme-panel[data-dream-placement="above"]::before {
+  top: auto;
+  bottom: -7px;
+  transform: rotate(225deg);
 }
 
 #codex-dream-theme-switcher .dream-theme-grid {
