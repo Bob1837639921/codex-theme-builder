@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, "..");
-const SKIN_VERSION = "2.4.4-sidebar-marker-repair";
+const SKIN_VERSION = "2.5.0-native-switcher";
 const MAX_ART_BYTES = 8 * 1024 * 1024;
 const MAX_VIDEO_BYTES = 8 * 1024 * 1024;
 const DIRECT_EVALUATE_LIMIT = 8 * 1024 * 1024;
@@ -813,6 +813,20 @@ async function verifyRemovedSession(session) {
 
 async function verifySession(session) {
   return session.evaluate(`(() => {
+    const nativeState = window.__CODEX_DREAM_SKIN_STATE__;
+    if (nativeState?.activeThemeId === 'native') {
+      const switcher = document.getElementById('codex-dream-theme-switcher');
+      const cards = switcher?.querySelectorAll('[data-dream-theme-id]') ?? [];
+      const clean = !document.documentElement.classList.contains('codex-dream-skin') &&
+        !document.getElementById('codex-dream-skin-style') &&
+        !document.querySelector('.dream-conversation-shell, .dream-home-shell, .dream-toolbar-glass') &&
+        !document.getElementById('codex-dream-background-video');
+      return {installed:true, version:nativeState.version, expectedVersion:${JSON.stringify(SKIN_VERSION)},
+        activeThemeId:'native', nativeMode:true, nativeClean:clean, themeCount:nativeState.themeCount,
+        themeCardCount:cards.length, switcherPresent:Boolean(switcher),
+        pass:clean && nativeState.version === ${JSON.stringify(SKIN_VERSION)} &&
+          (!document.querySelector('aside.app-shell-left-panel') || cards.length === nativeState.themeCount)};
+    }
     const box = (node) => {
       if (!node) return null;
       const r = node.getBoundingClientRect();
@@ -1295,7 +1309,7 @@ async function runOneShot(options) {
             await new Promise((resolve) => setTimeout(resolve, 60));
             const restoredMotion = state.activeMotionLevel;
             return {
-              pass: changed !== original && changedStyle === changed && restored === original &&
+              pass: changed !== original && (changed === 'native' ? !changedStyle : changedStyle === changed) && restored === original &&
                 motionButtons.length === 3 && changedMotion !== originalMotion &&
                 motionAttribute === changedMotion && persistedMotion === changedMotion &&
                 restoredMotion === originalMotion,

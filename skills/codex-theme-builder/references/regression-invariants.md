@@ -2,6 +2,10 @@
 
 ## Mutation fast path and toolbar verification
 
+- The first catalog entry is 原生. Restore native CSS/markers and stop theme
+  discovery, videos and decoration while preserving the switcher and persisted
+  choice. Native-to-theme switching must reattach marker repair observers.
+
 - Native sidebar toggles rewrite the main/titlebar class attributes. Observe
   only those two elements and repair missing compatibility/route markers in the
   mutation microtask before paint. Ignore intact markers to avoid feedback loops,

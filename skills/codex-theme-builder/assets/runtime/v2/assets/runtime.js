@@ -15,7 +15,7 @@
   const STORAGE_KEY = "codex-dream-theme-active";
   const MOTION_STORAGE_KEY = "codex-dream-motion-level";
   const MOTION_LEVELS = ["off", "low", "high"];
-  const RUNTIME_VERSION = "2.4.4-sidebar-marker-repair";
+  const RUNTIME_VERSION = "2.5.0-native-switcher";
   const THEME_SEARCH_THRESHOLD = 6;
   const MUTATION_COALESCE_MS = 180;
   const VIDEO_BINDING_NAME = "__CODEX_DREAM_SKIN_VIDEO__";
@@ -48,6 +48,7 @@
   for (const urls of previous?.objectUrls?.values?.() || []) {
     for (const url of urls.ownedUrls || []) URL.revokeObjectURL(url);
   }
+  themeCatalog = [{id: "native", name: "原生", subtitle: "Codex 默认界面", cssText: "", icons: {}, swatches: ["#ffffff", "#242424"]}, ...themeCatalog];
   const themeMap = new Map(themeCatalog.map((item) => [item.id, item]));
   if (!themeMap.size || !themeMap.has(initialThemeId)) throw new Error("Theme catalog is empty or missing the initial theme");
   const objectUrls = new Map();
@@ -867,6 +868,8 @@
   };
 
   const renderSwitcherSelection = () => {
+    const motionControl = document.querySelector(`#${SWITCHER_ID} .dream-motion-control`);
+    if (motionControl) motionControl.hidden = activeTheme.id === "native";
     const switcher = document.getElementById(SWITCHER_ID);
     switcher?.querySelectorAll("[data-dream-theme-id]").forEach((card) => {
       const selected = card.dataset.dreamThemeId === activeTheme.id;
@@ -941,7 +944,7 @@
     if (releaseUrl) releaseBackgroundVideoUrls();
   };
 
-  const suspendThemeForNativeSurface = () => {
+  const suspendThemeForNativeSurface = (keepSwitcher = false) => {
     themeSuspendedForNativeSurface = true;
     document.documentElement?.classList.remove("codex-dream-skin", "dream-video-covering", "dream-video-window-canvas", "dream-native-surface");
     document.documentElement?.removeAttribute("data-dream-route");
@@ -964,10 +967,12 @@
     document.getElementById(ACTIONS_ID)?.remove();
     document.getElementById(TITLE_ID)?.remove();
     document.getElementById(HOME_OVERLAY_ID)?.remove();
-    document.getElementById(SWITCHER_ID)?.remove();
+    if (!keepSwitcher) document.getElementById(SWITCHER_ID)?.remove();
     document.getElementById(MOTION_LAYER_ID)?.remove();
-    removeSwitcherListeners?.();
-    removeSwitcherListeners = null;
+    if (!keepSwitcher) {
+      removeSwitcherListeners?.();
+      removeSwitcherListeners = null;
+    }
     disposeBackgroundVideo(true);
   };
 
@@ -1028,6 +1033,7 @@
   };
 
   const syncBackgroundVideo = (shell = locateNativeShellMain()) => {
+    if (activeTheme.id === "native") return null;
     if (!isNativeAppSurfaceAvailable(shell)) {
       disposeBackgroundVideo(true);
       return null;
@@ -1255,6 +1261,22 @@
       baseStyle.textContent = compileNativeComposerSelectors(baseCss);
       baseStyle.dataset.dreamVersion = RUNTIME_VERSION;
     }
+    if (theme.id === "native") {
+      activeTheme = theme;
+      shellMarkerObserver?.disconnect();
+      observedShell = observedHeader = null;
+      suspendThemeForNativeSurface(true);
+      restoreCompatibilityMarkers();
+      root.classList.add("dream-native-mode");
+      ["--dream-art", "--dream-conversation-art", "--dream-motion-art", "--dream-usage-art"].forEach((key) => root.style.removeProperty(key));
+      root.removeAttribute("data-dream-color-scheme");
+      document.getElementById(STYLE_ID)?.remove();
+      if (persist) { try { localStorage.setItem(STORAGE_KEY, theme.id); } catch {} }
+      ensureThemeSwitcher(document.querySelector("aside.app-shell-left-panel"));
+      renderSwitcherSelection();
+      return;
+    }
+    root.classList.remove("dream-native-mode");
     let style = document.getElementById(STYLE_ID);
     if (!style) {
       style = document.createElement("style");
@@ -1298,6 +1320,7 @@
     const previousTheme = activeTheme;
     try {
       applyTheme(next, true);
+      ensure();
       setTimeout(() => {
         if (activeTheme.id !== previousTheme.id) releaseThemeUrls(previousTheme.id);
       }, 1800);
@@ -1390,9 +1413,14 @@
       card.dataset.dreamThemeSearch = `${item.name} ${item.subtitle || ""} ${item.id}`.toLocaleLowerCase();
       const preview = document.createElement("span");
       preview.className = "dream-theme-preview";
-      preview.dataset.dreamPreviewUrl = item.previewArtDataUrl || item.artDataUrl;
-      if (previewObserver) previewObserver.observe(preview);
-      else preview.style.backgroundImage = `url("${preview.dataset.dreamPreviewUrl}")`;
+      if (item.id === "native") {
+        preview.textContent = "Codex";
+        preview.style.cssText = "display:grid;place-items:center;background:#f4f4f5;color:#27272a;font:600 18px system-ui";
+      } else {
+        preview.dataset.dreamPreviewUrl = item.previewArtDataUrl || item.artDataUrl;
+        if (previewObserver) previewObserver.observe(preview);
+        else preview.style.backgroundImage = `url("${preview.dataset.dreamPreviewUrl}")`;
+      }
       const current = document.createElement("span");
       current.className = "dream-theme-current";
       current.textContent = "✓";
@@ -1555,6 +1583,10 @@
     if (window.__CODEX_DREAM_SKIN_DISABLED__) return;
     const root = document.documentElement;
     if (!root) return;
+    if (activeTheme.id === "native") {
+      ensureThemeSwitcher(document.querySelector("aside.app-shell-left-panel"));
+      return;
+    }
     const shellMain = ensureCompatibilityMarkers();
     const sidebar = document.querySelector("aside.app-shell-left-panel");
     if (!isNativeAppSurfaceAvailable(shellMain)) {
@@ -1813,6 +1845,7 @@
   };
 
   const cleanup = () => {
+    document.documentElement?.classList.remove("dream-native-mode");
     shellMarkerObserver?.disconnect();
     window.__CODEX_DREAM_SKIN_DISABLED__ = true;
     document.documentElement?.classList.remove("codex-dream-skin");
@@ -1981,6 +2014,10 @@
     if (!window.__CODEX_DREAM_SKIN_DISABLED__ && mutations.some(({target}) => shellMarkersMissing(target))) ensure();
   });
   const observer = new MutationObserver((mutations) => {
+    if (activeTheme.id === "native") {
+      if (mutations.some(mutationRemovedSwitcher)) ensure();
+      return;
+    }
     // Filter before subtree discovery: editor input and theme-owned updates
     // cannot introduce native composer hosts or detail surfaces.
     const relevantMutations = mutations.filter((mutation) =>
@@ -2018,6 +2055,7 @@
      full-scan tax while a large task is streaming. */
   const timer = setInterval(() => {
     if (document.hidden) return;
+    if (activeTheme.id === "native") return;
     detailState.conversationDetailsDirty = true;
     scheduleEnsure();
   }, 30000);

@@ -8,7 +8,7 @@ const observerCode = code.slice(code.indexOf('  const observer = new MutationObs
 const detailCode = code.slice(code.indexOf('  const requestDetailScansFor ='), code.indexOf('  const mutationNeedsFullEnsure ='));
 function harness() {
  const counts={queries:0,composers:0,scheduled:0}; let callback;
- const context={Node:{ELEMENT_NODE:1}, root:{classList:{contains:()=>true}},themeSuspendedForNativeSurface:false,themeCatalog:[{},{}],SWITCHER_ID:'switcher',detailState:{},
+ const context={Node:{ELEMENT_NODE:1},activeTheme:{id:'test'}, root:{classList:{contains:()=>true}},themeSuspendedForNativeSurface:false,themeCatalog:[{},{}],SWITCHER_ID:'switcher',detailState:{},
   document:{querySelector:()=>{counts.queries++;return null},getElementById:()=>{counts.queries++;return null}},
   mutationIsRuntimeOwned:m=>m.owned,mutationIsComposerTyping:m=>m.typing,mutationRemovedSwitcher:m=>m.switcher,
   mutationNeedsFullEnsure:m=>m.structural,invalidateConversationDetails:()=>{},markCompatibleComposersIn:()=>counts.composers++,scheduleEnsure:()=>counts.scheduled++,
@@ -131,3 +131,10 @@ assert.equal(checkMarkers(['main-surface','dream-home-shell']),false,'Home marke
 assert.equal(checkMarkers([],[],true),true,'rewritten titlebar marker is repaired');
 assert.equal(checkMarkers([],['app-header-tint'],true),false,'own titlebar write does not loop');
 console.log('PASS: shell/titlebar class replacement repair and observer loop prevention.');
+
+{
+ const h=harness();h.context.activeTheme.id='native';
+ for(let i=0;i<1000;i++)h.run([mutation({structural:true})]);
+ assert.deepEqual(h.counts,{queries:0,composers:0,scheduled:0},'native mode bypasses theme discovery and reconciliation');
+}
+console.log('PASS: native mode skips theme scanning for 1000 native DOM updates.');
