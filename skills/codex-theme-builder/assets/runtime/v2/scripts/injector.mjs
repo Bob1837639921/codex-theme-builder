@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, "..");
-const SKIN_VERSION = "2.4.0-unified-shell-compat";
+const SKIN_VERSION = "2.4.3-detail-cache";
 const MAX_ART_BYTES = 8 * 1024 * 1024;
 const MAX_VIDEO_BYTES = 8 * 1024 * 1024;
 const DIRECT_EVALUATE_LIMIT = 8 * 1024 * 1024;
@@ -689,12 +689,13 @@ async function loadPayload(themeDir, assetRegistry = null) {
 
 async function probeSession(session) {
   return session.evaluate(`(() => {
-    const shell = document.querySelector('main[data-app-shell-main-surface]') ||
-      [...document.querySelectorAll('main')].find((candidate) =>
-        candidate.querySelector(':scope > [data-app-shell-main-titlebar], :scope > header [data-testid="app-shell-header-context-menu-surface"]')) || null;
+    const headerFor = (candidate) => candidate?.querySelector(':scope > [data-app-shell-main-titlebar], :scope > header [data-testid="app-shell-header-context-menu-surface"]') ??
+      candidate?.closest('[data-app-shell-header-placement]')?.querySelector(':scope > header[data-app-shell-titlebar] [data-app-shell-main-titlebar]');
+    const shell = [...document.querySelectorAll('main')].find((candidate) =>
+      !candidate.closest('[data-app-shell-active-page="false"]') && candidate.getBoundingClientRect().width > 0 && headerFor(candidate)) || null;
     const markers = {
       shell: Boolean(shell),
-      header: Boolean(shell?.querySelector(':scope > [data-app-shell-main-titlebar], :scope > header [data-testid="app-shell-header-context-menu-surface"]')),
+      header: Boolean(headerFor(shell)),
       sidebar: Boolean(document.querySelector('aside.app-shell-left-panel')),
       composer: Boolean(document.querySelector('.composer-surface-chrome') ??
         document.querySelector('[data-codex-composer-root] [data-composer-surface-variant]') ??
@@ -817,28 +818,29 @@ async function verifySession(session) {
       const r = node.getBoundingClientRect();
       return { x: Math.round(r.x), y: Math.round(r.y), width: Math.round(r.width), height: Math.round(r.height) };
     };
-    const home = document.querySelector('.dream-home');
+    const visible = (node) => Boolean(node && !node.closest('[data-app-shell-active-page="false"]') && node.getBoundingClientRect().width > 0 && node.getBoundingClientRect().height > 0);
+    const activeShell = [...document.querySelectorAll('main.main-surface')].find(visible);
+    const home = [...document.querySelectorAll('.dream-home')].find(visible);
     const actionGrid = home?.querySelector('#codex-dream-skin-actions') ?? null;
     const cards = actionGrid ? [...actionGrid.querySelectorAll('button')].map(box) : [];
     const title = home?.querySelector('#codex-dream-skin-title') ?? null;
-    const homeVisualAnchor = home?.querySelector('.dream-home-hero') ??
-      home?.querySelector('.dream-home-stage') ??
-      home?.querySelector('#codex-dream-home-overlay') ??
-      null;
+    const homeVisualAnchor = [home?.querySelector('.dream-home-hero'),
+      home?.querySelector('.dream-home-stage'),
+      home?.querySelector('#codex-dream-home-overlay')].find(visible) ?? null;
     const switcher = document.getElementById('codex-dream-theme-switcher');
     const themeCards = switcher ? [...switcher.querySelectorAll('[data-dream-theme-id]')] : [];
-    const conversation = document.querySelector('[role="main"].dream-conversation');
+    const conversation = [...document.querySelectorAll('.dream-conversation')].find(visible);
     const backgroundVideo = document.getElementById('codex-dream-background-video');
     const backgroundVideoRect = backgroundVideo?.getBoundingClientRect() ?? null;
     const backgroundVideoParentRect = backgroundVideo?.parentElement?.getBoundingClientRect() ?? null;
     const outputPanel = document.querySelector('.dream-output-panel');
-    const nativeToolbar = document.querySelector('main.main-surface > .app-header-tint');
+    const nativeToolbar = [...document.querySelectorAll('.app-header-tint')].find((node) => node.getBoundingClientRect().width > 0);
     const toolbarGlass = nativeToolbar?.querySelector(':scope > .dream-toolbar-glass') ?? null;
     const nativeToolbarStyle = nativeToolbar ? getComputedStyle(nativeToolbar) : null;
     const toolbarGlassStyle = toolbarGlass ? getComputedStyle(toolbarGlass) : null;
-    const composerNode = document.querySelector('.composer-surface-chrome') ??
-      document.querySelector('[data-codex-composer-root] [data-composer-surface-variant]') ??
-      document.querySelector('[data-codex-composer="true"]')?.closest('[data-composer-surface-variant]') ??
+    const composerNode = activeShell?.querySelector('.composer-surface-chrome') ??
+      activeShell?.querySelector('[data-codex-composer-root] [data-composer-surface-variant]') ??
+      activeShell?.querySelector('[data-codex-composer="true"]')?.closest('[data-composer-surface-variant]') ??
       null;
     const composerRect = composerNode?.getBoundingClientRect() ?? null;
     const composerRail = composerNode?.closest('.dream-composer-rail') ??
@@ -923,7 +925,7 @@ async function verifySession(session) {
         source.startsWith(${JSON.stringify(ASSET_ORIGIN + "/")});
       return Boolean(image?.complete && image.naturalWidth > 0 && supportedSource);
     }) : false;
-    const toolbarButtons = [...document.querySelectorAll('main.main-surface > header.app-header-tint button')]
+    const toolbarButtons = [...nativeToolbar?.querySelectorAll('button') ?? []]
       // Native invisible aria-hidden replicas measure toolbar width only.
       .filter((button) => !button.closest('[aria-hidden="true"].invisible'))
       .filter((button) => {
@@ -1079,7 +1081,7 @@ async function verifySession(session) {
         })),
       } : null,
       shell: document.querySelector('main.main-surface') ? {
-        box: box(document.querySelector('main.main-surface')),
+        box: box(activeShell),
         className: document.querySelector('main.main-surface').className,
         backgroundColor: getComputedStyle(document.querySelector('main.main-surface')).backgroundColor,
         backgroundImage: getComputedStyle(document.querySelector('main.main-surface')).backgroundImage.slice(0, 160),
@@ -1129,8 +1131,8 @@ async function verifySession(session) {
       },
     };
     result.composerRequired = result.routeKind === 'conversation';
-    result.composerReady = !result.composerRequired || Boolean(result.composer);
-    result.homeReady = !result.homePresent || (Boolean(result.hero) && result.titlePresent &&
+    result.composerReady = !result.composerRequired || Boolean(result.composer?.width > 0 && result.composer?.height > 0);
+    result.homeReady = !result.homePresent || (Boolean(result.hero?.width > 0 && result.hero?.height > 0) && result.titlePresent &&
       result.actionGridPresent && result.iconsPresent && result.cards.length === 4);
     result.pass = result.installed && result.version === result.expectedVersion &&
       result.stylePresent && result.chromePresent &&

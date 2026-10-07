@@ -1048,7 +1048,7 @@ html.codex-dream-skin aside.app-shell-left-panel
    The theme already owns the outer sidebar artwork and surface, so keep this
    structural carrier transparent instead of letting it veil every theme. */
 html.codex-dream-skin aside.app-shell-left-panel
-  :is([class~="bg-token-bg-secondary/40"], [class~="bg-surface-secondary/40"]) {
+  :is(.sidebar-navigation, [class~="bg-token-bg-secondary/40"], [class~="bg-surface-secondary/40"]) {
   background-color: transparent !important;
   background-image: none !important;
 }
@@ -1406,6 +1406,23 @@ html.codex-dream-skin aside.app-shell-left-panel
 #codex-dream-theme-switcher button:focus-visible {
   outline: 2px solid var(--dream-accent, #5f7c72);
   outline-offset: 2px;
+}
+
+/* Static artwork and translucent colors remain; moving glass is expensive on
+   integrated GPUs. Extra specificity lets this shared tier override presets. */
+html:root.codex-dream-skin[data-dream-motion="off"][data-dream-motion="off"] body *,
+html:root.codex-dream-skin[data-dream-motion="off"][data-dream-motion="off"] body *::before,
+html:root.codex-dream-skin[data-dream-motion="off"][data-dream-motion="off"] body *::after {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html:root.codex-dream-skin[data-dream-motion="off"][data-dream-motion="off"] body::after,
+html:root.codex-dream-skin[data-dream-motion="off"][data-dream-motion="off"] :is(.composer-surface-chrome, [data-composer-surface-variant])::before,
+html:root.codex-dream-skin[data-dream-motion="off"][data-dream-motion="off"] #codex-dream-skin-chrome *,
+html:root.codex-dream-skin[data-dream-motion="off"][data-dream-motion="off"] #codex-dream-motion-layer * {
+  animation: none !important;
+  will-change: auto !important;
 }
 
 @media (prefers-reduced-motion: reduce) {

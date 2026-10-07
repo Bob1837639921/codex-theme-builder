@@ -404,7 +404,7 @@ if ($injectorText -notmatch 'MAX_VIDEO_BYTES\s*=\s*8\s*\*\s*1024\s*\*\s*1024' -o
     $baseCss -notmatch '(?s)\.codex-dream-background-video-layer\.is-outgoing\s*\{[^}]*opacity:\s*1\s*!important') {
   throw 'Scene-specific videos must preserve route-local defaults, support explicit theme-level window canvases, and remain tier-aware, visibility-aware, reduced-motion safe, authentication-safe, toolbar-safe, and non-interactive.'
 }
-if ($injectorText -notmatch 'const\s+homeVisualAnchor\s*=\s*home\?\.querySelector\(''\.dream-home-hero''\)' -or
+if ($injectorText -notmatch 'const\s+homeVisualAnchor\s*=\s*\[home\?\.querySelector\(''\.dream-home-hero''\)' -or
     $injectorText -match 'hero:\s*box\(home\?\.firstElementChild') {
   throw 'Injection verification must use stable runtime home markers instead of Codex DOM depth.'
 }
@@ -415,7 +415,7 @@ if ($injectorText -notmatch "source\.startsWith\('data:image/svg\+xml;base64,'\)
 }
 if ($injectorText -notmatch "routeKind:\s*home\s*\?\s*'home'\s*:\s*\(conversation\s*\?\s*'conversation'\s*:\s*'native'\)" -or
     $injectorText -notmatch "composerRequired\s*=\s*result\.routeKind\s*===\s*'conversation'" -or
-    $injectorText -notmatch 'composerReady\s*=\s*!result\.composerRequired\s*\|\|\s*Boolean\(result\.composer\)' -or
+    $injectorText -notmatch 'composerReady\s*=\s*!result\.composerRequired\s*\|\|\s*Boolean\(result\.composer\?\.width > 0 && result\.composer\?\.height > 0\)' -or
     $injectorText -notmatch 'Boolean\(result\.shell\)\s*&&\s*result\.composerReady' -or
     $injectorText -match 'Boolean\(result\.shell\)\s*&&\s*Boolean\(result\.composer\)') {
   throw 'Injection verification must require the composer only on conversation routes, not during a valid home or native-page mount.'
@@ -495,7 +495,7 @@ if ($themeCss -match 'group\\/project-selector' -or
     $baseCss -match '(?s)\.dream-project-picker\s*\{[^}]*(?:background|border(?:-radius)?|box-shadow|clip-path|margin|padding|position|z-index|width|height)\s*:') {
   throw 'Themes and shared CSS must leave the native project selector geometry and styling untouched.'
 }
-if ($baseCss -notmatch '(?s)aside\.app-shell-left-panel\s+:is\(\[class~="bg-token-bg-secondary/40"\],\s*\[class~="bg-surface-secondary/40"\]\)\s*\{[^}]*background-color:\s*transparent\s*!important[^}]*background-image:\s*none\s*!important') {
+if ($baseCss -notmatch '(?s)aside\.app-shell-left-panel\s+:is\(\.sidebar-navigation,\s*\[class~="bg-token-bg-secondary/40"\],\s*\[class~="bg-surface-secondary/40"\]\)\s*\{[^}]*background-color:\s*transparent\s*!important[^}]*background-image:\s*none\s*!important') {
   throw 'Both current native light-mode sidebar carrier class variants must stay transparent so they cannot veil theme artwork.'
 }
 if ($baseCss -notmatch '(?s)\[role="dialog"\]\s*\{[^}]*color:\s*var\(--dream-ink\)\s*!important[^}]*background-color:\s*var\(--dream-surface\)\s*!important') {
@@ -527,7 +527,7 @@ if ($runtimeJs -notmatch 'markDetailSurfaces' -or
   $runtimeJs -notmatch 'selected = nativeCurrentRow \|\| matchingTitleRow' -or
   $runtimeJs -match 'taskHeaderText\.includes\(cachedTitle\)' -or
   $runtimeJs -notmatch 'matchingTitleRow' -or
-  $runtimeJs -notmatch 'attributeFilter:\s*\["aria-current",\s*"aria-selected"\]' -or
+  $runtimeJs -notmatch 'attributeFilter:\s*\["aria-current",\s*"aria-selected",\s*"data-app-shell-active-page",\s*"data-app-action-sidebar-thread-selected"\]' -or
   $runtimeJs -notmatch 'MUTATION_COALESCE_MS = 180' -or
   $runtimeJs -notmatch 'setTextIfChanged' -or
   $runtimeJs -notmatch 'mutationIsRuntimeOwned' -or
@@ -628,7 +628,7 @@ if ($runtimeJs -notmatch 'mutationNeedsFullEnsure' -or
     $runtimeJs -notmatch 'outputMissing\s*=\s*!document\.querySelector\("\.dream-output-panel"\)' -or
     $runtimeJs -notmatch 'childElementCount\s*>\s*80' -or
     $runtimeJs -notmatch 'stepGuideScanRequested' -or
-    $runtimeJs -notmatch 'setInterval\(\(\) => scheduleEnsure\(\), 30000\)') {
+    $runtimeJs -notmatch '(?s)setInterval\(\(\) => \{\s*if \(document.hidden\) return;.*?scheduleEnsure\(\);\s*\}, 30000\)') {
   throw 'Long streaming tasks must bypass full compatibility scans, bound text inspection, and request layout-heavy guide discovery only when needed.'
 }
 if ($sunkenCss -notmatch '(?s)\.dream-file-changes-summary\s*\{[^}]*background:.*?border:' -or

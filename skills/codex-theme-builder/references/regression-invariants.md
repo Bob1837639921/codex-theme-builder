@@ -2,6 +2,19 @@
 
 ## Mutation fast path and toolbar verification
 
+- The `off` motion tier is the user-facing 流畅 tier: preserve static artwork,
+  palettes and native activity indicators; remove video decoding, background
+  blur and continuous theme decoration animations. Persist it per machine and
+  keep low/high tiers available without changing approved media assets.
+- Sidebar status-only mutations must not request full reconciliation. Mounting
+  or removing native rows/controls and changing native selection still wake it.
+  Discover composers within the active shell, and resolve asynchronous video
+  work against the visible shell rather than retained hidden Home pages.
+- Cache history-detail discovery until the conversation subtree changes or a
+  different conversation shell becomes active. Clear the cache with its markers.
+  Retain slow recovery for unobserved native changes only while visible; never
+  fall back to scanning all retained pages to locate the composer summary.
+
 - Filter editor-only and runtime-owned mutation batches before composer subtree
   discovery or document-wide marker queries. Preserve the separate removed-switcher
   recovery signal and the immediate hook for newly mounted native composer hosts.

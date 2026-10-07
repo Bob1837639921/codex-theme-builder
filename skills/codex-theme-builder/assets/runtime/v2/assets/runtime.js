@@ -15,7 +15,7 @@
   const STORAGE_KEY = "codex-dream-theme-active";
   const MOTION_STORAGE_KEY = "codex-dream-motion-level";
   const MOTION_LEVELS = ["off", "low", "high"];
-  const RUNTIME_VERSION = "2.4.0-unified-shell-compat";
+  const RUNTIME_VERSION = "2.4.3-detail-cache";
   const THEME_SEARCH_THRESHOLD = 6;
   const MUTATION_COALESCE_MS = 180;
   const VIDEO_BINDING_NAME = "__CODEX_DREAM_SKIN_VIDEO__";
@@ -55,15 +55,19 @@
   let activeBackgroundVideoElement = null;
   let themeSuspendedForNativeSurface = false;
   const usesWindowVideoCanvas = () => activeTheme?.windowVideoCanvas === true;
-  const hasNativeShellHeader = (candidate) => Boolean(candidate?.querySelector(
+  const isVisibleShellNode = (node) => Boolean(node && !node.closest('[data-app-shell-active-page="false"]') && node.getClientRects().length && node.getBoundingClientRect().width > 0);
+  const locateNativeShellHeader = (candidate) => candidate?.querySelector(
     ':scope > [data-app-shell-main-titlebar], :scope > header [data-testid="app-shell-header-context-menu-surface"]',
-  ));
+  ) ?? candidate?.closest('[data-app-shell-header-placement]')?.querySelector(':scope > header[data-app-shell-titlebar] [data-app-shell-main-titlebar]')?.closest('header') ?? null;
+  const hasNativeShellHeader = (candidate) => Boolean(locateNativeShellHeader(candidate));
   const locateNativeShellMain = () =>
-    document.querySelector('main[data-app-shell-main-surface]') ||
-    [...document.querySelectorAll("main")].find(hasNativeShellHeader) || null;
+    [...document.querySelectorAll('main[data-app-shell-main-surface], main')].find((node) => isVisibleShellNode(node) && hasNativeShellHeader(node)) || null;
   const COMPOSER_SURFACE_SELECTOR = "[data-composer-surface-variant]";
   const COMPILED_COMPOSER_SELECTOR = ":is(.composer-surface-chrome, [data-composer-surface-variant])";
   const compileNativeComposerSelectors = (cssText) => String(cssText || "").replace(
+    /main\.main-surface(?:\s*:is\([^)]*\))?\s*>\s*header\.app-header-tint/g,
+    '.app-header-tint',
+  ).replace(
     /\.composer-surface-chrome(?!,\s*\[data-composer-surface-variant\]\))/g,
     COMPILED_COMPOSER_SELECTOR,
   );
@@ -98,11 +102,14 @@
   const ensureCompatibilityMarkers = () => {
     const shell = locateNativeShellMain();
     if (!shell) return null;
+    document.querySelectorAll('main.main-surface').forEach((node) => {
+      if (node !== shell) node.classList.remove('dream-home-shell', 'dream-conversation-shell');
+    });
     if (!shell.classList.contains("main-surface")) {
       shell.classList.add("main-surface");
       shell.dataset.dreamCompatMainSurface = "true";
     }
-    const header = shell.querySelector(":scope > [data-app-shell-main-titlebar], :scope > header");
+    const header = locateNativeShellHeader(shell);
     if (header && !header.classList.contains("app-header-tint")) {
       header.classList.add("app-header-tint");
       header.dataset.dreamCompatHeaderTint = "true";
@@ -113,7 +120,7 @@
       glass.setAttribute("aria-hidden", "true");
       header.prepend(glass);
     }
-    markCompatibleComposersIn(document.documentElement);
+    markCompatibleComposersIn(shell);
     return shell;
   };
   const restoreComposerFade = (node) => {
@@ -268,6 +275,8 @@
     progressScanRequested: true,
     outputScanRequested: true,
     stepGuideScanRequested: true,
+    conversationDetailsDirty: true,
+    conversationDetailsRoot: null,
     usagePanel: document.querySelector(".dream-usage-panel"),
     createProjectDialog: document.querySelector(".dream-create-project-dialog"),
     sitesIntroDialog: document.querySelector(".dream-sites-intro-dialog"),
@@ -324,6 +333,8 @@
   };
 
   const clearDetailMarkers = () => {
+    detailState.conversationDetailsDirty = true;
+    detailState.conversationDetailsRoot = null;
     document.querySelectorAll(".dream-progress-pill").forEach((node) => node.classList.remove("dream-progress-pill"));
     document.querySelectorAll(".dream-progress-indicator").forEach((node) => node.classList.remove("dream-progress-indicator"));
     clearSelectedThreadMarkers();
@@ -494,135 +505,140 @@
     nextStepGuideSurfaces.forEach((node) => node.classList.add("dream-step-guide-surface"));
     detailState.stepGuideSurfaces = nextStepGuideSurfaces;
 
-    /* Current Codex renders completed-turn duration controls with text-text/60
-       and text-text/40 utilities rather than the older token-text tertiary
-       classes. Mark the semantic disclosure button so dark themes can provide
-       one readable muted foreground without broad utility-class overrides. */
-    const turnDurationPattern = /^(?:\u5df2\u5904\u7406|\u8017\u65f6|processed)\s+\d/i;
-    const conversationShellForDuration = document.querySelector("main.dream-conversation-shell");
-    const nextTurnDurationControls = new Set(conversationShellForDuration ?
-      [...conversationShellForDuration.querySelectorAll('button[aria-expanded], span.tabular-nums')].filter((node) =>
-        turnDurationPattern.test(normalizeProjectText(node.textContent))) : []);
-    detailState.turnDurationControls.forEach((node) => {
-      if (!nextTurnDurationControls.has(node)) node.classList.remove("dream-turn-duration");
-    });
-    nextTurnDurationControls.forEach((node) => node.classList.add("dream-turn-duration"));
-    detailState.turnDurationControls = nextTurnDurationControls;
-
-    /* Lifecycle copy such as stopped-turn notices, model changes, and the
-       compact thinking label uses light-palette utility colors even inside a
-       dark conversation. Mark the smallest stable row instead of recoloring
-       every conversation descendant, which would also damage icons and light
-       portaled cards. */
-    const conversationLifecyclePattern = /^(?:\u4f60\u5728\s*(?:\d+\s*(?:\u5c0f\u65f6|\u5206\u949f|\u79d2)\s*)+\u540e\u505c\u6b62\u4e86|you stopped after\s*(?:\d+\s*(?:hours?|hrs?|h|minutes?|mins?|m|seconds?|secs?|s)\s*)+|\u6a21\u578b\u5df2\u4ece.+(?:\u66f4\u6539|\u5207\u6362)\u4e3a.+|model (?:was )?changed from.+to.+|\u6b63\u5728\u601d\u8003(?:\u2026|\.{3})?|thinking(?:\u2026|\.{3})?)$/i;
-    const normalizeConversationStatusText = (node) => node?.matches?.("span.loading-shimmer-pure-text") ?
-      normalizeProjectText([...node.childNodes].filter((child) => child.nodeType === Node.TEXT_NODE).map((child) => child.textContent).join(" ")) :
-      normalizeProjectText(node?.textContent);
-    const nextConversationStatusLines = new Set();
-    if (conversationShellForDuration) {
-      [...conversationShellForDuration.querySelectorAll("span, p, button, [role=status], div")]
-        .filter((node) => {
-          const text = normalizeConversationStatusText(node);
-          if (!text || text.length > 220 || !conversationLifecyclePattern.test(text)) return false;
-          return ![...node.children].some((child) => normalizeProjectText(child.textContent) === text);
-        })
-        .forEach((node) => {
-          let row = node;
-          for (let depth = 0; depth < 3 && row.parentElement && row.parentElement !== conversationShellForDuration; depth += 1) {
-            const parent = row.parentElement;
-            const rect = parent.getBoundingClientRect();
-            if (normalizeConversationStatusText(parent) !== normalizeConversationStatusText(node) || rect.height > 52 || rect.width > 760) break;
-            row = parent;
-          }
-          nextConversationStatusLines.add(row);
-        });
-    }
-    detailState.conversationStatusLines.forEach((node) => {
-      if (!nextConversationStatusLines.has(node)) node.classList.remove("dream-conversation-status-line");
-    });
-    nextConversationStatusLines.forEach((node) => node.classList.add("dream-conversation-status-line"));
-    detailState.conversationStatusLines = nextConversationStatusLines;
-
-    const messageEditorInput = document.querySelector('[role="textbox"][aria-label="编辑消息"]');
-    const messageEditor = messageEditorInput?.closest("form") || null;
-    if (detailState.messageEditor && detailState.messageEditor !== messageEditor) {
-      detailState.messageEditor.classList.remove("dream-message-editor");
-    }
-    document.querySelectorAll(".dream-message-editor").forEach((node) => {
-      if (node !== messageEditor) node.classList.remove("dream-message-editor");
-    });
-    messageEditor?.classList.add("dream-message-editor");
-    detailState.messageEditor = messageEditor;
-
-    const diffHeaders = [...document.getElementsByClassName("group/turn-diff-header")];
-    const diffCards = new Set(diffHeaders.map((header) => header.parentElement).filter(Boolean));
-    document.querySelectorAll(".dream-file-changes-summary").forEach((node) => {
-      if (!diffCards.has(node)) node.classList.remove("dream-file-changes-summary");
-    });
-    diffCards.forEach((node) => node.classList.add("dream-file-changes-summary"));
-
-    /* Diff-card actions use the native light primary-soft button token even
-       when the surrounding card is a dark theme. Mark only the localized
-       undo/review controls so the invisible full-row review hit target and
-       file rows keep their native behavior and geometry. */
-    const nextDiffActionControls = new Set();
-    diffCards.forEach((card) => {
-      [...card.querySelectorAll("button")].forEach((button) => {
-        const label = normalizeProjectText(button.textContent || button.getAttribute("aria-label") || "");
-        const action = /^(?:撤销|undo)$/i.test(label) ? "undo" : /^(?:审核|审查|review)$/i.test(label) ? "review" : "";
-        if (!action) return;
-        nextDiffActionControls.add(button);
-        button.classList.add("dream-diff-action", `dream-diff-action-${action}`);
+    const detailsRoot = document.querySelector("main.dream-conversation-shell");
+    if (detailState.conversationDetailsDirty || detailState.conversationDetailsRoot !== detailsRoot) {
+      detailState.conversationDetailsDirty = false;
+      detailState.conversationDetailsRoot = detailsRoot;
+      /* Current Codex renders completed-turn duration controls with text-text/60
+         and text-text/40 utilities rather than the older token-text tertiary
+         classes. Mark the semantic disclosure button so dark themes can provide
+         one readable muted foreground without broad utility-class overrides. */
+      const turnDurationPattern = /^(?:\u5df2\u5904\u7406|\u8017\u65f6|processed)\s+\d/i;
+      const conversationShellForDuration = document.querySelector("main.dream-conversation-shell");
+      const nextTurnDurationControls = new Set(conversationShellForDuration ?
+        [...conversationShellForDuration.querySelectorAll('button[aria-expanded], span.tabular-nums')].filter((node) =>
+          turnDurationPattern.test(normalizeProjectText(node.textContent))) : []);
+      detailState.turnDurationControls.forEach((node) => {
+        if (!nextTurnDurationControls.has(node)) node.classList.remove("dream-turn-duration");
       });
-    });
-    detailState.diffActionControls.forEach((node) => {
-      if (!nextDiffActionControls.has(node)) node.classList.remove("dream-diff-action", "dream-diff-action-undo", "dream-diff-action-review");
-    });
-    detailState.diffActionControls = nextDiffActionControls;
+      nextTurnDurationControls.forEach((node) => node.classList.add("dream-turn-duration"));
+      detailState.turnDurationControls = nextTurnDurationControls;
 
-    /* Queued follow-up prompts are rendered above the composer as a native
-       vertical-scroll-fade-mask list. Mark only the language-independent
-       max-height variant owned by QueuedMessageList; its action labels are
-       localized and therefore unsuitable as the primary selector. */
-    const conversationShell = document.querySelector("main.dream-conversation-shell");
-    const messageActionPattern = /^(?:\u590d\u5236|\u56de\u590d\u4f18\u79c0|\u56de\u590d\u4e0d\u4f73|\u4ece\u8fd9\u91cc\u521b\u5efa\u804a\u5929\u5206\u652f|\u590d\u5236\u6d88\u606f|\u7f16\u8f91\u6d88\u606f|copy|good response|bad response|branch from here|copy message|edit message)$/i;
-    const nextMessageActionControls = new Set(conversationShell ? [...conversationShell.querySelectorAll("button")].filter((button) =>
-      messageActionPattern.test(normalizeProjectText(button.getAttribute("aria-label") || button.title || button.textContent))) : []);
-    const nextMessageActionRows = new Set();
-    nextMessageActionControls.forEach((button) => {
-      button.classList.add("dream-message-action");
-      let row = button.parentElement;
-      for (let depth = 0; row && row !== conversationShell && depth < 5; depth += 1, row = row.parentElement) {
-        const rect = row.getBoundingClientRect();
-        const matches = [...row.querySelectorAll("button")].filter((candidate) => nextMessageActionControls.has(candidate)).length;
-        if (matches >= 2 && rect.width <= 760 && rect.height <= 56) {
-          row.classList.add("dream-message-action-row");
-          nextMessageActionRows.add(row);
-          break;
-        }
+      /* Lifecycle copy such as stopped-turn notices, model changes, and the
+         compact thinking label uses light-palette utility colors even inside a
+         dark conversation. Mark the smallest stable row instead of recoloring
+         every conversation descendant, which would also damage icons and light
+         portaled cards. */
+      const conversationLifecyclePattern = /^(?:\u4f60\u5728\s*(?:\d+\s*(?:\u5c0f\u65f6|\u5206\u949f|\u79d2)\s*)+\u540e\u505c\u6b62\u4e86|you stopped after\s*(?:\d+\s*(?:hours?|hrs?|h|minutes?|mins?|m|seconds?|secs?|s)\s*)+|\u6a21\u578b\u5df2\u4ece.+(?:\u66f4\u6539|\u5207\u6362)\u4e3a.+|model (?:was )?changed from.+to.+|\u6b63\u5728\u601d\u8003(?:\u2026|\.{3})?|thinking(?:\u2026|\.{3})?)$/i;
+      const normalizeConversationStatusText = (node) => node?.matches?.("span.loading-shimmer-pure-text") ?
+        normalizeProjectText([...node.childNodes].filter((child) => child.nodeType === Node.TEXT_NODE).map((child) => child.textContent).join(" ")) :
+        normalizeProjectText(node?.textContent);
+      const nextConversationStatusLines = new Set();
+      if (conversationShellForDuration) {
+        [...conversationShellForDuration.querySelectorAll("span, p, button, [role=status], div")]
+          .filter((node) => {
+            const text = normalizeConversationStatusText(node);
+            if (!text || text.length > 220 || !conversationLifecyclePattern.test(text)) return false;
+            return ![...node.children].some((child) => normalizeProjectText(child.textContent) === text);
+          })
+          .forEach((node) => {
+            let row = node;
+            for (let depth = 0; depth < 3 && row.parentElement && row.parentElement !== conversationShellForDuration; depth += 1) {
+              const parent = row.parentElement;
+              const rect = parent.getBoundingClientRect();
+              if (normalizeConversationStatusText(parent) !== normalizeConversationStatusText(node) || rect.height > 52 || rect.width > 760) break;
+              row = parent;
+            }
+            nextConversationStatusLines.add(row);
+          });
       }
-    });
-    detailState.messageActionControls.forEach((node) => {
-      if (!nextMessageActionControls.has(node)) node.classList.remove("dream-message-action");
-    });
-    detailState.messageActionRows.forEach((node) => {
-      if (!nextMessageActionRows.has(node)) node.classList.remove("dream-message-action-row");
-    });
-    detailState.messageActionControls = nextMessageActionControls;
-    detailState.messageActionRows = nextMessageActionRows;
-    const queuedMessageList = conversationShell ?
-      [...conversationShell.querySelectorAll(".vertical-scroll-fade-mask.hide-scrollbar")].find((node) =>
-        node.classList.contains("max-h-[30dvh]") &&
-        node.querySelector("button") &&
-        node.getBoundingClientRect().height > 0) || null : null;
-    if (detailState.queuedMessageList && detailState.queuedMessageList !== queuedMessageList) {
-      detailState.queuedMessageList.classList.remove("dream-queued-message-list");
+      detailState.conversationStatusLines.forEach((node) => {
+        if (!nextConversationStatusLines.has(node)) node.classList.remove("dream-conversation-status-line");
+      });
+      nextConversationStatusLines.forEach((node) => node.classList.add("dream-conversation-status-line"));
+      detailState.conversationStatusLines = nextConversationStatusLines;
+
+      const messageEditorInput = document.querySelector('[role="textbox"][aria-label="编辑消息"]');
+      const messageEditor = messageEditorInput?.closest("form") || null;
+      if (detailState.messageEditor && detailState.messageEditor !== messageEditor) {
+        detailState.messageEditor.classList.remove("dream-message-editor");
+      }
+      document.querySelectorAll(".dream-message-editor").forEach((node) => {
+        if (node !== messageEditor) node.classList.remove("dream-message-editor");
+      });
+      messageEditor?.classList.add("dream-message-editor");
+      detailState.messageEditor = messageEditor;
+
+      const diffHeaders = [...document.getElementsByClassName("group/turn-diff-header")];
+      const diffCards = new Set(diffHeaders.map((header) => header.parentElement).filter(Boolean));
+      document.querySelectorAll(".dream-file-changes-summary").forEach((node) => {
+        if (!diffCards.has(node)) node.classList.remove("dream-file-changes-summary");
+      });
+      diffCards.forEach((node) => node.classList.add("dream-file-changes-summary"));
+
+      /* Diff-card actions use the native light primary-soft button token even
+         when the surrounding card is a dark theme. Mark only the localized
+         undo/review controls so the invisible full-row review hit target and
+         file rows keep their native behavior and geometry. */
+      const nextDiffActionControls = new Set();
+      diffCards.forEach((card) => {
+        [...card.querySelectorAll("button")].forEach((button) => {
+          const label = normalizeProjectText(button.textContent || button.getAttribute("aria-label") || "");
+          const action = /^(?:撤销|undo)$/i.test(label) ? "undo" : /^(?:审核|审查|review)$/i.test(label) ? "review" : "";
+          if (!action) return;
+          nextDiffActionControls.add(button);
+          button.classList.add("dream-diff-action", `dream-diff-action-${action}`);
+        });
+      });
+      detailState.diffActionControls.forEach((node) => {
+        if (!nextDiffActionControls.has(node)) node.classList.remove("dream-diff-action", "dream-diff-action-undo", "dream-diff-action-review");
+      });
+      detailState.diffActionControls = nextDiffActionControls;
+
+      /* Queued follow-up prompts are rendered above the composer as a native
+         vertical-scroll-fade-mask list. Mark only the language-independent
+         max-height variant owned by QueuedMessageList; its action labels are
+         localized and therefore unsuitable as the primary selector. */
+      const conversationShell = document.querySelector("main.dream-conversation-shell");
+      const messageActionPattern = /^(?:\u590d\u5236|\u56de\u590d\u4f18\u79c0|\u56de\u590d\u4e0d\u4f73|\u4ece\u8fd9\u91cc\u521b\u5efa\u804a\u5929\u5206\u652f|\u590d\u5236\u6d88\u606f|\u7f16\u8f91\u6d88\u606f|copy|good response|bad response|branch from here|copy message|edit message)$/i;
+      const nextMessageActionControls = new Set(conversationShell ? [...conversationShell.querySelectorAll("button")].filter((button) =>
+        messageActionPattern.test(normalizeProjectText(button.getAttribute("aria-label") || button.title || button.textContent))) : []);
+      const nextMessageActionRows = new Set();
+      nextMessageActionControls.forEach((button) => {
+        button.classList.add("dream-message-action");
+        let row = button.parentElement;
+        for (let depth = 0; row && row !== conversationShell && depth < 5; depth += 1, row = row.parentElement) {
+          const rect = row.getBoundingClientRect();
+          const matches = [...row.querySelectorAll("button")].filter((candidate) => nextMessageActionControls.has(candidate)).length;
+          if (matches >= 2 && rect.width <= 760 && rect.height <= 56) {
+            row.classList.add("dream-message-action-row");
+            nextMessageActionRows.add(row);
+            break;
+          }
+        }
+      });
+      detailState.messageActionControls.forEach((node) => {
+        if (!nextMessageActionControls.has(node)) node.classList.remove("dream-message-action");
+      });
+      detailState.messageActionRows.forEach((node) => {
+        if (!nextMessageActionRows.has(node)) node.classList.remove("dream-message-action-row");
+      });
+      detailState.messageActionControls = nextMessageActionControls;
+      detailState.messageActionRows = nextMessageActionRows;
+      const queuedMessageList = conversationShell ?
+        [...conversationShell.querySelectorAll(".vertical-scroll-fade-mask.hide-scrollbar")].find((node) =>
+          node.classList.contains("max-h-[30dvh]") &&
+          node.querySelector("button") &&
+          node.getBoundingClientRect().height > 0) || null : null;
+      if (detailState.queuedMessageList && detailState.queuedMessageList !== queuedMessageList) {
+        detailState.queuedMessageList.classList.remove("dream-queued-message-list");
+      }
+      document.querySelectorAll(".dream-queued-message-list").forEach((node) => {
+        if (node !== queuedMessageList) node.classList.remove("dream-queued-message-list");
+      });
+      queuedMessageList?.classList.add("dream-queued-message-list");
+      detailState.queuedMessageList = queuedMessageList;
     }
-    document.querySelectorAll(".dream-queued-message-list").forEach((node) => {
-      if (node !== queuedMessageList) node.classList.remove("dream-queued-message-list");
-    });
-    queuedMessageList?.classList.add("dream-queued-message-list");
-    detailState.queuedMessageList = queuedMessageList;
 
     const progressPattern = /\u7b2c\s*\d+\s*\/\s*\d+\s*\u6b65|\d+\s*\u4e2a?\u6587\u4ef6\u5df2\u66f4/;
     let progress = document.querySelector(".dream-progress-pill");
@@ -634,28 +650,29 @@
       if (detailState.progressScanRequested || now - detailState.lastProgressScan >= 800) {
         detailState.progressScanRequested = false;
         detailState.lastProgressScan = now;
-        const progressRoot = document.querySelector("main.dream-conversation-shell .sticky.bottom-0") || document.body;
-        const progressText = [...progressRoot.querySelectorAll("span, p, div")]
-          .filter((node) => progressPattern.test(node.textContent || ""))
-          .sort((left, right) => {
-            const a = left.getBoundingClientRect();
-            const b = right.getBoundingClientRect();
-            return (a.width * a.height) - (b.width * b.height);
-          })[0];
-        progress = progressText;
-        while (progress && progress !== progressRoot.parentElement) {
-          const rect = progress.getBoundingClientRect();
-          if (rect.width >= 150 && rect.width <= 520 && rect.height >= 28 && rect.height <= 64) {
-            progress.classList.add("dream-progress-pill");
-            const indicator = [...progress.querySelectorAll("svg, span, div")].find((node) => {
-              const box = node.getBoundingClientRect();
-              return box.width >= 10 && box.width <= 22 && box.height >= 10 && box.height <= 22 &&
-                box.left < rect.left + 40;
-            });
-            indicator?.classList.add("dream-progress-indicator");
-            break;
+        const progressRoot = document.querySelector("main.dream-conversation-shell .dream-composer-rail") ||
+          document.querySelector("main.dream-conversation-shell .sticky.bottom-0") || detailsRoot;
+        if (progressRoot) {
+          const progressText = [...progressRoot.querySelectorAll("span, p, div")]
+            .filter((node) => node.childElementCount <= 4 && progressPattern.test(node.textContent || ""))
+            .map((node) => { const rect = node.getBoundingClientRect(); return {node, area: rect.width * rect.height}; })
+            .filter(({area}) => area > 0)
+            .sort((a, b) => a.area - b.area)[0]?.node;
+          progress = progressText;
+          while (progress && progress !== progressRoot.parentElement) {
+            const rect = progress.getBoundingClientRect();
+            if (rect.width >= 150 && rect.width <= 520 && rect.height >= 28 && rect.height <= 64) {
+              progress.classList.add("dream-progress-pill");
+              const indicator = [...progress.querySelectorAll("svg, span, div")].find((node) => {
+                const box = node.getBoundingClientRect();
+                return box.width >= 10 && box.width <= 22 && box.height >= 10 && box.height <= 22 &&
+                  box.left < rect.left + 40;
+              });
+              indicator?.classList.add("dream-progress-indicator");
+              break;
+            }
+            progress = progress.parentElement;
           }
-          progress = progress.parentElement;
         }
       }
     }
@@ -685,7 +702,7 @@
       } else {
         let selected = detailState.selectedThread;
         const cachedTitle = (detailState.selectedLabel?.textContent || "").trim();
-        const taskHeaderText = (document.querySelector("main.main-surface > header.app-header-tint")?.textContent || "").trim();
+        const taskHeaderText = (locateNativeShellHeader(locateNativeShellMain())?.textContent || "").trim();
         const nativeCurrentRow = sidebar.querySelector(
           '[aria-current="page"].sidebar-item, [aria-selected="true"].sidebar-item'
         );
@@ -999,7 +1016,7 @@
     });
   };
 
-  const syncBackgroundVideo = (shell = document.querySelector("main.main-surface") || document.querySelector("main")) => {
+  const syncBackgroundVideo = (shell = locateNativeShellMain()) => {
     if (!isNativeAppSurfaceAvailable(shell)) {
       disposeBackgroundVideo(true);
       return null;
@@ -1406,14 +1423,14 @@
     const motionLabel = document.createElement("strong");
     motionLabel.textContent = "\u52a8\u6001\u6548\u679c";
     const motionHint = document.createElement("span");
-    motionHint.textContent = "\u6c1b\u56f4\u5f3a\u5ea6";
+    motionHint.textContent = "流畅档适合低配置电脑";
     motionHeading.append(motionLabel, motionHint);
     const motionOptions = document.createElement("div");
     motionOptions.className = "dream-motion-options";
     motionOptions.setAttribute("role", "group");
     motionOptions.setAttribute("aria-label", "\u52a8\u6001\u6548\u679c\u5f3a\u5ea6");
     for (const [level, label] of [
-      ["off", "\u5173\u95ed"],
+      ["off", "流畅"],
       ["low", "\u67d4\u548c"],
       ["high", "\u5b8c\u6574"],
     ]) {
@@ -1422,6 +1439,7 @@
       option.className = "dream-motion-option";
       option.dataset.dreamMotionLevel = level;
       option.textContent = label;
+      if (level === "off") option.title = "保留静态背景，关闭视频、装饰动画和背景模糊";
       option.addEventListener("click", () => applyMotionLevel(level, true));
       motionOptions.appendChild(option);
     }
@@ -1548,10 +1566,10 @@
       style = document.getElementById(STYLE_ID);
     }
 
-    const composerSurface = [...document.querySelectorAll(COMPOSER_SURFACE_SELECTOR)].find(isCodexComposerSurface) ?? null;
+    const composerSurface = [...shellMain.querySelectorAll(COMPOSER_SURFACE_SELECTOR)].find(isCodexComposerSurface) ?? null;
     const routeSurface = composerSurface?.closest('[role="main"]') ??
       shellMain.querySelector('[role="main"]') ?? shellMain;
-    const homeIcon = document.querySelector('[data-testid="home-icon"]');
+    const homeIcon = shellMain.querySelector('[data-testid="home-icon"]');
     const legacyHome = homeIcon?.closest('[role="main"]') ?? null;
     const threadTimeline = shellMain.querySelector(
       '[data-app-action-timeline-scroll], [data-thread-user-message-navigation-rail-list="true"], [data-content-search-turn-key]',
@@ -1585,7 +1603,7 @@
     /* Codex owns the quick-jump navigation and its scroll behavior. Discover it
        through the language-independent native list marker so localized aria
        labels and future copy changes cannot disable theme contrast fixes. */
-    const quickJumpRail = !home ? document
+    const quickJumpRail = !home ? shellMain
       .querySelector('[data-thread-user-message-navigation-rail-list="true"]')
       ?.closest("nav") ?? null : null;
     syncMarker("quickJumpRail", quickJumpRail, "dream-quick-jump-rail");
@@ -1730,7 +1748,7 @@
     if (!home) {
       syncMarker("projectPicker", null, "dream-project-picker");
     } else if (!markerState.projectPicker?.isConnected || !home.contains(markerState.projectPicker)) {
-      const composer = document.querySelector(".composer-surface-chrome");
+      const composer = composerSurface;
       const composerRect = composer?.getBoundingClientRect();
       let branch = composer;
       let projectPicker = null;
@@ -1898,6 +1916,14 @@
   const mutationNeedsFullEnsure = (mutation) => {
     if (mutation.type === "attributes") return true;
     const target = mutation.target?.nodeType === Node.ELEMENT_NODE ? mutation.target : mutation.target?.parentElement;
+    // Sidebar status ticks cannot change theme hosts. Rows and controls still
+    // reconcile when mounted/removed; selection attributes wake separately.
+    if (target?.closest?.("aside.app-shell-left-panel")) {
+      const sidebarStructure = '[data-app-action-sidebar-thread-row], .sidebar-item, button, [role="button"]';
+      return [...mutation.addedNodes, ...mutation.removedNodes].some((node) =>
+        node.nodeType === Node.ELEMENT_NODE &&
+        (node.matches?.(sidebarStructure) || node.querySelector?.(sidebarStructure)));
+    }
     if (!target?.closest?.("main.dream-conversation-shell")) return true;
     /* Streaming long conversations can append dozens of text/tool nodes per
        second. Those additions do not change route or stable theme hosts, so a
@@ -1906,6 +1932,13 @@
     const structuralSelector = '[role="dialog"], [role="menu"], [role="main"], [data-testid="home-icon"], [data-composer-surface-variant], aside.app-shell-left-panel';
     return [...mutation.addedNodes].some((node) => node.nodeType === Node.ELEMENT_NODE &&
       (node.matches?.(structuralSelector) || node.querySelector?.(structuralSelector)));
+  };
+  const invalidateConversationDetails = (mutations) => {
+    if (detailState.conversationDetailsDirty) return;
+    detailState.conversationDetailsDirty = mutations.some((mutation) => {
+      const node = mutation.target?.nodeType === Node.ELEMENT_NODE ? mutation.target : mutation.target?.parentElement;
+      return Boolean(node?.closest?.("main.dream-conversation-shell"));
+    });
   };
   const scheduleEnsure = (mutations = []) => {
     if (mutations.length) requestDetailScansFor(mutations);
@@ -1939,6 +1972,7 @@
       !document.getElementById(SWITCHER_ID) &&
       Boolean(document.querySelector("aside.app-shell-left-panel"));
     if (!relevantMutations.length && !switcherRecoveryRequested) return;
+    invalidateConversationDetails(relevantMutations);
     /* React replaces the composer node when tasks/routes switch. Attach the
        stable theme hooks during the mutation microtask, before the browser's
        next paint, instead of waiting for the coalesced 180 ms full scan. */
@@ -1956,12 +1990,16 @@
     childList: true,
     subtree: true,
     attributes: true,
-    attributeFilter: ["aria-current", "aria-selected"],
+    attributeFilter: ["aria-current", "aria-selected", "data-app-shell-active-page", "data-app-action-sidebar-thread-selected"],
   });
   /* Slow reconciliation remains as a recovery path for native DOM changes
      which expose no useful mutation signal. It must not become a periodic
      full-scan tax while a large task is streaming. */
-  const timer = setInterval(() => scheduleEnsure(), 30000);
+  const timer = setInterval(() => {
+    if (document.hidden) return;
+    detailState.conversationDetailsDirty = true;
+    scheduleEnsure();
+  }, 30000);
   window[STATE_KEY] = {
     ensure,
     cleanup,

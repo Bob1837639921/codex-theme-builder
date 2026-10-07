@@ -11,7 +11,7 @@ function harness() {
  const context={Node:{ELEMENT_NODE:1}, root:{classList:{contains:()=>true}},themeSuspendedForNativeSurface:false,themeCatalog:[{},{}],SWITCHER_ID:'switcher',detailState:{},
   document:{querySelector:()=>{counts.queries++;return null},getElementById:()=>{counts.queries++;return null}},
   mutationIsRuntimeOwned:m=>m.owned,mutationIsComposerTyping:m=>m.typing,mutationRemovedSwitcher:m=>m.switcher,
-  mutationNeedsFullEnsure:m=>m.structural,markCompatibleComposersIn:()=>counts.composers++,scheduleEnsure:()=>counts.scheduled++,
+  mutationNeedsFullEnsure:m=>m.structural,invalidateConversationDetails:()=>{},markCompatibleComposersIn:()=>counts.composers++,scheduleEnsure:()=>counts.scheduled++,
   MutationObserver:class {constructor(fn){callback=fn}}};
  vm.runInNewContext(detailCode+observerCode,context);
  return {counts,context,run:ms=>callback(ms)};
@@ -68,3 +68,50 @@ assert.equal(evaluateSameAction(differentButton, [button, differentButton]), fal
 assert.equal(evaluateSameAction(matchingButton, [button]), false, 'non-toolbar overlap is rejected');
 assert.ok(injector.includes('hit: hit === button || button.contains(hit) || sameNativeAction'), 'real toolbar obstruction checks remain required');
 console.log('PASS: hidden toolbar replicas, same-action overlap, and native obstruction guards.');
+
+// Retained Home must never win over the visible thread, even if it appears first.
+const shellDiscovery = code.slice(code.indexOf('  const isVisibleShellNode ='), code.indexOf('  const COMPOSER_SURFACE_SELECTOR'));
+const siblingHeader = {};
+const makeShell = (visible, legacy = false) => ({
+  closest: selector => selector.includes('active-page') ? (visible ? null : {}) : {
+    querySelector: () => ({closest: () => siblingHeader}),
+  },
+  getClientRects: () => visible ? [{}] : [],
+  getBoundingClientRect: () => ({width: visible ? 900 : 0}),
+  querySelector: () => legacy ? siblingHeader : null,
+});
+const hiddenHome = makeShell(false);
+const activeThread = makeShell(true);
+const discover = shells => vm.runInNewContext(shellDiscovery + '\nlocateNativeShellMain()', {
+  document: {querySelectorAll: () => shells},
+});
+assert.equal(discover([hiddenHome, activeThread]), activeThread);
+assert.equal(discover([hiddenHome]), null);
+const legacyShell = makeShell(true, true);
+assert.equal(discover([legacyShell]), legacyShell);
+console.log('PASS: retained hidden Home, workspace sibling titlebar, and legacy direct titlebar.');
+
+const structuralCode = code.slice(code.indexOf('  const mutationNeedsFullEnsure ='), code.indexOf('  const scheduleEnsure ='));
+const sidebarTarget = {nodeType:1, closest: selector => selector.includes('aside') ? {} : null};
+const decide = mutation => vm.runInNewContext(structuralCode + '\nmutationNeedsFullEnsure(mutation)', {
+  Node:{ELEMENT_NODE:1}, mutation,
+});
+for (let index = 0; index < 1000; index++) {
+  assert.equal(decide({target:sidebarTarget,addedNodes:[node],removedNodes:[],type:'childList'}), false);
+}
+const sidebarRow = {...node, matches: selector => selector.includes('sidebar-thread-row')};
+assert.equal(decide({target:sidebarTarget,addedNodes:[sidebarRow],removedNodes:[],type:'childList'}), true);
+assert.equal(decide({target:sidebarTarget,addedNodes:[],removedNodes:[sidebarRow],type:'childList'}), true);
+assert.equal(decide({target:sidebarTarget,type:'attributes'}), true);
+console.log('PASS: 1000 sidebar status updates skip full reconciliation; row mount/removal and selection still wake it.');
+
+const invalidationCode = code.slice(code.indexOf('  const invalidateConversationDetails ='), code.indexOf('  const scheduleEnsure ='));
+const cachedDetails = {conversationDetailsDirty:false};
+const invalidate = mutations => vm.runInNewContext(invalidationCode + '\ninvalidateConversationDetails(mutations)', {
+  Node:{ELEMENT_NODE:1},detailState:cachedDetails,mutations,
+});
+invalidate([{target:{nodeType:1,closest:()=>null}}]);
+assert.equal(cachedDetails.conversationDetailsDirty,false,'sidebar and portal updates retain the conversation cache');
+invalidate([{target:{nodeType:3,parentElement:{closest:()=>({})}}}]);
+assert.equal(cachedDetails.conversationDetailsDirty,true,'conversation text replacement invalidates cached details');
+console.log('PASS: conversation cache invalidation follows the mutated subtree.');
