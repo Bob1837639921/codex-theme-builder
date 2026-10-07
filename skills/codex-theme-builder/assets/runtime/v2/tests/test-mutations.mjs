@@ -115,3 +115,19 @@ assert.equal(cachedDetails.conversationDetailsDirty,false,'sidebar and portal up
 invalidate([{target:{nodeType:3,parentElement:{closest:()=>({})}}}]);
 assert.equal(cachedDetails.conversationDetailsDirty,true,'conversation text replacement invalidates cached details');
 console.log('PASS: conversation cache invalidation follows the mutated subtree.');
+
+const markerPredicate = code.slice(code.indexOf('  const shellMarkersMissing ='), code.indexOf('  // React rewrites these native class'));
+const markerNode = classes => ({classList:{contains:name=>classes.includes(name)}});
+const checkMarkers = (classes,headerClasses=['app-header-tint'],header=false) => {
+  const observedShell=markerNode(classes),observedHeader=markerNode(headerClasses);
+  return vm.runInNewContext(markerPredicate+'\nshellMarkersMissing(target)',{
+    observedShell,observedHeader,target:header?observedHeader:observedShell,
+  });
+};
+assert.equal(checkMarkers([]),true,'React class replacement needs repair');
+assert.equal(checkMarkers(['main-surface']),true,'route marker replacement needs repair');
+assert.equal(checkMarkers(['main-surface','dream-conversation-shell']),false,'own repaired classes do not loop');
+assert.equal(checkMarkers(['main-surface','dream-home-shell']),false,'Home markers are accepted');
+assert.equal(checkMarkers([],[],true),true,'rewritten titlebar marker is repaired');
+assert.equal(checkMarkers([],['app-header-tint'],true),false,'own titlebar write does not loop');
+console.log('PASS: shell/titlebar class replacement repair and observer loop prevention.');

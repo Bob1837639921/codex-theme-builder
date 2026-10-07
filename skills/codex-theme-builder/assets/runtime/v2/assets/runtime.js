@@ -15,7 +15,7 @@
   const STORAGE_KEY = "codex-dream-theme-active";
   const MOTION_STORAGE_KEY = "codex-dream-motion-level";
   const MOTION_LEVELS = ["off", "low", "high"];
-  const RUNTIME_VERSION = "2.4.3-detail-cache";
+  const RUNTIME_VERSION = "2.4.4-sidebar-marker-repair";
   const THEME_SEARCH_THRESHOLD = 6;
   const MUTATION_COALESCE_MS = 180;
   const VIDEO_BINDING_NAME = "__CODEX_DREAM_SKIN_VIDEO__";
@@ -29,6 +29,7 @@
 
   const previous = window[STATE_KEY];
   if (previous?.observer) previous.observer.disconnect();
+  previous?.shellMarkerObserver?.disconnect();
   if (previous?.timer) clearInterval(previous.timer);
   if (previous?.scheduler?.timeout) clearTimeout(previous.scheduler.timeout);
   if (previous?.scheduler?.frame) cancelAnimationFrame(previous.scheduler.frame);
@@ -54,6 +55,9 @@
   let nextVideoAssetRequest = 0;
   let activeBackgroundVideoElement = null;
   let themeSuspendedForNativeSurface = false;
+  let shellMarkerObserver = null;
+  let observedShell = null;
+  let observedHeader = null;
   const usesWindowVideoCanvas = () => activeTheme?.windowVideoCanvas === true;
   const isVisibleShellNode = (node) => Boolean(node && !node.closest('[data-app-shell-active-page="false"]') && node.getClientRects().length && node.getBoundingClientRect().width > 0);
   const locateNativeShellHeader = (candidate) => candidate?.querySelector(
@@ -119,6 +123,13 @@
       glass.className = TOOLBAR_GLASS_CLASS;
       glass.setAttribute("aria-hidden", "true");
       header.prepend(glass);
+    }
+    if (shellMarkerObserver && (observedShell !== shell || observedHeader !== header)) {
+      shellMarkerObserver.disconnect();
+      shellMarkerObserver.observe(shell, {attributes: true, attributeFilter: ["class"]});
+      if (header) shellMarkerObserver.observe(header, {attributes: true, attributeFilter: ["class"]});
+      observedShell = shell;
+      observedHeader = header;
     }
     markCompatibleComposersIn(shell);
     return shell;
@@ -1802,6 +1813,7 @@
   };
 
   const cleanup = () => {
+    shellMarkerObserver?.disconnect();
     window.__CODEX_DREAM_SKIN_DISABLED__ = true;
     document.documentElement?.classList.remove("codex-dream-skin");
     document.documentElement?.removeAttribute("data-dream-motion");
@@ -1959,6 +1971,15 @@
     if (delay > 1) scheduler.timeout = setTimeout(queueFrame, delay);
     else queueFrame();
   };
+  const shellMarkersMissing = (node) => node === observedShell ?
+    (!node.classList.contains("main-surface") ||
+      (!node.classList.contains("dream-home-shell") && !node.classList.contains("dream-conversation-shell"))) :
+    node === observedHeader && !node.classList.contains("app-header-tint");
+  // React rewrites these native class attributes during sidebar resizing.
+  // Repair in the mutation microtask, before paint, and ignore our own writes.
+  shellMarkerObserver = new MutationObserver((mutations) => {
+    if (!window.__CODEX_DREAM_SKIN_DISABLED__ && mutations.some(({target}) => shellMarkersMissing(target))) ensure();
+  });
   const observer = new MutationObserver((mutations) => {
     // Filter before subtree discovery: editor input and theme-owned updates
     // cannot introduce native composer hosts or detail surfaces.
@@ -2004,6 +2025,7 @@
     ensure,
     cleanup,
     observer,
+    shellMarkerObserver,
     timer,
     scheduler,
     detailState,

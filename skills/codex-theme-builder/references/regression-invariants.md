@@ -2,6 +2,11 @@
 
 ## Mutation fast path and toolbar verification
 
+- Native sidebar toggles rewrite the main/titlebar class attributes. Observe
+  only those two elements and repair missing compatibility/route markers in the
+  mutation microtask before paint. Ignore intact markers to avoid feedback loops,
+  rebind on shell replacement, and disconnect on cleanup/runtime replacement.
+
 - The `off` motion tier is the user-facing 流畅 tier: preserve static artwork,
   palettes and native activity indicators; remove video decoding, background
   blur and continuous theme decoration animations. Persist it per machine and
