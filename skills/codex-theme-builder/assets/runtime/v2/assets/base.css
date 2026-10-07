@@ -1,3 +1,9 @@
+/* Electron may leave the outer page canvas transparent. Native mode follows
+   Codex's own light/dark base token without carrying over theme artwork. */
+html.dream-native-mode {
+  background-color: var(--color-token-bg-primary, Canvas);
+}
+
 :root.codex-dream-skin {
   color-scheme: light !important;
   --dream-art: none;
@@ -1093,7 +1099,7 @@ html.codex-dream-skin aside.app-shell-left-panel
 /* The unified sidebar reserves its top row for the Codex title, search and
    notification controls. Keep the theme trigger in the navigation rail where
    it no longer overlaps those native actions. */
-html.codex-dream-skin aside.app-shell-left-panel[data-app-shell-left-panel-appearance]
+html:is(.codex-dream-skin, .dream-native-mode) aside.app-shell-left-panel[data-app-shell-left-panel-appearance]
   #codex-dream-theme-switcher {
   top: auto;
   right: auto;
