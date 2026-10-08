@@ -2,6 +2,10 @@
 
 ## Mutation fast path and toolbar verification
 
+- The native switcher preview stays a light tile with explicit dark `color` and
+  `-webkit-text-fill-color`, protected from dark sidebar rules. Its Codex label
+  must remain readable while browsing from any theme or native mode.
+
 - The first catalog entry is 原生. Restore native CSS/markers and stop theme
   discovery, videos and decoration while preserving the switcher and persisted
   choice. Native-to-theme switching must reattach marker repair observers.

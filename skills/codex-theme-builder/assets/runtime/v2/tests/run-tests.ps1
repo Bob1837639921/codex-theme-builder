@@ -120,6 +120,9 @@ if ($themeCss -match '(?s)main\.dream-conversation-shell\s+\*\s*\{' -or
   throw 'Conversation theme CSS must not use universal or broad data-state descendant selectors that trigger long-task rematching.'
 }
 $baseCss = Get-Content -LiteralPath (Join-Path $Root 'assets\base.css') -Raw
+if ($baseCss -notmatch '(?s)#codex-dream-theme-switcher \[data-dream-theme-id="native"\] \.dream-theme-preview\s*\{[^}]*background:\s*#f4f4f5\s*!important;[^}]*color:\s*#27272a\s*!important;[^}]*-webkit-text-fill-color:\s*#27272a\s*!important;') {
+  throw 'Native switcher preview must retain dark ink and text-fill on its light tile under every theme.'
+}
 $templateCss = Get-Content -LiteralPath (Join-Path $Root '..\..\theme-template\theme.css') -Raw
 $runtimeJs = Get-Content -LiteralPath (Join-Path $Root 'assets\runtime.js') -Raw
 $injectorText = Get-Content -LiteralPath $injector -Raw

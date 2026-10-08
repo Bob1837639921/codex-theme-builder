@@ -15,7 +15,7 @@
   const STORAGE_KEY = "codex-dream-theme-active";
   const MOTION_STORAGE_KEY = "codex-dream-motion-level";
   const MOTION_LEVELS = ["off", "low", "high"];
-  const RUNTIME_VERSION = "2.5.0-native-switcher";
+  const RUNTIME_VERSION = "2.5.1-native-preview-contrast";
   const THEME_SEARCH_THRESHOLD = 6;
   const MUTATION_COALESCE_MS = 180;
   const VIDEO_BINDING_NAME = "__CODEX_DREAM_SKIN_VIDEO__";
@@ -1415,7 +1415,6 @@
       preview.className = "dream-theme-preview";
       if (item.id === "native") {
         preview.textContent = "Codex";
-        preview.style.cssText = "display:grid;place-items:center;background:#f4f4f5;color:#27272a;font:600 18px system-ui";
       } else {
         preview.dataset.dreamPreviewUrl = item.previewArtDataUrl || item.artDataUrl;
         if (previewObserver) previewObserver.observe(preview);

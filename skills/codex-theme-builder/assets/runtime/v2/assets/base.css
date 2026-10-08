@@ -1304,6 +1304,17 @@ html.codex-dream-skin aside.app-shell-left-panel
   overflow: hidden;
 }
 
+/* Native preview is always a light tile, including inside a dark sidebar. */
+#codex-dream-theme-switcher [data-dream-theme-id="native"] .dream-theme-preview {
+  display: grid;
+  place-items: center;
+  background: #f4f4f5 !important;
+  color: #27272a !important;
+  -webkit-text-fill-color: #27272a !important;
+  text-shadow: none !important;
+  font: 600 18px system-ui;
+}
+
 #codex-dream-theme-switcher .dream-theme-current {
   position: absolute;
   top: 9px;

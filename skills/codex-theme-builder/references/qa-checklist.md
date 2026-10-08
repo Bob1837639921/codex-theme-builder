@@ -12,6 +12,9 @@
 
 ## Current Codex paint regressions
 
+- Open the theme switcher from a dark theme and native mode: the native preview's
+  Codex label must stay dark and readable against its light tile.
+
 - Inspect a sent user message in one light and one dark theme. The native
   `data-user-message-bubble="true"` geometry remains unchanged, while its
   surface, inset border, shadow, and text follow the active theme without
