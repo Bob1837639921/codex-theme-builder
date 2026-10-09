@@ -813,3 +813,5 @@ if ($baseCss -notmatch '(?s)data-dream-color-scheme="dark".*?main\.dream-convers
 Write-Host 'PASS: light/dark Markdown code-block reading contrast.'
 & $node.Path (Join-Path $PSScriptRoot 'test-mutations.mjs') (Join-Path $Root 'assets\runtime.js')
 if ($LASTEXITCODE -ne 0) { throw 'Mutation fast-path behavior checks failed.' }
+& $node.Path (Join-Path $PSScriptRoot 'test-hot-update.mjs')
+if ($LASTEXITCODE -ne 0) { throw 'Persistent hot-update asset behavior checks failed.' }

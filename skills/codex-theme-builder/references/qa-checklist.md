@@ -12,6 +12,11 @@
 
 ## Current Codex paint regressions
 
+- Hot-preview twice without restarting Codex; verify metadata-only payloads,
+  images and video still load after the preview command exits, asset edits use
+  fresh URLs, native/theme switching and all motion tiers work, and no old runtime
+  controls or per-request result globals accumulate. Compare post-GC heap usage.
+
 - Open the theme switcher from a dark theme and native mode: the native preview's
   Codex label must stay dark and readable against its light tile.
 

@@ -2,6 +2,13 @@
 
 ## Mutation fast path and toolbar verification
 
+- Hot previews and reloads delegate payload construction to the persistent CDP
+  watcher; never embed catalog images/videos in a one-shot injection. Both live
+  payload paths enforce less than 1 MiB and zero embedded raster/video media.
+  Rotate allowlisted asset URLs on edits and retain at most one outgoing registry
+  generation. Runtime replacement must remove old Home controls and their closures,
+  not just listeners and object URLs, so the old injected source can be collected.
+
 - The native switcher preview stays a light tile with explicit dark `color` and
   `-webkit-text-fill-color`, protected from dark sidebar rules. Its Codex label
   must remain readable while browsing from any theme or native mode.

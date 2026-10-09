@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, "..");
-const SKIN_VERSION = "2.5.1-native-preview-contrast";
+const SKIN_VERSION = "2.5.2-lazy-hot-update";
 const MAX_ART_BYTES = 8 * 1024 * 1024;
 const MAX_VIDEO_BYTES = 8 * 1024 * 1024;
 const DIRECT_EVALUATE_LIMIT = 8 * 1024 * 1024;
@@ -14,6 +14,7 @@ const LOOPBACK_HOSTS = new Set(["127.0.0.1", "localhost", "[::1]", "::1"]);
 const BROWSER_ID_PATTERN = /^[A-Za-z0-9._-]{1,200}$/;
 const ASSET_ORIGIN = "https://codex-dream-skin.invalid";
 const VIDEO_BINDING_NAME = "__CODEX_DREAM_SKIN_VIDEO__";
+const RELOAD_BINDING_NAME = "__CODEX_DREAM_SKIN_RELOAD__";
 
 class CdpIdentityMismatchError extends Error {}
 
@@ -21,6 +22,7 @@ function createAssetRegistry() {
   const token = randomUUID().replaceAll("-", "");
   const prefix = `${ASSET_ORIGIN}/${token}/`;
   const entries = new Map();
+  let previousEntries = new Map();
   return {
     prefix,
     register(themeId, filename, filePath, mime) {
@@ -28,7 +30,13 @@ function createAssetRegistry() {
       entries.set(url, { filePath, mime });
       return url;
     },
-    resolve(url) { return entries.get(url) ?? null; },
+    resolve(url) { return entries.get(url) ?? previousEntries.get(url) ?? null; },
+    adopt(registry) {
+      previousEntries = new Map(entries);
+      entries.clear();
+      for (const [url, entry] of registry.entries()) entries.set(url, entry);
+    },
+    entries() { return entries.entries(); },
     get size() { return entries.size; },
   };
 }
@@ -110,7 +118,7 @@ async function enableAssetInterception(session, registry) {
   });
   await session.send("Runtime.addBinding", { name: VIDEO_BINDING_NAME });
   await session.send("Fetch.enable", {
-    patterns: [{ urlPattern: `${registry.prefix}*`, requestStage: "Request" }],
+    patterns: [{ urlPattern: `${ASSET_ORIGIN}/*`, requestStage: "Request" }],
   });
 }
 
@@ -159,6 +167,7 @@ function parseArgs(argv) {
     else if (arg === "--once") options.mode = "once";
     else if (arg === "--watch") options.mode = "watch";
     else if (arg === "--verify") options.mode = "verify";
+    else if (arg === "--check-service") options.mode = "check-service";
     else if (arg === "--remove") options.mode = "remove";
     else if (arg === "--timeout-ms") options.timeoutMs = Number(argv[++i]);
     else if (arg === "--browser-id") options.browserId = argv[++i];
@@ -191,7 +200,7 @@ function parseArgs(argv) {
   if (options.motionLevel !== null && !["off", "low", "high"].includes(options.motionLevel)) {
     throw new Error(`Invalid motion level: ${options.motionLevel}`);
   }
-  if (["watch", "once", "verify", "remove"].includes(options.mode) && !options.browserId) {
+  if (["watch", "once", "verify", "remove", "check-service"].includes(options.mode) && !options.browserId) {
     throw new Error(`--browser-id is required in ${options.mode} mode`);
   }
   return options;
@@ -650,6 +659,7 @@ html:root.codex-dream-skin .codex-dream-background-video-layer{transform:transla
 }
 
 async function loadPayload(themeDir, assetRegistry = null) {
+  if (!assetRegistry) throw new Error('Theme payloads require a persistent lazy asset registry');
   const [baseCss, template] = await Promise.all([
     fs.readFile(path.join(root, "assets", "base.css"), "utf8"),
     fs.readFile(path.join(root, "assets", "runtime.js"), "utf8"),
@@ -681,10 +691,14 @@ async function loadPayload(themeDir, assetRegistry = null) {
     if (result.id !== id) throw new Error(`Theme ID ${result.id} must match its directory ${id}`);
     return result;
   }));
-  return template
+  const payload = template
     .replace("__DREAM_BASE_CSS_JSON__", JSON.stringify(baseCss))
     .replace("__DREAM_THEME_CATALOG_JSON__", JSON.stringify(themes))
     .replace("__DREAM_INITIAL_THEME_ID_JSON__", JSON.stringify(initialThemeId));
+  if (Buffer.byteLength(payload) > 1024 * 1024 || /data:(?:image\/(?:png|jpe?g|webp)|video\/mp4);base64,/i.test(payload)) {
+    throw new Error('Theme payload must stay below 1 MiB with no embedded media');
+  }
+  return payload;
 }
 
 async function probeSession(session) {
@@ -1225,14 +1239,45 @@ async function capture(session, outputPath, hoverSelectedThread = false, openSwi
   await fs.writeFile(outputPath, Buffer.from(result.data, "base64"));
 }
 
+async function requestHotReload(session, options) {
+  const id = randomUUID().replaceAll("-", "");
+  const key = `__DREAM_HOT_RESULT_${id}`;
+  const accepted = await session.evaluate(`(() => {
+    const service = window.__CODEX_DREAM_SKIN_RELOAD_SERVICE__;
+    if (service?.version !== ${JSON.stringify(SKIN_VERSION)} ||
+        typeof window[${JSON.stringify(RELOAD_BINDING_NAME)}] !== 'function') return false;
+    window[${JSON.stringify(RELOAD_BINDING_NAME)}](${JSON.stringify(JSON.stringify({ id, themeDir: options.themeDir }))});
+    return true;
+  })()`);
+  if (!accepted) throw new Error('A current persistent asset service is required for hot update; use preview-theme.ps1 to upgrade the watcher.');
+  const deadline = Date.now() + options.timeoutMs;
+  try {
+    while (Date.now() < deadline) {
+      const result = await session.evaluate(`window[${JSON.stringify(key)}] ?? null`);
+      if (result) {
+        if (!result.pass) throw new Error(`Hot update failed: ${result.error}`);
+        return result;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+    throw new Error('Persistent asset service hot update timed out');
+  } finally {
+    await session.evaluate(`delete window[${JSON.stringify(key)}]`).catch(() => {});
+  }
+}
+
 async function runOneShot(options) {
   const connected = await connectCodexTargets(options.port, options.timeoutMs);
-  const payload = (options.mode === "once" || options.reload) ? await loadPayload(options.themeDir) : null;
   const results = [];
   let screenshotCaptured = false;
   try {
     for (const { target, session, probe } of connected) {
       try {
+        if (options.mode === "check-service") {
+          const service = await session.evaluate(`window.__CODEX_DREAM_SKIN_RELOAD_SERVICE__ ?? null`);
+          results.push({ targetId: target.id, result: { pass: service?.version === SKIN_VERSION, service } });
+          continue;
+        }
         if (options.openHome) {
           const opened = await session.evaluate(`(() => {
             const newTaskLabel = /新建任务|新任务|新对话|new task|new chat/i;
@@ -1252,14 +1297,14 @@ async function runOneShot(options) {
           await new Promise((resolve) => setTimeout(resolve, 900));
         }
         if (options.mode === "remove") await removeFromSession(session);
-        else if (options.mode === "once") await applyToSession(session, payload);
+        else if (options.mode === "once") await requestHotReload(session, options);
         if (options.mode === "once") {
           await new Promise((resolve) => setTimeout(resolve, 850));
         }
         if (options.reload) {
           await session.send("Page.reload", { ignoreCache: true });
           await new Promise((resolve) => setTimeout(resolve, 1600));
-          if (options.mode !== "remove") await applyToSession(session, payload);
+          if (options.mode !== "remove") await requestHotReload(session, options);
         }
         let actionTest = null;
         if (options.testActions) {
@@ -1384,7 +1429,41 @@ async function runWatch(options) {
 
   try {
     const assetRegistry = createAssetRegistry();
-    const payload = await loadPayload(options.themeDir, assetRegistry);
+    let payload = await loadPayload(options.themeDir, assetRegistry);
+    let reloadQueue = Promise.resolve();
+    const publishService = (session) => session.evaluate(
+      `window.__CODEX_DREAM_SKIN_RELOAD_SERVICE__ = ${JSON.stringify({ version: SKIN_VERSION, pid: process.pid })}`,
+    );
+    const enableHotReload = async (session) => {
+      session.on("Runtime.bindingCalled", (event) => {
+        if (event.name !== RELOAD_BINDING_NAME) return;
+        let request;
+        try { request = JSON.parse(event.payload); } catch { return; }
+        if (!/^[a-f0-9]{32}$/.test(request?.id) || typeof request.themeDir !== 'string') return;
+        const key = `__DREAM_HOT_RESULT_${request.id}`;
+        reloadQueue = reloadQueue.then(async () => {
+          try {
+            const themeDir = path.resolve(request.themeDir);
+            if (path.dirname(themeDir) !== path.dirname(options.themeDir)) throw new Error('Rejected theme outside the active catalog');
+            const nextRegistry = createAssetRegistry();
+            const nextPayload = await loadPayload(themeDir, nextRegistry);
+            if (Buffer.byteLength(nextPayload) > 1024 * 1024 || /data:(?:image\/(?:png|jpe?g|webp)|video\/mp4);base64,/i.test(nextPayload)) {
+              throw new Error('Hot payload must stay below 1 MiB with no embedded media');
+            }
+            assetRegistry.adopt(nextRegistry);
+            payload = nextPayload;
+            for (const active of sessions.values()) {
+              await applyToSession(active, payload);
+              await publishService(active);
+            }
+            await session.evaluate(`window[${JSON.stringify(key)}] = {pass:true, payloadBytes:${Buffer.byteLength(payload)}}`);
+          } catch (error) {
+            await session.evaluate(`window[${JSON.stringify(key)}] = ${JSON.stringify({pass:false,error:error.message})}`).catch(() => {});
+          }
+        }).catch((error) => console.error(`[dream-skin] hot reload failed: ${error.message}`));
+      });
+      await session.send('Runtime.addBinding', { name: RELOAD_BINDING_NAME });
+    };
     console.log(`[dream-skin] lazy asset catalog ready (${assetRegistry.size} files)`);
     while (!stopping) {
       if (identityAnchor.closed) {
@@ -1427,6 +1506,7 @@ async function runWatch(options) {
         try {
           session = await connectTarget(target, options.port);
           await enableAssetInterception(session, assetRegistry);
+          await enableHotReload(session);
           if (identityAnchor.closed) throw new CdpIdentityMismatchError("Original CDP browser identity closed");
           const probe = await probeSession(session);
           if (!probe?.codex) {
@@ -1436,7 +1516,7 @@ async function runWatch(options) {
           }
           let lastReinjectErrorLogAt = 0;
           session.on("Page.loadEventFired", () => {
-            setTimeout(() => applyToSession(session, payload).catch((error) => {
+            setTimeout(() => applyToSession(session, payload).then(() => publishService(session)).catch((error) => {
               if (Date.now() - lastReinjectErrorLogAt >= 30000) {
                 console.error(`[dream-skin] reinject failed for ${target.id}: ${error.message}`);
                 lastReinjectErrorLogAt = Date.now();
@@ -1446,6 +1526,7 @@ async function runWatch(options) {
           if (identityAnchor.closed) throw new CdpIdentityMismatchError("Original CDP browser identity closed");
           await applyToSession(session, payload);
           sessions.set(target.id, session);
+          await publishService(session);
           targetFailures.delete(target.id);
           console.log(`[dream-skin] injected target ${target.id}`);
         } catch (error) {

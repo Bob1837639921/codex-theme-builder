@@ -15,7 +15,7 @@
   const STORAGE_KEY = "codex-dream-theme-active";
   const MOTION_STORAGE_KEY = "codex-dream-motion-level";
   const MOTION_LEVELS = ["off", "low", "high"];
-  const RUNTIME_VERSION = "2.5.1-native-preview-contrast";
+  const RUNTIME_VERSION = "2.5.2-lazy-hot-update";
   const THEME_SEARCH_THRESHOLD = 6;
   const MUTATION_COALESCE_MS = 180;
   const VIDEO_BINDING_NAME = "__CODEX_DREAM_SKIN_VIDEO__";
@@ -27,7 +27,11 @@
   ];
   window.__CODEX_DREAM_SKIN_DISABLED__ = false;
 
-  const previous = window[STATE_KEY];
+  let previous = window[STATE_KEY];
+  /* Old Home controls carry closures from the previous injected script.
+     Remove every runtime-owned control so its source can be collected too. */
+  previous?.cleanup?.();
+  window.__CODEX_DREAM_SKIN_DISABLED__ = false;
   if (previous?.observer) previous.observer.disconnect();
   previous?.shellMarkerObserver?.disconnect();
   if (previous?.timer) clearInterval(previous.timer);
@@ -48,6 +52,7 @@
   for (const urls of previous?.objectUrls?.values?.() || []) {
     for (const url of urls.ownedUrls || []) URL.revokeObjectURL(url);
   }
+  previous = null;
   themeCatalog = [{id: "native", name: "原生", subtitle: "Codex 默认界面", cssText: "", icons: {}, swatches: ["#ffffff", "#242424"]}, ...themeCatalog];
   const themeMap = new Map(themeCatalog.map((item) => [item.id, item]));
   if (!themeMap.size || !themeMap.has(initialThemeId)) throw new Error("Theme catalog is empty or missing the initial theme");

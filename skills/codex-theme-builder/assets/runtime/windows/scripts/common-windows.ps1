@@ -533,7 +533,9 @@ function Stop-DreamSkinRecordedInjector {
 
   Stop-Process -Id $processId -Force -ErrorAction Stop
   try { Wait-Process -Id $processId -Timeout 5 -ErrorAction Stop } catch {}
-  if (Get-Process -Id $processId -ErrorAction SilentlyContinue) {
+  $remaining = Get-Process -Id $processId -ErrorAction SilentlyContinue
+  if ($remaining) { $remaining.Refresh() }
+  if ($remaining -and -not $remaining.HasExited) {
     throw "记录的主题注入进程未能停止：PID $processId"
   }
   return $true

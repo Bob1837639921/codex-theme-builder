@@ -68,6 +68,16 @@ Rules:
 
 ## Video handoff contract
 
+Hot preview (`--once`) asks the persistent watcher to rebuild and apply its
+metadata-only payload through the reload binding; the one-shot process never
+owns media interception or embeds the catalog. `preview-theme.ps1` upgrades an
+old recorded watcher after browser/process identity checks without restarting
+Codex. The service serializes updates, validates the catalog directory, rotates
+asset tokens on changes, and retains only the current and one outgoing allowlist.
+Unknown requests are still rejected by exact URL lookup; no public server or
+directory serving is introduced. A missing service is an error, never permission
+to fall back to a Base64 catalog. New pages/reloads use the latest watcher payload.
+
 Theme catalogs are metadata-first. `injector.mjs` validates every manifest and
 asset path, injects only metadata, theme CSS, and one shared copy of `base.css`,
 then services allowlisted synthetic HTTPS image requests through the existing
