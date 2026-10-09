@@ -2,6 +2,15 @@
 
 ## Mutation fast path and toolbar verification
 
+- Newer thinking/activity shimmers use `_cadencedShimmer_` with nested resting
+  copy and an aria-hidden sweep/highlight duplicate, without the legacy
+  loading-shimmer class. Dark themes must color both copies and their text-fill
+  on first paint via resident CSS, without waiting for text-based marker discovery
+  or disabling the native sweep animation.
+  Native shimmer colors are layered `!important` rules: use the existing early
+  `theme` layer for these narrowly scoped overrides; unlayered rules lose
+  regardless of selector specificity. Verify computed color and text-fill.
+
 - Hot previews and reloads delegate payload construction to the persistent CDP
   watcher; never embed catalog images/videos in a one-shot injection. Both live
   payload paths enforce less than 1 MiB and zero embedded raster/video media.

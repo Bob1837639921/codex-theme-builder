@@ -12,6 +12,11 @@
 
 ## Current Codex paint regressions
 
+- On dark artwork inspect the initial thinking label and running tool labels:
+  nested cadenced shimmer resting copy stays readable between sweeps, while the
+  nested highlight remains brighter. Check before status markers are added and
+  after a new native label mounts; keep animation and light/native palettes intact.
+
 - Hot-preview twice without restarting Codex; verify metadata-only payloads,
   images and video still load after the preview command exits, asset edits use
   fresh URLs, native/theme switching and all motion tiers work, and no old runtime

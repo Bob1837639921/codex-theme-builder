@@ -897,6 +897,37 @@ html.codex-dream-skin[data-dream-color-scheme="dark"] main.dream-conversation-sh
   -webkit-text-fill-color: var(--theme-conversation-activity-highlight, #f3fbff) !important;
 }
 
+/* Current Codex nests both copies inside a cadenced shimmer, without the
+   legacy loading-shimmer marker. Resident rules cover its first paint before
+   status discovery and explicitly color the nested highlight copy too. */
+/* Native components/utilities use layered !important colors. An early native
+   layer is required: unlayered !important rules cannot override those layers. */
+@layer theme {
+html:root.codex-dream-skin[data-dream-color-scheme="dark"]
+  main:is(.dream-conversation-shell, [data-app-shell-main-surface])
+  :is(span.loading-shimmer-pure-text, span[class*="_cadencedShimmer_"]),
+html:root.codex-dream-skin[data-dream-color-scheme="dark"]
+  main:is(.dream-conversation-shell, [data-app-shell-main-surface])
+  :is(span.loading-shimmer-pure-text, span[class*="_cadencedShimmer_"]) span {
+  color: var(--theme-conversation-activity-ink, var(--theme-conversation-muted-ink, #dff5ff)) !important;
+  -webkit-text-fill-color: var(--theme-conversation-activity-ink, var(--theme-conversation-muted-ink, #dff5ff)) !important;
+  text-shadow: none !important;
+}
+
+html:root.codex-dream-skin[data-dream-color-scheme="dark"]
+  main:is(.dream-conversation-shell, [data-app-shell-main-surface])
+  :is(span.loading-shimmer-pure-text, span[class*="_cadencedShimmer_"])
+  span[class*="cadencedShimmerHighlight"],
+html:root.codex-dream-skin[data-dream-color-scheme="dark"]
+  main:is(.dream-conversation-shell, [data-app-shell-main-surface])
+  :is(span.loading-shimmer-pure-text, span[class*="_cadencedShimmer_"])
+  span[class*="cadencedShimmerHighlight"] span {
+  color: var(--theme-conversation-activity-highlight, #f3fbff) !important;
+  -webkit-text-fill-color: var(--theme-conversation-activity-highlight, #f3fbff) !important;
+}
+
+}
+
 /* Command/tool activity headers use conversation-body utilities instead of
    the tertiary wrappers above. Their leading function glyph and disclosure
    chevron therefore need an explicit semantic foreground on dark artwork. */
