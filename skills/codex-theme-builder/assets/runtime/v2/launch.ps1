@@ -44,6 +44,51 @@ function Report-DreamSkinLaunchStage {
   Report-DreamSkinLaunchProgress -Percent $definition.Percent -Status $definition.Status -Stage $Stage
 }
 
+function Invoke-DreamSkinVerificationAttempt {
+  param([string]$NodePath, [string]$InjectorPath, [int]$Port, [string]$BrowserId,
+    [string]$ThemePath, [int]$AttemptTimeoutMs, [string]$VerificationLogPath)
+  $start = New-Object System.Diagnostics.ProcessStartInfo
+  $start.FileName = $NodePath
+  $start.Arguments = (@($InjectorPath, '--verify', '--port', "$Port", '--browser-id', $BrowserId,
+    '--theme-dir', $ThemePath, '--timeout-ms', "$AttemptTimeoutMs") |
+    ForEach-Object { ConvertTo-DreamSkinProcessArgument -Value $_ }) -join ' '
+  $start.UseShellExecute = $false
+  $start.CreateNoWindow = $true
+  $start.RedirectStandardOutput = $true
+  $start.RedirectStandardError = $true
+  $start.StandardOutputEncoding = New-Object System.Text.UTF8Encoding($false)
+  $start.StandardErrorEncoding = New-Object System.Text.UTF8Encoding($false)
+  $child = New-Object System.Diagnostics.Process
+  $child.StartInfo = $start
+  try {
+    [void]$child.Start()
+    # Drain both pipes concurrently. Native stderr must not become a terminating
+    # PowerShell 5 NativeCommandError that bypasses the remaining attempts.
+    $stdout = $child.StandardOutput.ReadToEndAsync()
+    $stderr = $child.StandardError.ReadToEndAsync()
+    $timedOut = -not $child.WaitForExit($AttemptTimeoutMs + 5000)
+    if ($timedOut) {
+      $child.Kill()
+      [void]$child.WaitForExit(3000)
+    }
+    if (-not $child.HasExited) { throw 'Verifier child did not exit after its deadline.' }
+    foreach ($stream in @($stdout, $stderr)) {
+      $output = $stream.GetAwaiter().GetResult()
+      if ($output) { Add-Content -LiteralPath $VerificationLogPath -Encoding UTF8 -Value $output }
+    }
+    "verifier exit=$($child.ExitCode); timedOut=$timedOut" |
+      Add-Content -LiteralPath $VerificationLogPath -Encoding UTF8
+    return (-not $timedOut -and $child.ExitCode -eq 0)
+  } catch {
+    "verifier process error: $($_.Exception.Message)" |
+      Add-Content -LiteralPath $VerificationLogPath -Encoding UTF8
+    return $false
+  } finally {
+    try { if (-not $child.HasExited) { $child.Kill(); [void]$child.WaitForExit(2000) } } catch {}
+    $child.Dispose()
+  }
+}
+
 function Test-DreamSkinVerifiedInjection {
   [CmdletBinding()]
   param(
@@ -54,7 +99,7 @@ function Test-DreamSkinVerifiedInjection {
     [Parameter(Mandatory)][string]$ThemePath,
     [Parameter(Mandatory)][string]$VerificationLogPath,
     [ValidateRange(1, 6)][int]$VerificationAttempts = 3,
-    [ValidateRange(1000, 30000)][int]$AttemptTimeoutMs = 12000
+    [ValidateRange(1000, 30000)][int]$AttemptTimeoutMs = 20000
   )
 
   Remove-Item -LiteralPath $VerificationLogPath -Force -ErrorAction SilentlyContinue
@@ -68,9 +113,9 @@ function Test-DreamSkinVerifiedInjection {
 
     "[$((Get-Date).ToString('o'))] verification attempt $verifyAttempt/$VerificationAttempts" |
       Add-Content -LiteralPath $VerificationLogPath -Encoding UTF8
-    & $NodePath $InjectorPath --verify --port $Port --browser-id $BrowserId `
-      --theme-dir $ThemePath --timeout-ms $AttemptTimeoutMs *>> $VerificationLogPath
-    if ($LASTEXITCODE -eq 0) { return $true }
+    if (Invoke-DreamSkinVerificationAttempt -NodePath $NodePath -InjectorPath $InjectorPath `
+        -Port $Port -BrowserId $BrowserId -ThemePath $ThemePath `
+        -AttemptTimeoutMs $AttemptTimeoutMs -VerificationLogPath $VerificationLogPath) { return $true }
   }
   return $false
 }
@@ -112,7 +157,7 @@ try {
     "--remote-debugging-port=$port"
   ) | Out-Null
 
-  $deadline = (Get-Date).AddSeconds(45)
+  $deadline = (Get-Date).AddSeconds(90)
   $identity = Get-DreamSkinVerifiedCdpIdentity -Port $port -Codex $codex
   $pollCount = 0
   while ($null -eq $identity -and (Get-Date) -lt $deadline) {
@@ -123,8 +168,7 @@ try {
     $identity = Get-DreamSkinVerifiedCdpIdentity -Port $port -Codex $codex
   }
   if ($null -eq $identity) {
-    Stop-DreamSkinCodex -Codex $codex -AllowForce
-    throw 'Codex 未能提供通过验证的本机 CDP 调试端点。'
+    throw "Codex 启动后 90 秒内未提供通过身份验证的本机调试端点（端口 $port）。已保留 Codex 窗口；请勿连续重复启动，保存内容后完全退出再重试。"
   }
 
   Report-DreamSkinLaunchStage -Stage PrepareInjector
@@ -177,7 +221,8 @@ try {
     -Port $port -BrowserId $identity.BrowserId -ThemePath $Theme `
     -VerificationLogPath $verificationLog
   if (-not $verified) {
-    throw "主题注入验证失败。验证日志：$verificationLog"
+    $details = (Get-Content -LiteralPath $verificationLog -Tail 12 -ErrorAction SilentlyContinue) -join "`n"
+    throw "主题注入验证失败（已完成有限重试）。验证日志：$verificationLog`n$details"
   }
   Report-DreamSkinLaunchStage -Stage Verified
   Write-Host "主题已在随机本机端口（$port）上启用。"

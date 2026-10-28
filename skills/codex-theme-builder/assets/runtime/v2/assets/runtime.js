@@ -15,7 +15,7 @@
   const STORAGE_KEY = "codex-dream-theme-active";
   const MOTION_STORAGE_KEY = "codex-dream-motion-level";
   const MOTION_LEVELS = ["off", "low", "high"];
-  const RUNTIME_VERSION = "2.5.3-shimmer-contrast";
+  const RUNTIME_VERSION = "2.5.13-output-boundary";
   const THEME_SEARCH_THRESHOLD = 6;
   const MUTATION_COALESCE_MS = 180;
   const VIDEO_BINDING_NAME = "__CODEX_DREAM_SKIN_VIDEO__";
@@ -643,7 +643,7 @@
       detailState.messageActionControls = nextMessageActionControls;
       detailState.messageActionRows = nextMessageActionRows;
       const queuedMessageList = conversationShell ?
-        [...conversationShell.querySelectorAll(".vertical-scroll-fade-mask.hide-scrollbar")].find((node) =>
+        [...conversationShell.querySelectorAll(".vertical-scroll-fade-mask")].find((node) =>
           node.classList.contains("max-h-[30dvh]") &&
           node.querySelector("button") &&
           node.getBoundingClientRect().height > 0) || null : null;
@@ -659,7 +659,8 @@
 
     const progressPattern = /\u7b2c\s*\d+\s*\/\s*\d+\s*\u6b65|\d+\s*\u4e2a?\u6587\u4ef6\u5df2\u66f4/;
     let progress = document.querySelector(".dream-progress-pill");
-    if (!progress?.isConnected || !progressPattern.test(progress.textContent || "")) {
+    if (!progress?.isConnected || !detailsRoot?.contains(progress) ||
+        progress.getBoundingClientRect().width <= 0 || !progressPattern.test(progress.textContent || "")) {
       progress?.classList.remove("dream-progress-pill");
       document.querySelectorAll(".dream-progress-indicator").forEach((node) =>
         node.classList.remove("dream-progress-indicator"));
@@ -803,10 +804,14 @@
       }
     }
 
+    const isOutputBoundary = (node) => node.matches(
+      'main, [role="main"], [data-app-shell-main-surface], [data-app-shell-main-content-layout], .thread-scroll-container'
+    ) || Boolean(node.querySelector('[data-composer-surface-variant], .composer-surface-chrome, .thread-scroll-container'));
     const findOutputContainer = (seed) => {
       let node = seed;
       let candidate = null;
       while (node && node !== document.body) {
+        if (isOutputBoundary(node)) break;
         const rect = node.getBoundingClientRect();
         const style = getComputedStyle(node);
         const isDropdownSurface = (
@@ -826,13 +831,18 @@
       return candidate;
     };
     const intersectsViewport = (node) => {
+      if (isOutputBoundary(node)) return false;
       const rect = node.getBoundingClientRect();
       const style = getComputedStyle(node);
       return rect.right > 0 && rect.bottom > 0 && rect.left < innerWidth && rect.top < innerHeight &&
-        rect.width >= 240 && rect.height >= 80 && style.display !== "none" &&
+        rect.width >= 240 && rect.width <= 560 && rect.height >= 80 && rect.height <= 720 && style.display !== "none" &&
         style.visibility !== "hidden" && Number.parseFloat(style.opacity || "1") > 0;
     };
-    const markedOutput = [...document.querySelectorAll(".dream-output-panel")].find(intersectsViewport) || null;
+    const outputMarkers = [...document.querySelectorAll(".dream-output-panel")];
+    outputMarkers.forEach((node) => {
+      if (!intersectsViewport(node)) node.classList.remove("dream-output-panel");
+    });
+    const markedOutput = outputMarkers.find(intersectsViewport) || null;
     const now = performance.now();
     if (!markedOutput && (detailState.outputScanRequested || now - detailState.lastOutputScan >= 1000)) {
       detailState.outputScanRequested = false;
@@ -848,7 +858,7 @@
       const outputCandidates = [...new Set(
         [...outputStructureSeeds, ...outputTexts].map(findOutputContainer).filter(Boolean)
       )];
-      const output = outputCandidates.find(intersectsViewport) || outputCandidates[0] || null;
+      const output = outputCandidates.find(intersectsViewport) || null;
       document.querySelectorAll(".dream-output-panel").forEach((node) => {
         if (node !== output) node.classList.remove("dream-output-panel");
       });

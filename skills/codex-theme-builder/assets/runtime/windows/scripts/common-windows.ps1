@@ -356,7 +356,21 @@ function Get-DreamSkinPortListeners {
 
 function Test-DreamSkinPortAvailable {
   param([int]$Port)
-  return (Get-DreamSkinPortListeners -Port $Port).Count -eq 0
+  if ($Port -lt 1 -or $Port -gt 65535) { return $false }
+  if ((Get-DreamSkinPortListeners -Port $Port).Count -ne 0) { return $false }
+  # Windows excluded ranges have no listener but still reject Chromium's bind.
+  # Probe the same IPv4 loopback address with exclusive ownership, then release it.
+  $probe = $null
+  try {
+    $probe = [System.Net.Sockets.TcpListener]::new([System.Net.IPAddress]::Loopback, $Port)
+    $probe.Server.ExclusiveAddressUse = $true
+    $probe.Start()
+    return $true
+  } catch {
+    return $false
+  } finally {
+    if ($null -ne $probe) { $probe.Stop() }
+  }
 }
 
 function Test-DreamSkinCodexPortOwner {
@@ -493,6 +507,14 @@ function Stop-DreamSkinRecordedInjector {
   $processId = [int]$State.injectorPid
   $process = Get-CimInstance Win32_Process -Filter "ProcessId = $processId" -ErrorAction SilentlyContinue
   if (-not $process) { return $true }
+
+  # PID reuse can point at a protected system process with no readable path or
+  # command line. Its visible name already proves it is not our Node watcher.
+  # Keep unknown names and unreadable Node processes on the conservative path.
+  if ($process.Name -and "$($process.Name)" -ine 'node.exe') {
+    Write-Warning "已跳过旧的注入进程 PID $processId：当前进程为 $($process.Name)，不是主题 Node 注入器。"
+    return $false
+  }
 
   $expectedInjector = if ($State.injectorPath) {
     "$($State.injectorPath)"

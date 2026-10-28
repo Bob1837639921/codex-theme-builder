@@ -32,9 +32,183 @@ html.dream-native-mode {
   --dream-unread-glow: color-mix(in srgb, var(--dream-accent-alt, var(--dream-accent, #5f7c72)) 76%, transparent);
 }
 
+/* Queued-message lists no longer carry hide-scrollbar in current Codex.
+   The native max-height contract gives first-paint contrast before discovery. */
+html:root.codex-dream-skin main.dream-conversation-shell
+  :is(.dream-queued-message-list, .vertical-scroll-fade-mask[class~="max-h-[30dvh]"]) {
+  color: var(--dream-ink) !important;
+  background: var(--dream-surface) !important;
+}
+
+html:root.codex-dream-skin main.dream-conversation-shell
+  :is(.dream-queued-message-list, .vertical-scroll-fade-mask[class~="max-h-[30dvh]"])
+  :is(div, p, span, strong, small, button, svg) {
+  color: var(--dream-ink) !important;
+  -webkit-text-fill-color: var(--dream-ink) !important;
+  text-shadow: none !important;
+}
+
+html:root.codex-dream-skin main.dream-conversation-shell
+  :is(.dream-queued-message-list, .vertical-scroll-fade-mask[class~="max-h-[30dvh]"]) button {
+  background: color-mix(in srgb, var(--dream-surface) 88%, var(--dream-ink) 12%) !important;
+  border-color: color-mix(in srgb, var(--dream-ink) 28%, transparent) !important;
+}
+
+html:root.codex-dream-skin main.dream-conversation-shell
+  :is(.dream-queued-message-list, .vertical-scroll-fade-mask[class~="max-h-[30dvh]"])
+  button:not(:disabled):not([aria-disabled="true"]):is(:hover, :focus-visible) {
+  background: color-mix(in srgb, var(--dream-surface) 76%, var(--dream-ink) 24%) !important;
+}
+
+/* Native workspace tab chrome has its own selected paint layer. Keep tab
+   foregrounds paired with that layer, without styling browser page contents. */
+html:root.codex-dream-skin [data-app-shell-tab-controller]
+  :is([role="tab"], [data-app-shell-tab-close-button]),
+html:root.codex-dream-skin [data-app-shell-tab-controller]
+  :is([role="tab"], [data-app-shell-tab-close-button]) :is(span, svg) {
+  color: var(--dream-ink) !important;
+  -webkit-text-fill-color: var(--dream-ink) !important;
+  text-shadow: none !important;
+}
+
+html:root.codex-dream-skin [data-app-shell-tab-controller]
+  [data-tab-id] > [class*="_SelectedSurface_"] {
+  background: color-mix(in srgb, var(--dream-surface) 85%, var(--dream-ink) 15%) !important;
+  border-color: color-mix(in srgb, var(--dream-accent) 60%, transparent) !important;
+  box-shadow: none !important;
+}
+
+html:root.codex-dream-skin [data-app-shell-tab-controller]
+  [role="tab"][aria-selected="false"]:hover,
+html:root.codex-dream-skin [data-app-shell-tab-controller]
+  [data-app-shell-tab-close-button]:not(:disabled):hover {
+  background: color-mix(in srgb, var(--dream-surface) 75%, var(--dream-ink) 25%) !important;
+}
+
+/* File-change hover lists are portaled native tooltips, not dialogs. The
+   matching summary pill also needs shared paint across every palette. */
+html:root.codex-dream-skin :is([role="tooltip"], .dream-progress-pill,
+  main.dream-conversation-shell [class~="w-max"][class~="rounded-3xl"][class~="bg-surface-elevated-secondary"]) {
+  color: var(--dream-ink) !important;
+  -webkit-text-fill-color: var(--dream-ink) !important;
+  background: var(--dream-surface) !important;
+  border-color: color-mix(in srgb, var(--dream-ink) 25%, transparent) !important;
+  text-shadow: none !important;
+}
+
+html:root.codex-dream-skin :is([role="tooltip"], .dream-progress-pill,
+  main.dream-conversation-shell [class~="w-max"][class~="rounded-3xl"][class~="bg-surface-elevated-secondary"])
+  :is(div, p, span, button, svg) {
+  color: var(--dream-ink) !important;
+  -webkit-text-fill-color: var(--dream-ink) !important;
+  text-shadow: none !important;
+}
+
+html:root.codex-dream-skin [role="tooltip"] button:not(:disabled):is(:hover, :focus-visible) {
+  background: color-mix(in srgb, var(--dream-surface) 85%, var(--dream-ink) 15%) !important;
+}
+
+html:root.codex-dream-skin :is([role="tooltip"], .dream-progress-pill,
+  main.dream-conversation-shell [class~="w-max"][class~="rounded-3xl"][class~="bg-surface-elevated-secondary"])
+  [class~="text-codex-git-added"],
+html:root.codex-dream-skin :is([role="tooltip"], .dream-progress-pill,
+  main.dream-conversation-shell [class~="w-max"][class~="rounded-3xl"][class~="bg-surface-elevated-secondary"])
+  [class~="text-codex-git-added"] * {
+  color: color-mix(in srgb, var(--dream-ink) 50%, #16a34a) !important;
+  -webkit-text-fill-color: color-mix(in srgb, var(--dream-ink) 50%, #16a34a) !important;
+}
+
+html:root.codex-dream-skin :is([role="tooltip"], .dream-progress-pill,
+  main.dream-conversation-shell [class~="w-max"][class~="rounded-3xl"][class~="bg-surface-elevated-secondary"])
+  [class~="text-codex-git-deleted"],
+html:root.codex-dream-skin :is([role="tooltip"], .dream-progress-pill,
+  main.dream-conversation-shell [class~="w-max"][class~="rounded-3xl"][class~="bg-surface-elevated-secondary"])
+  [class~="text-codex-git-deleted"] * {
+  color: color-mix(in srgb, var(--dream-ink) 50%, #dc3545) !important;
+  -webkit-text-fill-color: color-mix(in srgb, var(--dream-ink) 50%, #dc3545) !important;
+}
+
+/* Native diff rows and the renamed View Changes action use newer light
+   surface utilities. Match their structure/tokens rather than localized copy. */
+html:root.codex-dream-skin main.dream-conversation-shell .dream-file-changes-summary
+  [class~="group/turn-diff-file-row"] button {
+  background: var(--dream-surface) !important;
+  color: var(--dream-ink) !important;
+  -webkit-text-fill-color: var(--dream-ink) !important;
+}
+
+html:root.codex-dream-skin main.dream-conversation-shell .dream-file-changes-summary
+  :is(button[class~="bg-primary-soft-alpha"], [class~="bg-surface-secondary/92"]) {
+  color: var(--dream-ink) !important;
+  -webkit-text-fill-color: var(--dream-ink) !important;
+  background: color-mix(in srgb, var(--dream-surface) 85%, var(--dream-ink) 15%) !important;
+  border-color: color-mix(in srgb, var(--dream-ink) 30%, transparent) !important;
+}
+
+html:root.codex-dream-skin main.dream-conversation-shell .dream-file-changes-summary
+  button[class~="bg-primary-soft-alpha"] :is(span, svg) {
+  color: var(--dream-ink) !important;
+  -webkit-text-fill-color: var(--dream-ink) !important;
+}
+
+html:root.codex-dream-skin main.dream-conversation-shell .dream-file-changes-summary
+  :is([class~="group/turn-diff-file-row"] button, button[class~="bg-primary-soft-alpha"]):not(:disabled):is(:hover, :focus-visible) {
+  background: color-mix(in srgb, var(--dream-surface) 75%, var(--dream-ink) 25%) !important;
+}
+
+html:root.codex-dream-skin main.dream-conversation-shell .dream-file-changes-summary
+  [class~="text-codex-git-added"],
+html:root.codex-dream-skin main.dream-conversation-shell .dream-file-changes-summary
+  [class~="text-codex-git-added"] * {
+  color: color-mix(in srgb, var(--dream-ink) 50%, #16a34a) !important;
+  -webkit-text-fill-color: color-mix(in srgb, var(--dream-ink) 50%, #16a34a) !important;
+}
+
+html:root.codex-dream-skin main.dream-conversation-shell .dream-file-changes-summary
+  [class~="text-codex-git-deleted"],
+html:root.codex-dream-skin main.dream-conversation-shell .dream-file-changes-summary
+  [class~="text-codex-git-deleted"] * {
+  color: color-mix(in srgb, var(--dream-ink) 50%, #dc3545) !important;
+  -webkit-text-fill-color: color-mix(in srgb, var(--dream-ink) 50%, #dc3545) !important;
+}
+
 html.codex-dream-skin [role="dialog"] {
   color: var(--dream-ink) !important;
   background-color: var(--dream-surface) !important;
+}
+
+/* Native form controls retain light soft surfaces inside themed dialogs.
+   Pair paint and text-fill explicitly: inherited WebKit text-fill otherwise
+   hides dark native input text, including while focused or selected. */
+html:root.codex-dream-skin .codex-dialog[role="dialog"] input[class~="bg-primary-soft"],
+html:root.codex-dream-skin .codex-dialog[role="dialog"] button[class~="bg-primary-soft-alpha"] {
+  color: var(--dream-ink) !important;
+  -webkit-text-fill-color: var(--dream-ink) !important;
+  background: color-mix(in srgb, var(--dream-surface) 90%, var(--dream-ink) 10%) !important;
+  caret-color: var(--dream-ink) !important;
+  text-shadow: none !important;
+}
+
+html:root.codex-dream-skin .codex-dialog[role="dialog"]
+  button[class~="bg-primary-soft-alpha"] :is(span, svg) {
+  color: var(--dream-ink) !important;
+  -webkit-text-fill-color: var(--dream-ink) !important;
+}
+
+html:root.codex-dream-skin .codex-dialog[role="dialog"]
+  button[class~="bg-primary-soft-alpha"]:not(:disabled):not([aria-disabled="true"]):hover {
+  background: color-mix(in srgb, var(--dream-surface) 80%, var(--dream-ink) 20%) !important;
+}
+
+html:root.codex-dream-skin .codex-dialog[role="dialog"] input[class~="bg-primary-soft"]::placeholder {
+  color: color-mix(in srgb, var(--dream-ink) 65%, transparent) !important;
+  -webkit-text-fill-color: color-mix(in srgb, var(--dream-ink) 65%, transparent) !important;
+}
+
+html:root.codex-dream-skin .codex-dialog[role="dialog"] input[class~="bg-primary-soft"]::selection {
+  color: #102938 !important;
+  -webkit-text-fill-color: #102938 !important;
+  background-color: #bfe8ff !important;
 }
 
 /* Codex 2026.09 introduced a rounded page-surface carrier behind the unified
@@ -482,6 +656,28 @@ html.codex-dream-skin .composer-surface-chrome > * {
   z-index: 3;
 }
 
+/* The compact application-menu frame leaves two spacing units outside its
+   painted panels. Absorb that gutter into panel paint while retaining the
+   original content inset, so artwork does not show through as a narrow strip. */
+html:root.codex-dream-skin [data-app-shell-application-menu-bar="true"]
+  main.main-surface[data-app-shell-main-surface][class*="_MainContentSurface_"] {
+  margin-top: 0 !important;
+  padding-top: calc(var(--spacing, 4px) * 2) !important;
+  border-top-right-radius: 12px !important;
+}
+
+html:root.codex-dream-skin [data-app-shell-application-menu-bar="true"]
+  aside.app-shell-left-panel[data-app-shell-left-panel-appearance][class*="_LeftPanel_"] {
+  margin-top: 0 !important;
+  padding-top: calc(var(--spacing, 4px) * 2) !important;
+}
+
+html:root.codex-dream-skin [data-app-shell-application-menu-bar="true"]
+  aside.app-shell-left-panel[data-app-shell-left-panel-appearance][class*="_LeftPanel_"]
+  > [class~="absolute"][class~="inset-y-0"] {
+  top: calc(var(--spacing, 4px) * 2) !important;
+}
+
 /* Keep the native Codex content toolbar inside the scene instead of painting
    an opaque strip above it. Theme CSS still owns foreground, divider, and
    hover colors; this higher-specificity shared rule owns only the glass
@@ -783,6 +979,11 @@ html.codex-dream-skin .dream-home section[class~="group/home-suggestions"] {
    content. It paints 46px of opaque white over the themed route artwork, so
    the shared runtime removes it instead of requiring every dark theme to know
    the current hashed class name. The native toolbar remains intact. */
+/* Newer thread layouts put the composer fade in the transcript's sticky
+   spacer, outside the absolute composer rail. Match only its pointer-free
+   background layer; leave the spacer and native scroll geometry intact. */
+html.codex-dream-skin .thread-scroll-container
+  .pointer-events-none[class*="_background_"][class*="_fade_"],
 html.codex-dream-skin[data-dream-route]
   :is(.app-shell-main-content-top-fade, [class*="_MainContentTopFade_"]),
 html.codex-dream-skin[data-dream-route]
@@ -909,8 +1110,8 @@ html:root.codex-dream-skin[data-dream-color-scheme="dark"]
 html:root.codex-dream-skin[data-dream-color-scheme="dark"]
   main:is(.dream-conversation-shell, [data-app-shell-main-surface])
   :is(span.loading-shimmer-pure-text, span[class*="_cadencedShimmer_"]) span {
-  color: var(--theme-conversation-activity-ink, var(--theme-conversation-muted-ink, #dff5ff)) !important;
-  -webkit-text-fill-color: var(--theme-conversation-activity-ink, var(--theme-conversation-muted-ink, #dff5ff)) !important;
+  color: color-mix(in srgb, var(--theme-conversation-activity-ink, var(--theme-conversation-muted-ink, #dff5ff)) 78%, transparent) !important;
+  -webkit-text-fill-color: color-mix(in srgb, var(--theme-conversation-activity-ink, var(--theme-conversation-muted-ink, #dff5ff)) 78%, transparent) !important;
   text-shadow: none !important;
 }
 
@@ -924,6 +1125,8 @@ html:root.codex-dream-skin[data-dream-color-scheme="dark"]
   span[class*="cadencedShimmerHighlight"] span {
   color: var(--theme-conversation-activity-highlight, #f3fbff) !important;
   -webkit-text-fill-color: var(--theme-conversation-activity-highlight, #f3fbff) !important;
+  text-shadow: 0 0 3px rgb(255 255 255 / 42%),
+    0 0 7px color-mix(in srgb, var(--dream-accent, #8bdefb) 35%, transparent) !important;
 }
 
 }
@@ -1127,14 +1330,13 @@ html.codex-dream-skin aside.app-shell-left-panel
   font-family: "Microsoft YaHei UI", system-ui, sans-serif;
 }
 
-/* The unified sidebar reserves its top row for the Codex title, search and
-   notification controls. Keep the theme trigger in the navigation rail where
-   it no longer overlaps those native actions. */
+/* Keep the top title/search controls and both native footer action rows clear.
+   The theme trigger occupies the next navigation-rail slot above those rows. */
 html:is(.codex-dream-skin, .dream-native-mode) aside.app-shell-left-panel[data-app-shell-left-panel-appearance]
   #codex-dream-theme-switcher {
   top: auto;
   right: auto;
-  bottom: 72px;
+  bottom: 116px;
   left: 10px;
 }
 

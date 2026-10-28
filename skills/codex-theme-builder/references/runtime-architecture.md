@@ -222,6 +222,12 @@ conversation descendant selectors for this reading-surface correction.
 
 ## Change placement
 
+For a diagnostic CSS-only update, compile the complete base stylesheet through
+the current runtime's `compileNativeComposerSelectors` before replacing its
+existing style element. Never assign raw base.css: sibling titlebars and native
+composer selectors require the same compatibility conversion as normal injection.
+Verify transparent titlebar paint as well as the edited control after updating.
+
 Before adding code, choose exactly one owner:
 
 - New theme art, color, or per-theme selector: theme directory.
@@ -281,9 +287,17 @@ Every shared-runtime change must pass:
 4. Both bundled theme validations.
 5. Installation-copy verification before changing the desktop shortcut behavior.
 
-The verification retry remains bounded: three 12-second attempts by default. Each
+The verification retry remains bounded: three 20-second attempts by default. Each
 attempt starts a fresh verifier process so a renderer reload cannot strand validation
-on a closed page WebSocket. Results are appended to
+on a closed page WebSocket. Use ProcessStartInfo with concurrent stdout/stderr
+draining, not native PowerShell redirection: PowerShell 5 with Stop preference can
+turn stderr into a terminating error before the retry loop continues. Every attempt
+has an outer child deadline (attempt timeout plus five seconds); terminate only
+that owned verifier if hung. Log stderr, exit code, timeout and marker diagnostics.
+Allow up to 90 seconds for the identity-verified CDP endpoint, and leave Codex open
+on failure. A semantic native main plus its authenticated titlebar is sufficient
+for initial discovery before the composer mounts; the final visual/interaction
+verification still must pass. Results are appended to
 `%LOCALAPPDATA%\CodexDreamSkinV2\verification.log`; continuous failure remains fatal.
 
 The runtime tests must reject legacy `WScript.Shell.Popup`, UI functions inside the orchestration script, process-control calls inside the UI module, indeterminate progress, or a completion state that does not visibly reach 100%.

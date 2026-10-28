@@ -88,8 +88,9 @@ if ($launchText -notmatch '\[scriptblock\]\$ProgressCallback' -or
     $launchText -notmatch 'Report-DreamSkinLaunchStage' -or
     $launchText -notmatch 'function\s+Test-DreamSkinVerifiedInjection' -or
     $launchText -notmatch '\$VerificationAttempts\s*=\s*3' -or
-    $launchText -notmatch '\$AttemptTimeoutMs\s*=\s*12000' -or
-    $launchText -notmatch '--timeout-ms\s+\$AttemptTimeoutMs' -or
+    $launchText -notmatch '\$AttemptTimeoutMs\s*=\s*20000' -or
+    $launchText -notmatch 'ReadToEndAsync' -or
+    $launchText -notmatch 'Invoke-DreamSkinVerificationAttempt' -or
     $launchText -notmatch 'verification\.log' -or
     $launchText -notmatch '\$verifyAttempt/\$VerificationAttempts' -or
     $launchText -notmatch "Verified = \[pscustomobject\]@\{ Percent = 96" -or
@@ -443,7 +444,7 @@ if ($runtimeJs -notmatch 'data-app-action-timeline-scroll' -or
     $baseCss -notmatch '(?s)data-app-shell-page-surface="true".*?data-app-shell-main-content-layout.*?background-color:\s*transparent\s*!important.*?background-image:\s*none\s*!important') {
   throw 'The unified Codex shell must classify Home from composer/timeline semantics and keep its new page carrier transparent.'
 }
-if ($baseCss -notmatch '(?s)data-app-shell-left-panel-appearance.*?#codex-dream-theme-switcher.*?bottom:\s*72px.*?left:\s*10px' -or
+if ($baseCss -notmatch '(?s)data-app-shell-left-panel-appearance.*?#codex-dream-theme-switcher.*?bottom:\s*116px.*?left:\s*10px' -or
     $runtimeJs -notmatch 'panel\.dataset\.dreamPlacement\s*=\s*opensAbove\s*\?\s*"above"\s*:\s*"below"' -or
     $baseCss -notmatch 'data-dream-placement="above"') {
   throw 'The theme switcher must avoid the unified sidebar titlebar and open inside the viewport from its rail position.'
@@ -815,8 +816,21 @@ if ($baseCss -notmatch '(?s)data-dream-color-scheme="dark".*?main\.dream-convers
     $baseCss -match '(?s)main\.dream-conversation-shell\s+\*\s*\{[^}]*--theme-conversation-code-ink') {
   throw 'Dark Markdown tables and their inline-code cells must use scoped reading ink without a universal conversation override.'
 }
-Write-Host 'PASS: light/dark Markdown code-block reading contrast.'
+if ($baseCss -notmatch '(?s)html\.codex-dream-skin \.thread-scroll-container\s+\.pointer-events-none\[class\*="_background_"\]\[class\*="_fade_"\][^{]*\{[^}]*display:\s*none\s*!important') {
+  throw 'Transcript-owned composer fade must be suppressed in shared themed CSS.'
+}
+Write-Host 'PASS: light/dark Markdown code-block reading contrast and transcript composer fade.'
 & $node.Path (Join-Path $PSScriptRoot 'test-mutations.mjs') (Join-Path $Root 'assets\runtime.js')
 if ($LASTEXITCODE -ne 0) { throw 'Mutation fast-path behavior checks failed.' }
 & $node.Path (Join-Path $PSScriptRoot 'test-hot-update.mjs')
 if ($LASTEXITCODE -ne 0) { throw 'Persistent hot-update asset behavior checks failed.' }
+& powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'test-injector-identity.ps1')
+if ($LASTEXITCODE -ne 0) { throw 'Recorded injector process identity checks failed.' }
+& powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'test-port-allocation.ps1')
+if ($LASTEXITCODE -ne 0) { throw 'Loopback port allocation checks failed.' }
+& powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'test-startup-retry.ps1') -NodePath $node.Path
+if ($LASTEXITCODE -ne 0) { throw 'Startup verification retry behavior checks failed.' }
+& $node.Path (Join-Path $PSScriptRoot 'test-output-boundary.mjs')
+if ($LASTEXITCODE -ne 0) { throw 'Output-panel boundary checks failed.' }
+& $node.Path (Join-Path $PSScriptRoot 'test-startup-probe.mjs')
+if ($LASTEXITCODE -ne 0) { throw 'Startup shell readiness checks failed.' }

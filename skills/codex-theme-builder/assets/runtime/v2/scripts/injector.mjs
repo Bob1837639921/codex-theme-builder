@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, "..");
-const SKIN_VERSION = "2.5.3-shimmer-contrast";
+const SKIN_VERSION = "2.5.13-output-boundary";
 const MAX_ART_BYTES = 8 * 1024 * 1024;
 const MAX_VIDEO_BYTES = 8 * 1024 * 1024;
 const DIRECT_EVALUATE_LIMIT = 8 * 1024 * 1024;
@@ -716,11 +716,12 @@ async function probeSession(session) {
         document.querySelector('[data-codex-composer="true"]')?.closest('[data-composer-surface-variant]')),
       main: Boolean(document.querySelector('[role="main"]')),
       nativeFeature: Boolean(document.getElementById('appgen-site-search')),
+      semanticShell: Boolean(shell?.matches('[data-app-shell-main-surface]')),
     };
     return {
       markers,
       codex: location.protocol === 'app:' && markers.shell && markers.header &&
-        (markers.composer || markers.main || markers.nativeFeature),
+        (markers.semanticShell || markers.composer || markers.main || markers.nativeFeature),
     };
   })()`);
 }
@@ -736,20 +737,24 @@ async function connectCodexTargets(port, timeoutMs) {
     try {
       const targets = await listAppTargets(port, options.browserId);
       const connected = [];
+      const diagnostics = [];
       for (const target of targets) {
         let session;
         try {
           session = await connectTarget(target, port);
           const probe = await probeSession(session);
           if (probe?.codex) connected.push({ target, session, probe });
-          else session.close();
+          else { diagnostics.push({ targetId: target.id, markers: probe?.markers }); session.close(); }
         } catch (error) {
           session?.close();
           lastError = error;
+          diagnostics.push({ targetId: target.id, error: error.message });
         }
       }
       if (connected.length) return connected;
-      lastError = new Error("No page matched the expected Codex shell markers");
+      lastError = new Error(targets.length
+        ? `No page matched the expected Codex shell markers: ${JSON.stringify(diagnostics)}`
+        : 'No verified app:// page targets are available yet');
     } catch (error) {
       if (error instanceof CdpIdentityMismatchError) throw error;
       lastError = error;

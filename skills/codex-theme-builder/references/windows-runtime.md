@@ -29,6 +29,16 @@ A Codex update ends the hidden watcher, so the theme disappears. Start the selec
 
 ## Troubleshooting
 
+- A CDP timeout with the correct process arguments but no listener can mean the
+  random port falls in a Windows excluded TCP range. Port allocation must perform
+  an exclusive loopback bind before launch; increasing the wait cannot fix a denied
+  bind. Do not delete system reservations or change firewall settings.
+
+- A stale recorded watcher PID may now belong to a protected Windows service.
+  Skip a visibly non-Node process without querying protected fields or stopping
+  it. Unknown or unreadable Node identities must still preserve the state and
+  fail safely. Archive a confirmed inactive session record before retrying.
+
 - “Close Codex before starting”: exit from the window and system tray, then check Task Manager.
 - “A V2 session already exists”: run the restore script first.
 - “Access is denied”: do not kill arbitrary processes; run the normal shortcut without elevation and check Windows package permissions.

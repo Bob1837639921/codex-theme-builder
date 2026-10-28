@@ -2,6 +2,73 @@
 
 ## Mutation fast path and toolbar verification
 
+- File-count pill contrast must also match its native w-max/rounded-3xl/elevated
+  surface structure, before the runtime marker arrives. Cached progress pills
+  must belong to the active details root and remain visible; a retained hidden
+  chat must not suppress discovery of a newly mounted pill in another chat.
+
+- The compact application-menu shell's two-spacing-unit top gutter must not
+  expose a disconnected artwork strip. Absorb it into painted main/sidebar
+  panels using equivalent internal inset, including the absolute sidebar carrier.
+  Verify toolbar, viewport, composer and sidebar content rectangles remain fixed;
+  do not move native controls or apply this rule to old shell layouts/native mode.
+
+- File-change cards use `group/turn-diff-file-row` with `bg-surface/70` row
+  buttons and a `bg-primary-soft-alpha` View Changes action. Match these native
+  structures/tokens in shared CSS; localized Review text is not a stable hook.
+  Pair backgrounds/text-fill, preserve diff colors and header overlay hit targets.
+
+- Output-panel discovery must stop before native main/content-layout/scroll
+  containers or any ancestor owning a composer. Revalidate cached marker bounds
+  after responsive layout changes and remove invalid/hidden markers before reuse.
+  A formerly narrow ancestor must never retain panel paint across the whole chat.
+
+- File-change hover lists mount as portaled native tooltips. Shared tooltip and
+  progress-pill contrast must pair theme surface/ink, retaining semantic green
+  additions and red deletions through animated digit descendants. Preserve native
+  list scrolling, row actions, focus rings and placement; do not flatten all diff
+  statistics to the ordinary foreground.
+
+- Workspace tab controllers own a separate `_SelectedSurface_` paint layer.
+  Pair it with theme ink on tab titles, SVG icons and native close controls.
+  Scope selected/hover paint to tab controllers, never tab panels or embedded
+  websites. Preserve drag geometry, pointer-free paint and native hit targets.
+
+- Queued follow-up discovery must not require `hide-scrollbar`: newer native
+  lists retain `vertical-scroll-fade-mask` and `max-h-[30dvh]` but remove that
+  cosmetic class. Shared CSS must cover the native list before marker discovery,
+  including steer, delete, more and queue icons with paired surface/ink. Preserve
+  disabled opacity and native button actions; never invoke steer/delete for QA.
+
+- Native dialog `bg-primary-soft` inputs and `bg-primary-soft-alpha` secondary
+  buttons need paired theme surface/ink and explicit WebKit text-fill. Inherited
+  light text-fill can override an input's correctly dark color on a light surface.
+  Cover focus, placeholder, selection and secondary-button hover without changing
+  submit/destructive buttons, validation rings, disabled behavior or native mode.
+
+- The transcript sticky spacer can own a separate pointer-free `_background_`
+  `_fade_` layer outside the composer rail. Suppress that paint with resident CSS
+  scoped to the themed thread scroll container. Preserve spacer sizing, input
+  surfaces, scrolling and native mode; do not add a per-message DOM scan.
+
+- CDP port selection must test an exclusive IPv4 loopback bind, not just the
+  absence of listeners. Windows excluded TCP ranges have no owner but reject the
+  bind with access denied. Release the probe on both success and failure; test
+  occupied, released, invalid and existing excluded ports without altering Windows.
+
+- Startup validation must actually retry native stderr failures on PowerShell 5,
+  drain both output pipes concurrently and bound every fresh child process. Three
+  failed attempts must still fail. Record missing shell/header/composer markers.
+  Permit the anchored semantic shell before composer mount without admitting
+  authentication pages, hidden shells, changed browser identities or non-app URLs.
+  A CDP startup timeout must never force-close Codex.
+
+- Recorded watcher PIDs can be reused by protected Windows services after exit.
+  A visible non-Node process name must be skipped before path/command-line reads;
+  never terminate it. Unreadable Node or unknown identities remain fail-closed.
+  Preserve full executable, command, port, browser ID and start-time checks before
+  stopping a real watcher. Exercise these cases with mocked process operations.
+
 - Newer thinking/activity shimmers use `_cadencedShimmer_` with nested resting
   copy and an aria-hidden sweep/highlight duplicate, without the legacy
   loading-shimmer class. Dark themes must color both copies and their text-fill

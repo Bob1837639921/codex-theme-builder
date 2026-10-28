@@ -2,6 +2,11 @@
 
 ## Mutation fast-path verification
 
+- Run startup retry tests in Windows PowerShell 5 with Stop preference: stderr
+  failures recover on a later attempt, persistent failures exhaust the bound,
+  large stdout/stderr do not deadlock, and a hung owned child is cleaned up.
+  Verify delayed composer discovery never admits signed-out or hidden pages.
+
 - Run `assets/runtime/v2/tests/run-tests.ps1`, including the executable mutation
   scenarios. Editor-only and runtime-owned batches must avoid document queries,
   composer discovery, and full ensure scheduling.
@@ -11,6 +16,10 @@
   retaining actual hit testing of the visible controls.
 
 ## Current Codex paint regressions
+
+- Check the navigation-rail theme trigger clears both native footer action rows
+  in the current unified sidebar; open its viewport-bounded panel and verify
+  native footer buttons remain clickable in themed and native modes.
 
 - On dark artwork inspect the initial thinking label and running tool labels:
   nested cadenced shimmer resting copy stays readable between sweeps, while the
