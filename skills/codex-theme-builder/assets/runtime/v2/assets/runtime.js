@@ -15,7 +15,7 @@
   const STORAGE_KEY = "codex-dream-theme-active";
   const MOTION_STORAGE_KEY = "codex-dream-motion-level";
   const MOTION_LEVELS = ["off", "low", "high"];
-  const RUNTIME_VERSION = "2.5.13-output-boundary";
+  const RUNTIME_VERSION = "2.5.14-login-recovery";
   const THEME_SEARCH_THRESHOLD = 6;
   const MUTATION_COALESCE_MS = 180;
   const VIDEO_BINDING_NAME = "__CODEX_DREAM_SKIN_VIDEO__";
@@ -1618,7 +1618,8 @@
       style.id = STYLE_ID;
       (document.head || root).appendChild(style);
     }
-    if (style.dataset.dreamVersion !== RUNTIME_VERSION || style.dataset.dreamThemeId !== activeTheme.id) {
+    if (style.dataset.dreamVersion !== RUNTIME_VERSION || style.dataset.dreamThemeId !== activeTheme.id ||
+        !root.classList.contains("dream-native-surface")) {
       applyTheme(activeTheme, false);
       style = document.getElementById(STYLE_ID);
     }

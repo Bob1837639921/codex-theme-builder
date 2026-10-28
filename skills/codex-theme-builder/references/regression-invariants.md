@@ -2,6 +2,12 @@
 
 ## Mutation fast path and toolbar verification
 
+- Signing out/in can reset document-root classes while the same runtime and
+  stylesheet survive. After validating the authenticated native shell, ensure
+  must reapply theme state when dream-native-surface is missing even if version
+  and theme ID still match. Keep suspension before this recovery so authentication
+  pages remain native. Verify the existing switcher becomes visible again.
+
 - File-count pill contrast must also match its native w-max/rounded-3xl/elevated
   surface structure, before the runtime marker arrives. Cached progress pills
   must belong to the active details root and remain visible; a retained hidden
