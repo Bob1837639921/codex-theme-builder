@@ -60,9 +60,14 @@ function Start-DreamSkinDesktopSession {
     [Parameter(Mandatory)]$ProgressWindow
   )
   Set-DreamSkinProgressStatus -Window $ProgressWindow -Status '正在启动 Codex 并加载主题资源…' -Percent 35
+  $progressState = @{ LastMessage = '' }
   $progressCallback = {
     param([int]$Percent, [string]$Status, [string]$Stage)
-    Write-DreamSkinDesktopLaunchLog -Message "启动阶段：$Stage；$Percent%；$Status"
+    $message = "启动阶段：$Stage；$Percent%；$Status"
+    if ($message -ne $progressState.LastMessage) {
+      Write-DreamSkinDesktopLaunchLog -Message $message
+      $progressState.LastMessage = $message
+    }
     Set-DreamSkinProgressStatus -Window $ProgressWindow -Status $Status -Percent (35 + [int][Math]::Floor($Percent * .64))
   }
   & (Join-Path $PSScriptRoot 'launch.ps1') -Theme $ThemePath -ProgressCallback $progressCallback | Out-Null

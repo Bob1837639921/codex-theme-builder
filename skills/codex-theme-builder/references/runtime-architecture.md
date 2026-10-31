@@ -54,6 +54,10 @@ match. Missing/corrupt cache or changed/missing installation files must run
 setup again. Metadata enumeration must not hash or decode full media files.
 The progress UI shows elapsed time and milestone labels, never advances progress
 on a timer, and minimizes its completion delay after successful verification.
+Its short easing transition and clipped highlight animate only the achieved
+progress region. Follow Windows UI-effects settings and dispose the animation
+timer with the form. Child-process waits report unchanged milestones to keep
+the UI responsive; repeated callbacks must not restart easing or duplicate logs.
 
 `launch.ps1` owns the canonical launch stages. Each event has:
 

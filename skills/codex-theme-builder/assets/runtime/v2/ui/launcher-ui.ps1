@@ -155,6 +155,36 @@ function New-DreamSkinProgressWindow {
   $progressFill.Size = New-Object System.Drawing.Size(1, 5)
   $progressFill.BackColor = [System.Drawing.Color]::FromArgb(15, 118, 110)
   $progressTrack.Controls.Add($progressFill)
+  $motion = [pscustomobject]@{
+    Enabled = [System.Windows.Forms.SystemInformation]::UIEffectsEnabled
+    TargetWidth = 1
+    FromWidth = 1
+    StartedAt = 0.0
+    Clock = [Diagnostics.Stopwatch]::StartNew()
+  }
+  $progressFill.Tag = $motion
+  $progressFill.Add_Paint({
+    if (-not $this.Tag.Enabled -or $this.Width -lt 8) { return }
+    $width = [Math]::Max(1, $this.Width)
+    $base = New-Object Drawing.Drawing2D.LinearGradientBrush(
+      (New-Object Drawing.Rectangle(0, 0, $width, $this.Height)),
+      [Drawing.Color]::FromArgb(15, 118, 110),
+      [Drawing.Color]::FromArgb(45, 170, 155),
+      [Drawing.Drawing2D.LinearGradientMode]::Horizontal)
+    $glow = $null
+    try {
+      $_.Graphics.FillRectangle($base, 0, 0, $width, $this.Height)
+      $position = [int](($this.Tag.Clock.Elapsed.TotalMilliseconds % 1800) / 1800 * ($width + 96)) - 96
+      $glow = New-Object Drawing.Drawing2D.LinearGradientBrush(
+        (New-Object Drawing.Rectangle($position, 0, 96, $this.Height)),
+        [Drawing.Color]::Transparent, [Drawing.Color]::FromArgb(110, 220, 255, 245),
+        [Drawing.Drawing2D.LinearGradientMode]::Horizontal)
+      $_.Graphics.FillRectangle($glow, $position, 0, 96, $this.Height)
+    } finally {
+      $base.Dispose()
+      if ($glow) { $glow.Dispose() }
+    }
+  })
 
   $steps = @()
   $index = 0
@@ -173,6 +203,20 @@ function New-DreamSkinProgressWindow {
   $form.Controls.Add($percent)
   $form.Controls.Add($progressTrack)
   $form.Controls.Add($hint)
+  $animationTimer = New-Object System.Windows.Forms.Timer
+  $animationTimer.Interval = if ($motion.Enabled) { 33 } else { 1000 }
+  $animationTimer.Add_Tick({
+    if ($form.IsDisposed) { $animationTimer.Stop(); return }
+    if ($motion.Enabled) {
+      $t = [Math]::Min(1.0, [Math]::Max(0.0, ($motion.Clock.Elapsed.TotalMilliseconds - $motion.StartedAt) / 260.0))
+      $eased = 1 - [Math]::Pow(1 - $t, 3)
+      $progressFill.Width = [int][Math]::Round($motion.FromWidth + ($motion.TargetWidth - $motion.FromWidth) * $eased)
+      $progressFill.Invalidate()
+    }
+    $elapsed.Text = "$([int]$motion.Clock.Elapsed.TotalSeconds) 秒"
+  }.GetNewClosure())
+  $form.Add_Disposed({ $animationTimer.Stop(); $animationTimer.Dispose() }.GetNewClosure())
+  $animationTimer.Start()
   $form.Show()
   [System.Windows.Forms.Application]::DoEvents()
   return [pscustomobject]@{
@@ -187,6 +231,8 @@ function New-DreamSkinProgressWindow {
     Steps = $steps
     Elapsed = $elapsed
     Clock = [Diagnostics.Stopwatch]::StartNew()
+    Animation = $motion
+    AnimationTimer = $animationTimer
   }
 }
 
@@ -199,11 +245,17 @@ function Set-DreamSkinProgressStatus {
   )
   if (-not [string]::IsNullOrWhiteSpace($Title)) { $Window.Title.Text = $Title }
   if ($Window.Status.Text -ne $Status) { $Window.Status.Text = $Status }
-  if ($Percent -ge 0) {
+  if ($Percent -ge 0 -and $Percent -ne $Window.ProgressValue) {
     $nextValue = [Math]::Min(100, [Math]::Max([int]$Window.ProgressValue, $Percent))
     $Window.ProgressValue = $nextValue
     $fillWidth = [Math]::Round($Window.ProgressTrack.ClientSize.Width * ($nextValue / 100.0))
-    $Window.ProgressFill.Width = [Math]::Max(1, $fillWidth)
+    $targetWidth = [Math]::Max(1, $fillWidth)
+    if ($Window.Animation.TargetWidth -ne $targetWidth) {
+      $Window.Animation.FromWidth = $Window.ProgressFill.Width
+      $Window.Animation.TargetWidth = $targetWidth
+      $Window.Animation.StartedAt = $Window.Animation.Clock.Elapsed.TotalMilliseconds
+    }
+    if (-not $Window.Animation.Enabled) { $Window.ProgressFill.Width = $targetWidth }
     $Window.Percent.Text = "$nextValue%"
     $stage = if ($nextValue -lt 14) { 0 } elseif ($nextValue -lt 35) { 1 } elseif ($nextValue -lt 75) { 2 } else { 3 }
     for ($i = 0; $i -lt $Window.Steps.Count; $i++) {
@@ -224,6 +276,7 @@ function Complete-DreamSkinProgressWindow {
   $Window.Status.Text = '主题已加载，Codex 即将显示。'
   $Window.Status.ForeColor = [System.Drawing.Color]::FromArgb(70, 91, 82)
   $Window.ProgressValue = 100
+  $Window.AnimationTimer.Stop()
   $Window.ProgressFill.Width = $Window.ProgressTrack.ClientSize.Width
   $Window.Percent.Text = '100%'
   $Window.Hint.Text = '正在切换到 Codex 窗口…'

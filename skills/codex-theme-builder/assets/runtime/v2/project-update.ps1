@@ -23,7 +23,7 @@
     $stdout = $process.StandardOutput.ReadToEndAsync()
     $stderr = $process.StandardError.ReadToEndAsync()
     $watch = [Diagnostics.Stopwatch]::StartNew()
-    while (-not $process.WaitForExit(100)) {
+    while (-not $process.WaitForExit(33)) {
       if ($ProgressCallback) { & $ProgressCallback $Percent $Status }
       if ($watch.Elapsed.TotalSeconds -gt $TimeoutSeconds) {
         $process.Kill()

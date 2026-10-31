@@ -46,7 +46,7 @@ function Report-DreamSkinLaunchStage {
 
 function Invoke-DreamSkinVerificationAttempt {
   param([string]$NodePath, [string]$InjectorPath, [int]$Port, [string]$BrowserId,
-    [string]$ThemePath, [int]$AttemptTimeoutMs, [string]$VerificationLogPath)
+    [string]$ThemePath, [int]$AttemptTimeoutMs, [string]$VerificationLogPath, [scriptblock]$WaitCallback)
   $start = New-Object System.Diagnostics.ProcessStartInfo
   $start.FileName = $NodePath
   $start.Arguments = (@($InjectorPath, '--verify', '--port', "$Port", '--browser-id', $BrowserId,
@@ -66,7 +66,12 @@ function Invoke-DreamSkinVerificationAttempt {
     # PowerShell 5 NativeCommandError that bypasses the remaining attempts.
     $stdout = $child.StandardOutput.ReadToEndAsync()
     $stderr = $child.StandardError.ReadToEndAsync()
-    $timedOut = -not $child.WaitForExit($AttemptTimeoutMs + 5000)
+    $waitClock = [Diagnostics.Stopwatch]::StartNew()
+    $timedOut = $false
+    while (-not $child.WaitForExit(33)) {
+      if ($WaitCallback) { & $WaitCallback }
+      if ($waitClock.ElapsedMilliseconds -ge ($AttemptTimeoutMs + 5000)) { $timedOut = $true; break }
+    }
     if ($timedOut) {
       $child.Kill()
       [void]$child.WaitForExit(3000)
@@ -115,7 +120,9 @@ function Test-DreamSkinVerifiedInjection {
       Add-Content -LiteralPath $VerificationLogPath -Encoding UTF8
     if (Invoke-DreamSkinVerificationAttempt -NodePath $NodePath -InjectorPath $InjectorPath `
         -Port $Port -BrowserId $BrowserId -ThemePath $ThemePath `
-        -AttemptTimeoutMs $AttemptTimeoutMs -VerificationLogPath $VerificationLogPath) { return $true }
+        -AttemptTimeoutMs $AttemptTimeoutMs -VerificationLogPath $VerificationLogPath -WaitCallback {
+          Report-DreamSkinLaunchProgress -Percent 90 -Status '正在验证主题是否完整加载…' -Stage VerifyInjection
+        }) { return $true }
   }
   return $false
 }
