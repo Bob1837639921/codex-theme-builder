@@ -569,7 +569,7 @@ if ($frostleafCss -notmatch '(?s)\.dream-queued-message-list\s*\{[^}]*background
     $templateCss -notmatch '(?s)\.dream-queued-message-list\s*\{[^}]*background:\s*var\(--theme-solid-panel\).*?border:') {
   throw 'Queued follow-up guidance must use a reusable marker with explicit background and descendant contrast.'
 }
-if ($runtimeJs -notmatch '\[role="textbox"\]\[aria-label=' -or
+if ($runtimeJs -notmatch 'messageEditorInput.*?\[role="textbox"\].*?Edit message' -or
     $runtimeJs -notmatch 'closest\("form"\)' -or
     $runtimeJs -notmatch 'dream-message-editor' -or
     $baseCss -notmatch '(?s)\.dream-message-editor :is\(\[role="textbox"\]\[aria-label=.*?-webkit-text-fill-color:' -or

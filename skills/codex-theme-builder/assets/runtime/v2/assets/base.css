@@ -465,6 +465,47 @@ html.codex-dream-skin main.dream-conversation-shell .dream-message-editor {
   box-shadow: var(--theme-message-editor-shadow, 0 10px 28px rgb(0 0 0 / 12%)) !important;
 }
 
+/* Native action rows may contain only Copy until hovered, and newer builds
+   use rate/read-aloud/overflow actions. Each control must be readable without
+   relying on discovering a multi-button row. Preserve native hover visibility. */
+html.codex-dream-skin main.dream-conversation-shell
+  :is(.dream-message-action, .turn-action-controls button),
+html.codex-dream-skin main.dream-conversation-shell
+  :is(.dream-message-action, .turn-action-controls button) :is(span, svg) {
+  color: var(--theme-message-action-ink, var(--theme-conversation-muted-ink, var(--theme-muted-text, var(--dream-ink)))) !important;
+  -webkit-text-fill-color: currentColor !important;
+}
+
+html.codex-dream-skin main.dream-conversation-shell
+  :is(.dream-message-action, .turn-action-controls button):is(:hover, :focus-visible, [data-state="open"]) {
+  color: var(--theme-conversation-text-ink, var(--theme-panel-text, var(--dream-ink))) !important;
+  background-color: color-mix(in srgb, var(--dream-accent) 16%, transparent) !important;
+}
+
+html.codex-dream-skin main.dream-conversation-shell
+  .dream-message-editor [role="textbox"],
+html.codex-dream-skin main.dream-conversation-shell
+  .dream-message-editor [role="textbox"] * {
+  color: var(--theme-message-editor-ink, var(--theme-conversation-code-ink, var(--dream-ink))) !important;
+  -webkit-text-fill-color: currentColor !important;
+  caret-color: var(--theme-message-editor-accent, var(--dream-accent)) !important;
+}
+
+html.codex-dream-skin main.dream-conversation-shell .dream-message-editor button {
+  color: var(--theme-message-editor-ink, var(--theme-conversation-code-ink, var(--dream-ink))) !important;
+  -webkit-text-fill-color: currentColor !important;
+  background-color: var(--theme-message-editor-secondary-surface, color-mix(in srgb, var(--dream-accent) 12%, transparent)) !important;
+  border-color: var(--theme-message-editor-border, var(--theme-border)) !important;
+}
+
+html.codex-dream-skin main.dream-conversation-shell
+  .dream-message-editor button:is([type="submit"], [data-variant="solid"], [class~="bg-primary-solid"]) {
+  color: var(--theme-message-editor-primary-ink, #ffffff) !important;
+  -webkit-text-fill-color: currentColor !important;
+  background-color: var(--theme-message-editor-primary-surface, var(--dream-accent)) !important;
+  border-color: transparent !important;
+}
+
 html.codex-dream-skin main.dream-conversation-shell
   .dream-message-editor :is([role="textbox"][aria-label="编辑消息"], [role="textbox"][aria-label="编辑消息"] *) {
   color: var(--theme-message-editor-ink, var(--theme-conversation-code-ink, var(--dream-ink))) !important;
@@ -957,6 +998,45 @@ html.codex-dream-skin .dream-home {
   overflow-x: hidden !important;
 }
 
+/* Home now places project/location controls on an independent semantic rail.
+   Keep the broad scene layout while restoring a comfortable reading width for
+   the native composer and enough room below theme edge decoration. */
+html.codex-dream-skin main.dream-home-shell
+  [data-codex-composer-root][data-composer-placement="home"] {
+  width: 100%;
+  max-width: min(100%, var(--thread-content-responsive-max-width, 48rem));
+  margin-inline: auto;
+}
+
+html.codex-dream-skin main.dream-home-shell [data-composer-input] {
+  padding-top: 12px !important;
+  padding-bottom: 8px !important;
+  min-height: 88px !important;
+}
+
+html.codex-dream-skin main.dream-home-shell
+  [data-composer-input] .ProseMirror {
+  min-height: 60px !important;
+}
+
+html.codex-dream-skin main.dream-home-shell [data-composer-utility-rail] {
+  color: var(--theme-panel-text, var(--dream-ink, #252a27)) !important;
+  -webkit-text-fill-color: var(--theme-panel-text, var(--dream-ink, #252a27)) !important;
+  background-color: var(--theme-composer-surface, var(--dream-surface, #f5f2e9)) !important;
+  border-color: var(--theme-border, transparent) !important;
+}
+
+html.codex-dream-skin main.dream-home-shell
+  [data-composer-utility-rail] :is(button, svg, span) {
+  color: inherit !important;
+  -webkit-text-fill-color: inherit !important;
+}
+
+html.codex-dream-skin [data-composer-input] .ProseMirror p.placeholder::before {
+  color: var(--theme-composer-placeholder, var(--dream-muted, #718078)) !important;
+  -webkit-text-fill-color: var(--theme-composer-placeholder, var(--dream-muted, #718078)) !important;
+}
+
 html.codex-dream-skin .dream-home-stage,
 html.codex-dream-skin .dream-home-hero {
   width: 100% !important;
@@ -1254,7 +1334,7 @@ html.codex-dream-skin .dream-plugin-search input::placeholder {
 #codex-dream-home-overlay {
   position: absolute !important;
   z-index: 12 !important;
-  inset: 0 0 clamp(190px, 27vh, 230px) !important;
+  inset: 0 0 max(clamp(190px, 27vh, 230px), var(--dream-home-composer-reserve, 0px)) !important;
   overflow: hidden !important;
   pointer-events: none !important;
 }
@@ -1262,6 +1342,12 @@ html.codex-dream-skin .dream-plugin-search input::placeholder {
 #codex-dream-home-overlay #codex-dream-skin-actions,
 #codex-dream-home-overlay #codex-dream-skin-actions * {
   pointer-events: auto !important;
+}
+
+@media (max-height: 760px) {
+  html.codex-dream-skin .dream-home #codex-dream-home-overlay .dream-title {
+    top: clamp(24px, calc(50% - 90px), 150px) !important;
+  }
 }
 
 /* Preserve Codex's native selector styling and geometry. Its internal carrier

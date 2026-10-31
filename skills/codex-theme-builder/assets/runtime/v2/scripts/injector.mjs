@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, "..");
-const SKIN_VERSION = "2.5.15-duration-contrast";
+const SKIN_VERSION = "2.5.17-message-controls";
 const MAX_ART_BYTES = 8 * 1024 * 1024;
 const MAX_VIDEO_BYTES = 8 * 1024 * 1024;
 const DIRECT_EVALUATE_LIMIT = 8 * 1024 * 1024;
@@ -1285,14 +1285,14 @@ async function runOneShot(options) {
         }
         if (options.openHome) {
           const opened = await session.evaluate(`(() => {
-            const newTaskLabel = /新建任务|新任务|新对话|new task|new chat/i;
+            const newTaskLabel = /新建任务|新任务|新对话|新聊天|new task|new chat/i;
             const button = [...document.querySelectorAll('button,[role="button"]')].find((candidate) => {
               const label = [
                 candidate.textContent,
                 candidate.getAttribute('aria-label'),
                 candidate.getAttribute('title'),
               ].filter(Boolean).join(' ');
-              return newTaskLabel.test(label);
+              return candidate.getBoundingClientRect().width > 0 && newTaskLabel.test(label);
             });
             if (!button) return false;
             button.click();
@@ -1315,7 +1315,7 @@ async function runOneShot(options) {
         if (options.testActions) {
           actionTest = await session.evaluate(`(async () => {
             const button = document.querySelector('#codex-dream-skin-actions button');
-            const editor = document.querySelector('.ProseMirror[contenteditable="true"]');
+            const editor = document.querySelector('main.dream-home-shell [data-codex-composer="true"]');
             if (!button || !editor) return { pass: false, reason: 'missing control or composer' };
             const original = editor.textContent || '';
             button.click();

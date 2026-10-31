@@ -139,6 +139,26 @@ artwork, motion, or theme identity.
 
 ## Home action grid
 
+- New Home composers use `data-composer-placement="home"` and an independent
+  `data-composer-utility-rail`. Keep the composer at a readable width, preserve
+  top clearance below decorative edges, and theme the utility rail's background
+  and controls. Leave native mode untouched.
+- Reserve Home overlay space from the actual composer root height using one
+  ResizeObserver; multiline input or attachments must not overlap action cards.
+  Disconnect the observer and remove the reserve on route exit or cleanup.
+- Home action buttons must locate the editor inside their own Home route.
+  Never fill a document-wide first composer that may belong to a hidden thread.
+
+## Message controls
+
+- Style individual message actions and native `turn-action-controls` buttons,
+  including standalone copy/edit controls. Do not require two buttons before
+  providing contrast, and preserve native hover visibility and disabled state.
+- Recognize current 评价回复, 朗读 and 更多操作 labels as well as older labels.
+- Message edit forms support Chinese and English editor labels. Theme cancel
+  and semantic submit buttons (`type=submit` / current solid surface) without
+  depending only on removed `bg-token-*` utility classes.
+
 - Keep each runtime-owned home action as three distinct vertically stacked rows:
   icon, title, then supporting description. Native button typography must never
   concatenate the title and description or distort the four equal-width tabs.

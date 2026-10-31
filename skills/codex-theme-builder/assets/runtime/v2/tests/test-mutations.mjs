@@ -148,3 +148,26 @@ for (const text of ['耗时较长和连接异常提示', '用时说明', 'Proces
   assert.equal(durationPattern.test(text), false, text);
 }
 console.log('PASS: current and legacy turn-duration wording without recoloring normal prose.');
+
+const reserveCode = code.slice(code.indexOf('  let homeComposerObserver ='), code.indexOf('  const usesWindowVideoCanvas ='));
+{
+ let callback,observes=0,disconnects=0,removed=0,value='';
+ const home={getBoundingClientRect:()=>({bottom:720}),style:{getPropertyValue:()=>value,setProperty:(_,v)=>{value=v},removeProperty:()=>{value='';removed++}}};
+ let top=510;
+ const composer={getBoundingClientRect:()=>({top})};
+ const c={home,composer,ResizeObserver:class{constructor(fn){callback=fn}observe(){observes++}disconnect(){disconnects++}}};
+ vm.runInNewContext(reserveCode+'\ntrackHomeComposer(home, composer)',c);
+ assert.equal(value,'234px');
+ top=410;callback();assert.equal(value,'334px','multiline growth reserves more space');
+ vm.runInNewContext('trackHomeComposer(home, composer)',c);assert.equal(observes,1,'stable home reuses one observer');
+ vm.runInNewContext('trackHomeComposer(null, null)',c);
+ assert.equal(disconnects,1);assert.equal(value,'');assert.ok(removed>0,'route exit removes the reserve variable');
+}
+console.log('PASS: adaptive Home composer reserve, single resize observer and route cleanup.');
+
+const actionPattern = vm.runInNewContext(code.match(/const messageActionPattern = (\/.*?\/[a-z]*);/)[1]);
+for (const label of ['复制消息','复制','编辑消息','评价回复','朗读','更多操作','Edit message','Read aloud','Rate response']) {
+  assert.equal(actionPattern.test(label),true,label);
+}
+for (const label of ['复制项目路径','提交任务','More settings']) assert.equal(actionPattern.test(label),false,label);
+console.log('PASS: current message-action labels and exact matching.');

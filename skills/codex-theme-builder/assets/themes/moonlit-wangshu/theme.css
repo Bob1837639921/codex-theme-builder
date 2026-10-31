@@ -24,6 +24,7 @@
   --dream-sites-border: rgb(112 201 233 / 38%);
   --theme-conversation-code-ink: #dff5ff;
   --theme-conversation-muted-ink: #a9cad9;
+  --theme-message-action-ink: #cceefa;
   --theme-conversation-activity-ink: #b9deed;
   --theme-conversation-activity-highlight: #f2fbff;
   --theme-conversation-activity-icon: #9fe7ff;
@@ -538,6 +539,8 @@ html.codex-dream-skin main.dream-conversation-shell .sticky.bottom-0 [class~="bg
   --theme-panel-text: #e9f7ff;
   --theme-muted-text: #9bb9ca;
   --theme-primary-text: #061523;
+  --theme-message-editor-primary-ink: #061523;
+  --theme-message-editor-primary-surface: #75cbea;
   --theme-border: rgb(130 211 239 / 22%);
   --theme-shadow: 0 12px 30px rgb(0 8 18 / 24%);
   --theme-canvas-wash: rgb(2 13 26 / 4%);

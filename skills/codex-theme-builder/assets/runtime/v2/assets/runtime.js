@@ -15,7 +15,7 @@
   const STORAGE_KEY = "codex-dream-theme-active";
   const MOTION_STORAGE_KEY = "codex-dream-motion-level";
   const MOTION_LEVELS = ["off", "low", "high"];
-  const RUNTIME_VERSION = "2.5.15-duration-contrast";
+  const RUNTIME_VERSION = "2.5.17-message-controls";
   const THEME_SEARCH_THRESHOLD = 6;
   const MUTATION_COALESCE_MS = 180;
   const VIDEO_BINDING_NAME = "__CODEX_DREAM_SKIN_VIDEO__";
@@ -64,6 +64,33 @@
   let shellMarkerObserver = null;
   let observedShell = null;
   let observedHeader = null;
+  let homeComposerObserver = null;
+  let observedHomeComposer = null;
+  let homeReserveHost = null;
+  const removeHomeComposerObserver = () => {
+    homeComposerObserver?.disconnect();
+    homeComposerObserver = null;
+    observedHomeComposer = null;
+    homeReserveHost?.style.removeProperty('--dream-home-composer-reserve');
+    homeReserveHost = null;
+  };
+  const trackHomeComposer = (home, composer) => {
+    if (homeReserveHost === home && observedHomeComposer === composer) return;
+    removeHomeComposerObserver();
+    if (!home || !composer) return;
+    homeReserveHost = home;
+    observedHomeComposer = composer;
+    const update = () => {
+      const reserve = Math.max(0, Math.ceil(home.getBoundingClientRect().bottom - composer.getBoundingClientRect().top + 24));
+      const value = `${reserve}px`;
+      if (home.style.getPropertyValue('--dream-home-composer-reserve') !== value) home.style.setProperty('--dream-home-composer-reserve', value);
+    };
+    update();
+    if (typeof ResizeObserver === 'function') {
+      homeComposerObserver = new ResizeObserver(update);
+      homeComposerObserver.observe(composer);
+    }
+  };
   const usesWindowVideoCanvas = () => activeTheme?.windowVideoCanvas === true;
   const isVisibleShellNode = (node) => Boolean(node && !node.closest('[data-app-shell-active-page="false"]') && node.getClientRects().length && node.getBoundingClientRect().width > 0);
   const locateNativeShellHeader = (candidate) => candidate?.querySelector(
@@ -576,7 +603,7 @@
       nextConversationStatusLines.forEach((node) => node.classList.add("dream-conversation-status-line"));
       detailState.conversationStatusLines = nextConversationStatusLines;
 
-      const messageEditorInput = document.querySelector('[role="textbox"][aria-label="编辑消息"]');
+      const messageEditorInput = document.querySelector('[role="textbox"]:is([aria-label="编辑消息"], [aria-label="Edit message"])');
       const messageEditor = messageEditorInput?.closest("form") || null;
       if (detailState.messageEditor && detailState.messageEditor !== messageEditor) {
         detailState.messageEditor.classList.remove("dream-message-editor");
@@ -618,7 +645,7 @@
          max-height variant owned by QueuedMessageList; its action labels are
          localized and therefore unsuitable as the primary selector. */
       const conversationShell = document.querySelector("main.dream-conversation-shell");
-      const messageActionPattern = /^(?:\u590d\u5236|\u56de\u590d\u4f18\u79c0|\u56de\u590d\u4e0d\u4f73|\u4ece\u8fd9\u91cc\u521b\u5efa\u804a\u5929\u5206\u652f|\u590d\u5236\u6d88\u606f|\u7f16\u8f91\u6d88\u606f|copy|good response|bad response|branch from here|copy message|edit message)$/i;
+      const messageActionPattern = /^(?:\u590d\u5236|\u56de\u590d\u4f18\u79c0|\u56de\u590d\u4e0d\u4f73|\u4ece\u8fd9\u91cc\u521b\u5efa\u804a\u5929\u5206\u652f|\u590d\u5236\u6d88\u606f|\u7f16\u8f91\u6d88\u606f|评价回复|朗读|更多操作|copy|good response|bad response|branch from here|copy message|edit message|rate response|read aloud|more actions)$/i;
       const nextMessageActionControls = new Set(conversationShell ? [...conversationShell.querySelectorAll("button")].filter((button) =>
         messageActionPattern.test(normalizeProjectText(button.getAttribute("aria-label") || button.title || button.textContent))) : []);
       const nextMessageActionRows = new Set();
@@ -961,6 +988,7 @@
   };
 
   const suspendThemeForNativeSurface = (keepSwitcher = false) => {
+    removeHomeComposerObserver();
     themeSuspendedForNativeSurface = true;
     document.documentElement?.classList.remove("codex-dream-skin", "dream-video-covering", "dream-video-window-canvas", "dream-native-surface");
     document.documentElement?.removeAttribute("data-dream-route");
@@ -1638,6 +1666,7 @@
        semantics is the new-thread Home route; settings and other native pages
        have no Codex composer and therefore remain outside this classification. */
     const home = legacyHome || (composerSurface && !threadTimeline ? routeSurface : null);
+    trackHomeComposer(home, home ? composerSurface?.closest('[data-codex-composer-root]') : null);
     syncMarker("home", home, "dream-home");
     const homeStage = home?.querySelector(":scope > div:first-child > div:first-child") ?? null;
     const homeHero = homeStage?.querySelector(":scope > div:first-child") ?? null;
@@ -1785,7 +1814,7 @@
             detail.textContent = description;
             button.append(icon, label, detail);
             button.addEventListener("click", () => {
-              const editor = document.querySelector('.ProseMirror[contenteditable="true"]');
+              const editor = home.querySelector('[data-codex-composer="true"]');
               if (!editor) return;
               editor.focus();
               editor.textContent = prompt;
@@ -1800,8 +1829,6 @@
           hero.appendChild(actionGrid);
         }
       }
-      const editor = document.querySelector('.ProseMirror[contenteditable="true"]');
-      editor?.setAttribute("data-placeholder", "随心输入，Codex 为你构建未来");
     }
 
     if (!home) {
@@ -1861,6 +1888,7 @@
   };
 
   const cleanup = () => {
+    removeHomeComposerObserver();
     document.documentElement?.classList.remove("dream-native-mode");
     shellMarkerObserver?.disconnect();
     window.__CODEX_DREAM_SKIN_DISABLED__ = true;
