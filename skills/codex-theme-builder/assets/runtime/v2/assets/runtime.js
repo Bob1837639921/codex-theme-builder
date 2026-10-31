@@ -15,7 +15,7 @@
   const STORAGE_KEY = "codex-dream-theme-active";
   const MOTION_STORAGE_KEY = "codex-dream-motion-level";
   const MOTION_LEVELS = ["off", "low", "high"];
-  const RUNTIME_VERSION = "2.5.14-login-recovery";
+  const RUNTIME_VERSION = "2.5.15-duration-contrast";
   const THEME_SEARCH_THRESHOLD = 6;
   const MUTATION_COALESCE_MS = 180;
   const VIDEO_BINDING_NAME = "__CODEX_DREAM_SKIN_VIDEO__";
@@ -530,10 +530,11 @@
          and text-text/40 utilities rather than the older token-text tertiary
          classes. Mark the semantic disclosure button so dark themes can provide
          one readable muted foreground without broad utility-class overrides. */
-      const turnDurationPattern = /^(?:\u5df2\u5904\u7406|\u8017\u65f6|processed)\s+\d/i;
+      const turnDurationPattern = /^(?:\u5df2\u5904\u7406|\u8017\u65f6|\u7528\u65f6|processed|worked for)\s*\d/i;
       const conversationShellForDuration = document.querySelector("main.dream-conversation-shell");
       const nextTurnDurationControls = new Set(conversationShellForDuration ?
-        [...conversationShellForDuration.querySelectorAll('button[aria-expanded], span.tabular-nums')].filter((node) =>
+        [...conversationShellForDuration.querySelectorAll('button[aria-expanded], span.tabular-nums')]
+          .map((node) => node.closest('button') ?? node).filter((node) =>
           turnDurationPattern.test(normalizeProjectText(node.textContent))) : []);
       detailState.turnDurationControls.forEach((node) => {
         if (!nextTurnDurationControls.has(node)) node.classList.remove("dream-turn-duration");

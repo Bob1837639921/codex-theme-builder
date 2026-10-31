@@ -138,3 +138,13 @@ console.log('PASS: shell/titlebar class replacement repair and observer loop pre
  assert.deepEqual(h.counts,{queries:0,composers:0,scheduled:0},'native mode bypasses theme discovery and reconciliation');
 }
 console.log('PASS: native mode skips theme scanning for 1000 native DOM updates.');
+
+const durationPatternSource = code.match(/const turnDurationPattern = (\/.*?\/[a-z]*);/)[1];
+const durationPattern = vm.runInNewContext(durationPatternSource);
+for (const text of ['用时 44秒', '用时2分钟54秒', '已处理 1秒', '耗时 4分钟', 'Processed 2m', 'Worked for 3m 4s']) {
+  assert.equal(durationPattern.test(text), true, text);
+}
+for (const text of ['耗时较长和连接异常提示', '用时说明', 'Processed results', '2026年']) {
+  assert.equal(durationPattern.test(text), false, text);
+}
+console.log('PASS: current and legacy turn-duration wording without recoloring normal prose.');

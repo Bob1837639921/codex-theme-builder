@@ -200,6 +200,7 @@ function New-DreamSkinProgressWindow {
   $nodes.Tag = $motion
   $nodes.Add_Paint({
     $_.Graphics.SmoothingMode = [Drawing.Drawing2D.SmoothingMode]::AntiAlias
+    $_.Graphics.ScaleTransform([single]($this.ClientSize.Width / 456.0), [single]($this.ClientSize.Height / 26.0))
     $accent = [Drawing.Color]::FromArgb(15, 118, 110)
     $muted = [Drawing.Color]::FromArgb(142, 159, 160)
     $trackBrush = New-Object Drawing.SolidBrush([Drawing.Color]::FromArgb(225, 232, 231))

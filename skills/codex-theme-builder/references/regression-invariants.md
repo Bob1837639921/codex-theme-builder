@@ -2,6 +2,12 @@
 
 ## Mutation fast path and toolbar verification
 
+- Recognize `用时` and `Worked for` alongside older duration labels. Mark the
+  enclosing disclosure button so its arrow inherits the same readable tone;
+  ordinary prose beginning with 耗时 must remain untouched.
+- Launcher node painting must scale with its control dimensions. Keep nodes
+  centered on their stage labels at 100%, 150% and 200% display scaling.
+
 - Signing out/in can reset document-root classes while the same runtime and
   stylesheet survive. After validating the authenticated native shell, ensure
   must reapply theme state when dream-native-surface is missing even if version
