@@ -52,7 +52,7 @@ $installedSkill = & (Join-Path $PSScriptRoot 'install-skill.ps1') @installArgume
 $installedSkill = [System.IO.Path]::GetFullPath("$installedSkill")
 
 Write-Host '[3/4] 正在创建隐藏窗口桌面快捷方式和主题图标……'
-$shortcutArguments = @{ ThemeId = $ThemeId; LauncherName = $LauncherName }
+$shortcutArguments = @{ ThemeId = $ThemeId; LauncherName = $LauncherName; RepositoryRoot = $repositoryRoot }
 if (-not [string]::IsNullOrWhiteSpace($ShortcutName)) { $shortcutArguments.ShortcutName = $ShortcutName }
 if (-not [string]::IsNullOrWhiteSpace($DesktopPath)) { $shortcutArguments.DesktopPath = $DesktopPath }
 if (-not [string]::IsNullOrWhiteSpace($IconPath)) { $shortcutArguments.IconPath = $IconPath }

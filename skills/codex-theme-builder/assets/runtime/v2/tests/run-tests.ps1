@@ -834,3 +834,5 @@ if ($LASTEXITCODE -ne 0) { throw 'Startup verification retry behavior checks fai
 if ($LASTEXITCODE -ne 0) { throw 'Output-panel boundary checks failed.' }
 & $node.Path (Join-Path $PSScriptRoot 'test-startup-probe.mjs')
 if ($LASTEXITCODE -ne 0) { throw 'Startup shell readiness checks failed.' }
+& powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'test-project-update.ps1')
+if ($LASTEXITCODE -ne 0) { throw 'Repository update and install ordering checks failed.' }

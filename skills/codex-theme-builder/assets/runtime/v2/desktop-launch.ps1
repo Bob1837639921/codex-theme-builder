@@ -1,13 +1,15 @@
 ﻿[CmdletBinding()]
 param(
   [string]$Theme = '',
-  [string]$ThemeName = '万象'
+  [string]$ThemeName = '万象',
+  [string]$RepositoryRoot = ''
 )
 
 $ErrorActionPreference = 'Stop'
 $RuntimeRoot = Split-Path -Parent $PSScriptRoot
 . (Join-Path $RuntimeRoot 'windows\scripts\common-windows.ps1')
 . (Join-Path $PSScriptRoot 'ui\launcher-ui.ps1')
+. (Join-Path $PSScriptRoot 'project-update.ps1')
 
 if ([string]::IsNullOrWhiteSpace($Theme)) {
   $Theme = Join-Path $PSScriptRoot '..\..\themes\ink-landscape'
@@ -43,7 +45,7 @@ function Remove-DreamSkinPreviousSession {
     [Parameter(Mandatory)]$ProgressWindow
   )
   if (-not (Test-Path -LiteralPath $StatePath)) { return }
-  Set-DreamSkinProgressStatus -Window $ProgressWindow -Status '正在清理上一次主题会话…' -Percent 14
+  Set-DreamSkinProgressStatus -Window $ProgressWindow -Status '正在清理上一次主题会话…' -Percent 32
   Write-DreamSkinDesktopLaunchLog -Message '正在检查并清理上一次主题会话状态。'
   $state = Read-DreamSkinState -Path $StatePath
   if ($null -ne $state) {
@@ -57,11 +59,11 @@ function Start-DreamSkinDesktopSession {
     [Parameter(Mandatory)][string]$ThemePath,
     [Parameter(Mandatory)]$ProgressWindow
   )
-  Set-DreamSkinProgressStatus -Window $ProgressWindow -Status '正在启动 Codex 并加载主题资源…' -Percent 18
+  Set-DreamSkinProgressStatus -Window $ProgressWindow -Status '正在启动 Codex 并加载主题资源…' -Percent 35
   $progressCallback = {
     param([int]$Percent, [string]$Status, [string]$Stage)
     Write-DreamSkinDesktopLaunchLog -Message "启动阶段：$Stage；$Percent%；$Status"
-    Set-DreamSkinProgressStatus -Window $ProgressWindow -Status $Status -Percent $Percent
+    Set-DreamSkinProgressStatus -Window $ProgressWindow -Status $Status -Percent (35 + [int][Math]::Floor($Percent * .64))
   }
   & (Join-Path $PSScriptRoot 'launch.ps1') -Theme $ThemePath -ProgressCallback $progressCallback | Out-Null
 }
@@ -77,14 +79,25 @@ try {
       Write-DreamSkinDesktopLaunchLog -Message '用户取消了主题重启。'
       exit 0
     }
-    $progressWindow = New-DreamSkinProgressWindow -Context $launchUiContext
-    Set-DreamSkinProgressStatus -Window $progressWindow -Status '正在安全关闭当前 Codex…' -Percent 6
+  }
+  $progressWindow = New-DreamSkinProgressWindow -Context $launchUiContext
+  if (-not [string]::IsNullOrWhiteSpace($RepositoryRoot)) {
+    $installedSkill = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..\..'))
+    $updateCallback = { param([int]$Percent, [string]$Status)
+      Set-DreamSkinProgressStatus -Window $progressWindow -Status $Status -Percent $Percent
+    }
+    Update-DreamSkinProject -RepositoryRoot $RepositoryRoot -DestinationRoot (Split-Path -Parent $installedSkill) `
+      -ThemeId (Split-Path -Leaf $Theme) -ThemeName $ThemeName -LogPath (Join-Path $stateRoot 'project-update.log') -ProgressCallback $updateCallback
+    . (Join-Path $RuntimeRoot 'windows\scripts\common-windows.ps1')
+    . (Join-Path $PSScriptRoot 'ui\launcher-ui.ps1')
+  }
+  if ($codexProcesses.Count -gt 0) {
+    Set-DreamSkinProgressStatus -Window $progressWindow -Status '正在安全关闭当前 Codex…' -Percent 28
     Stop-DreamSkinCodex -Codex $codex -AllowForce
     Start-Sleep -Milliseconds 800
-    Set-DreamSkinProgressStatus -Window $progressWindow -Status 'Codex 已关闭，正在准备重新启动…' -Percent 12
+    Set-DreamSkinProgressStatus -Window $progressWindow -Status 'Codex 已关闭，正在准备重新启动…' -Percent 30
   } else {
     Write-DreamSkinDesktopLaunchLog -Message 'Codex 当前未运行，进入冷启动流程。'
-    $progressWindow = New-DreamSkinProgressWindow -Context $launchUiContext
   }
 
   $statePath = Join-Path $stateRoot 'state.json'

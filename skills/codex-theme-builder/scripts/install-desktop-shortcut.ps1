@@ -4,7 +4,8 @@ param(
   [string]$LauncherName = '万象',
   [string]$ShortcutName = '',
   [string]$DesktopPath = '',
-  [string]$IconPath = ''
+  [string]$IconPath = '',
+  [string]$RepositoryRoot = ''
 )
 
 $ErrorActionPreference = 'Stop'
@@ -64,6 +65,11 @@ $shell = New-Object -ComObject WScript.Shell
 $shortcut = $shell.CreateShortcut($shortcutPath)
 $shortcut.TargetPath = $powershell
 $shortcut.Arguments = "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$launcher`" -Theme `"$themePath`" -ThemeName `"$LauncherName`""
+if (-not [string]::IsNullOrWhiteSpace($RepositoryRoot)) {
+  $RepositoryRoot = [IO.Path]::GetFullPath($RepositoryRoot)
+  if (-not (Test-Path -LiteralPath (Join-Path $RepositoryRoot 'scripts\setup-windows.ps1'))) { throw '主题项目目录无效。' }
+  $shortcut.Arguments += " -RepositoryRoot `"$RepositoryRoot`""
+}
 $shortcut.WorkingDirectory = Split-Path -Parent $launcher
 $shortcut.Description = "使用$LauncherName启动 Codex"
 $shortcut.WindowStyle = 7
@@ -74,6 +80,7 @@ $verified = $shell.CreateShortcut($shortcutPath)
 if ($verified.TargetPath -ine $powershell -or
   $verified.Arguments -notmatch [regex]::Escape($launcher) -or
   $verified.Arguments -notmatch [regex]::Escape($themePath) -or
+  (-not [string]::IsNullOrWhiteSpace($RepositoryRoot) -and $verified.Arguments -notmatch [regex]::Escape($RepositoryRoot)) -or
   $verified.IconLocation -notmatch [regex]::Escape($IconPath)) {
   throw '桌面快捷方式验证失败。'
 }
@@ -86,6 +93,8 @@ if ($verified.TargetPath -ine $powershell -or
   themeName = $LauncherName
   iconPath = $IconPath
   launcherPath = $launcher
+  repositoryRoot = $RepositoryRoot
+  updateOnLaunch = -not [string]::IsNullOrWhiteSpace($RepositoryRoot)
   nodePath = $node.Path
   codexVersion = $codex.Version
 }

@@ -37,6 +37,16 @@ Lower layers never import or call higher layers. In particular:
 
 ## Progress contract
 
+Repository-backed shortcuts pass `-RepositoryRoot` to the installed desktop
+launcher. Its `project-update.ps1` module fast-forwards the clean checkout and
+runs the latest setup script before Codex shutdown or session cleanup. The
+module reports status through callbacks, pumps no UI itself, runs child tools
+without console windows, drains both output streams, enforces timeouts, and
+logs failures to `project-update.log`. Update occupies 2–26%, shutdown/cleanup
+28–32%, and runtime stages map to 35–96%; the UI alone completes 100%.
+Setup persists the source checkout path in the shortcut. Standalone Skill
+launchers without a checkout retain the direct-start workflow.
+
 `launch.ps1` owns the canonical launch stages. Each event has:
 
 ```text
