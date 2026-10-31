@@ -182,42 +182,81 @@ function New-DreamSkinProgressWindow {
   $progressFill.Location = New-Object System.Drawing.Point(0, 0)
   $progressFill.Size = New-Object System.Drawing.Size(1, 5)
   $progressFill.BackColor = [System.Drawing.Color]::FromArgb(15, 118, 110)
-  $progressTrack.Controls.Add($progressFill)
+  # ProgressFill tracks the eased width; the shared bar paints fill and nodes together.
   $motion = [pscustomobject]@{
     Enabled = [System.Windows.Forms.SystemInformation]::UIEffectsEnabled
     TargetWidth = 1
     FromWidth = 1
     StartedAt = 0.0
+    Stage = 0
+    DisplayWidth = 1
     Clock = [Diagnostics.Stopwatch]::StartNew()
   }
   $progressFill.Tag = $motion
-  $progressFill.Add_Paint({
-    if (-not $this.Tag.Enabled -or $this.Width -lt 8) { return }
-    $width = [Math]::Max(1, $this.Width)
-    $base = New-Object Drawing.Drawing2D.LinearGradientBrush(
-      (New-Object Drawing.Rectangle(0, 0, $width, $this.Height)),
-      [Drawing.Color]::FromArgb(15, 118, 110),
-      [Drawing.Color]::FromArgb(45, 170, 155),
-      [Drawing.Drawing2D.LinearGradientMode]::Horizontal)
+  $nodes = New-Object System.Windows.Forms.Panel
+  $nodes.Location = New-Object Drawing.Point(32, 140)
+  $nodes.Size = New-Object Drawing.Size(456, 26)
+  $nodes.BackColor = [Drawing.Color]::Transparent
+  $nodes.Tag = $motion
+  $nodes.Add_Paint({
+    $_.Graphics.SmoothingMode = [Drawing.Drawing2D.SmoothingMode]::AntiAlias
+    $accent = [Drawing.Color]::FromArgb(15, 118, 110)
+    $muted = [Drawing.Color]::FromArgb(142, 159, 160)
+    $trackBrush = New-Object Drawing.SolidBrush([Drawing.Color]::FromArgb(225, 232, 231))
+    $outline = New-Object Drawing.Pen($muted, 1.2)
+    $solid = New-Object Drawing.SolidBrush($accent)
+    $paper = New-Object Drawing.SolidBrush([Drawing.Color]::FromArgb(250, 251, 248))
+    $ring = New-Object Drawing.Pen($accent, 1.4)
+    $halo = $null
+    $gradient = $null
     $glow = $null
     try {
-      $_.Graphics.FillRectangle($base, 0, 0, $width, $this.Height)
-      $position = [int](($this.Tag.Clock.Elapsed.TotalMilliseconds % 1800) / 1800 * ($width + 96)) - 96
-      $glow = New-Object Drawing.Drawing2D.LinearGradientBrush(
-        (New-Object Drawing.Rectangle($position, 0, 96, $this.Height)),
-        [Drawing.Color]::Transparent, [Drawing.Color]::FromArgb(110, 220, 255, 245),
-        [Drawing.Drawing2D.LinearGradientMode]::Horizontal)
-      $_.Graphics.FillRectangle($glow, $position, 0, 96, $this.Height)
+      $_.Graphics.FillRectangle($trackBrush, 24, 11, 408, 5)
+      $fillWidth = [int][Math]::Round(408 * $this.Tag.DisplayWidth / $this.Width)
+      if ($fillWidth -gt 0) {
+        $gradient = New-Object Drawing.Drawing2D.LinearGradientBrush(
+          (New-Object Drawing.Rectangle(24, 11, ([Math]::Max(1, $fillWidth)), 5)),
+          $accent, [Drawing.Color]::FromArgb(45, 170, 155), [Drawing.Drawing2D.LinearGradientMode]::Horizontal)
+        $_.Graphics.FillRectangle($gradient, 24, 11, $fillWidth, 5)
+        if ($this.Tag.Enabled) {
+          $position = 24 + [int](($this.Tag.Clock.Elapsed.TotalMilliseconds % 1800) / 1800 * ($fillWidth + 72)) - 72
+          $glow = New-Object Drawing.Drawing2D.LinearGradientBrush(
+            (New-Object Drawing.Rectangle($position, 11, 72, 5)),
+            [Drawing.Color]::Transparent, [Drawing.Color]::FromArgb(110, 220, 255, 245), [Drawing.Drawing2D.LinearGradientMode]::Horizontal)
+          $clip = $_.Graphics.Save()
+          try {
+            $_.Graphics.SetClip((New-Object Drawing.Rectangle(24, 11, $fillWidth, 5)))
+            $_.Graphics.FillRectangle($glow, $position, 11, 72, 5)
+          } finally { $_.Graphics.Restore($clip) }
+        }
+      }
+      for ($i = 0; $i -lt 4; $i++) {
+        $x = 24 + 136 * $i
+        if ($i -lt $this.Tag.Stage) {
+          $_.Graphics.FillEllipse($solid, ($x - 4), 9, 8, 8)
+        } elseif ($i -eq $this.Tag.Stage) {
+          $phase = if ($this.Tag.Enabled) { (.5 + .5 * [Math]::Sin($this.Tag.Clock.Elapsed.TotalMilliseconds / 1400 * [Math]::PI * 2)) } else { .5 }
+          $halo = New-Object Drawing.SolidBrush([Drawing.Color]::FromArgb([int](18 + 22 * $phase), 15, 118, 110))
+          $_.Graphics.FillEllipse($halo, ($x - 11), 2, 22, 22)
+          $halo.Dispose(); $halo = $null
+          $_.Graphics.FillEllipse($paper, ($x - 6), 7, 12, 12)
+          $_.Graphics.DrawEllipse($ring, ($x - 6), 7, 12, 12)
+          $_.Graphics.FillEllipse($solid, ($x - 2.5), 10.5, 5, 5)
+        } else {
+          $_.Graphics.FillEllipse($paper, ($x - 4), 9, 8, 8)
+          $_.Graphics.DrawEllipse($outline, ($x - 4), 9, 8, 8)
+        }
+      }
     } finally {
-      $base.Dispose()
-      if ($glow) { $glow.Dispose() }
+      foreach ($resource in @($trackBrush, $outline, $solid, $paper, $ring, $halo, $gradient, $glow)) { if ($resource) { $resource.Dispose() } }
     }
   })
-
+  $form.Controls.Add($nodes)
   $steps = @()
   $index = 0
-  foreach ($text in @('01  更新代码', '02  准备环境', '03  启动 Codex', '04  加载主题')) {
-    $step = New-DreamSkinLabel -Text $text -Left (32 + 116 * $index) -Top 180 -Width 108 -Height 24 -Size 8.5 -Color ([System.Drawing.Color]::FromArgb(100, 116, 139))
+  foreach ($text in @('更新代码', '准备环境', '启动 Codex', '加载主题')) {
+    $step = New-DreamSkinLabel -Text $text -Left (2 + 136 * $index) -Top 181 -Width 108 -Height 24 -Size 8.5 -Color ([System.Drawing.Color]::FromArgb(100, 116, 139))
+    $step.TextAlign = [Drawing.ContentAlignment]::TopCenter
     $form.Controls.Add($step)
     $steps += $step
     $index++
@@ -229,7 +268,7 @@ function New-DreamSkinProgressWindow {
   $form.Controls.Add($title)
   $form.Controls.Add($status)
   $form.Controls.Add($percent)
-  $form.Controls.Add($progressTrack)
+  # The node surface below also paints the progress track.
   $form.Controls.Add($hint)
   $animationTimer = New-Object System.Windows.Forms.Timer
   $animationTimer.Interval = if ($motion.Enabled) { 33 } else { 1000 }
@@ -240,10 +279,12 @@ function New-DreamSkinProgressWindow {
       $eased = 1 - [Math]::Pow(1 - $t, 3)
       $progressFill.Width = [int][Math]::Round($motion.FromWidth + ($motion.TargetWidth - $motion.FromWidth) * $eased)
       $progressFill.Invalidate()
+      $motion.DisplayWidth = $progressFill.Width
+      $nodes.Invalidate()
     }
     $elapsed.Text = "$([int]$motion.Clock.Elapsed.TotalSeconds) 秒"
   }.GetNewClosure())
-  $form.Add_Disposed({ $animationTimer.Stop(); $animationTimer.Dispose() }.GetNewClosure())
+  $form.Add_Disposed({ $animationTimer.Stop(); $animationTimer.Dispose(); $progressFill.Dispose(); $progressTrack.Dispose() }.GetNewClosure())
   $animationTimer.Start()
   $form.Show()
   [System.Windows.Forms.Application]::DoEvents()
@@ -252,7 +293,7 @@ function New-DreamSkinProgressWindow {
     Title = $title
     Status = $status
     Percent = $percent
-    ProgressTrack = $progressTrack
+    ProgressTrack = $nodes
     ProgressFill = $progressFill
     ProgressValue = 0
     Hint = $hint
@@ -261,6 +302,7 @@ function New-DreamSkinProgressWindow {
     Clock = [Diagnostics.Stopwatch]::StartNew()
     Animation = $motion
     AnimationTimer = $animationTimer
+    StageNodes = $nodes
   }
 }
 
@@ -283,9 +325,11 @@ function Set-DreamSkinProgressStatus {
       $Window.Animation.TargetWidth = $targetWidth
       $Window.Animation.StartedAt = $Window.Animation.Clock.Elapsed.TotalMilliseconds
     }
-    if (-not $Window.Animation.Enabled) { $Window.ProgressFill.Width = $targetWidth }
+    if (-not $Window.Animation.Enabled) { $Window.ProgressFill.Width = $targetWidth; $Window.Animation.DisplayWidth = $targetWidth }
     $Window.Percent.Text = "$nextValue%"
     $stage = if ($nextValue -lt 14) { 0 } elseif ($nextValue -lt 35) { 1 } elseif ($nextValue -lt 75) { 2 } else { 3 }
+    $Window.Animation.Stage = $stage
+    $Window.StageNodes.Invalidate()
     for ($i = 0; $i -lt $Window.Steps.Count; $i++) {
       $Window.Steps[$i].ForeColor = if ($i -le $stage) { [Drawing.Color]::FromArgb(15, 118, 110) } else { [Drawing.Color]::FromArgb(100, 116, 139) }
     }
@@ -304,6 +348,9 @@ function Complete-DreamSkinProgressWindow {
   $Window.Status.Text = '主题已加载，Codex 即将显示。'
   $Window.Status.ForeColor = [System.Drawing.Color]::FromArgb(70, 91, 82)
   $Window.ProgressValue = 100
+  $Window.Animation.Stage = 4
+  $Window.Animation.DisplayWidth = $Window.ProgressTrack.ClientSize.Width
+  $Window.StageNodes.Invalidate()
   $Window.AnimationTimer.Stop()
   $Window.ProgressFill.Width = $Window.ProgressTrack.ClientSize.Width
   $Window.Percent.Text = '100%'
