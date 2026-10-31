@@ -28,8 +28,12 @@ $fixture = @'
 param([string]$DestinationRoot,[string]$ThemeId,[string]$LauncherName)
 $ErrorActionPreference='Stop'
 New-Item -ItemType Directory -Force -Path $DestinationRoot | Out-Null
+$skill=Join-Path $DestinationRoot 'codex-theme-builder'
+New-Item -ItemType Directory -Force -Path $skill | Out-Null
 $value=Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\payload.txt') -Raw
 [IO.File]::WriteAllText((Join-Path $DestinationRoot 'installed.txt'), "$value|$ThemeId|$LauncherName")
+[IO.File]::WriteAllText((Join-Path $skill 'runtime.txt'), $value)
+Add-Content -LiteralPath (Join-Path $DestinationRoot 'setup-count.txt') -Value 'setup'
 '@
 [IO.File]::WriteAllText((Join-Path $seed 'scripts\setup-windows.ps1'), $fixture)
 [IO.File]::WriteAllText((Join-Path $seed 'payload.txt'), 'v1')
@@ -44,6 +48,22 @@ $options = @{RepositoryRoot=$checkout;DestinationRoot=$destination;ThemeId='samp
 Update-DreamSkinProject @options
 if ([IO.File]::ReadAllText((Join-Path $destination 'installed.txt')) -ne 'v2|sample|Test Theme') { throw 'Latest source was not installed with the requested arguments.' }
 if ($events[0] -ne 2 -or $events[$events.Count-1] -ne 26) { throw 'Update progress was not reported.' }
+Update-DreamSkinProject @options
+if (@(Get-Content (Join-Path $destination 'setup-count.txt')).Count -ne 1) { throw 'Unchanged installations must skip setup.' }
+Remove-Item -LiteralPath (Join-Path $destination 'codex-theme-builder\runtime.txt')
+Update-DreamSkinProject @options
+if (@(Get-Content (Join-Path $destination 'setup-count.txt')).Count -ne 2) { throw 'Missing installed files must invalidate the cache.' }
+[IO.File]::WriteAllText((Join-Path $destination 'codex-theme-builder\runtime.txt'), 'changed installed file')
+Update-DreamSkinProject @options
+if (@(Get-Content (Join-Path $destination 'setup-count.txt')).Count -ne 3) { throw 'Modified installed files must invalidate the cache.' }
+[IO.File]::WriteAllText((Join-Path $seed 'payload.txt'), 'v2-new')
+Commit-Fixture $seed
+[void](Test-Git $seed @('push'))
+Update-DreamSkinProject @options
+if (@(Get-Content (Join-Path $destination 'setup-count.txt')).Count -ne 4 -or
+    [IO.File]::ReadAllText((Join-Path $destination 'codex-theme-builder\runtime.txt')) -ne 'v2-new') {
+  throw 'A new upstream revision must run setup instead of using the old installation cache.'
+}
 $head = Test-Git $checkout @('rev-parse', 'HEAD')
 [IO.File]::WriteAllText((Join-Path $checkout 'payload.txt'), 'local work')
 $rejected = $false
@@ -76,4 +96,4 @@ try {
     -Status 'timeout fixture' -Percent 8 -TimeoutSeconds 1 -ProgressCallback {param($p,$s) $pumps.Add($p)}
 } catch { $rejected = $true }
 if (-not $rejected -or $clock.Elapsed.TotalSeconds -gt 5 -or $pumps.Count -lt 2) { throw 'Hung commands must time out while progress callbacks remain responsive.' }
-Write-Host "PASS: pull-before-install, spaced arguments, progress callbacks, dirty work protection, ff-only divergence, setup failure and responsive timeout. Fixtures: $testRoot"
+Write-Host "PASS: pull-before-install, unchanged-version fast path, missing/modified file repair, new-revision install, spaced arguments, progress callbacks, dirty work protection, ff-only divergence, setup failure and responsive timeout. Fixtures: $testRoot"

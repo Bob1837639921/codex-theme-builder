@@ -32,7 +32,7 @@ function New-DreamSkinLabel {
     [Parameter(Mandatory)][int]$Height,
     [float]$Size = 10,
     [System.Drawing.FontStyle]$Style = [System.Drawing.FontStyle]::Regular,
-    [System.Drawing.Color]$Color = [System.Drawing.Color]::FromArgb(48, 54, 60)
+    [System.Drawing.Color]$Color = [System.Drawing.Color]::FromArgb(30, 41, 59)
   )
   $label = New-Object System.Windows.Forms.Label
   $label.Text = $Text
@@ -41,6 +41,7 @@ function New-DreamSkinLabel {
   $label.Font = New-Object System.Drawing.Font('Microsoft YaHei UI', $Size, $Style)
   $label.ForeColor = $Color
   $label.BackColor = [System.Drawing.Color]::Transparent
+  $label.AutoEllipsis = $true
   return $label
 }
 
@@ -52,14 +53,15 @@ function New-DreamSkinLaunchForm {
   Initialize-DreamSkinLaunchUi
   $form = New-Object System.Windows.Forms.Form
   $form.Text = "Codex $($Context.ThemeName)"
-  $form.ClientSize = New-Object System.Drawing.Size(460, $Height)
+  $form.ClientSize = New-Object System.Drawing.Size(520, $Height)
+  $form.AutoScaleMode = [System.Windows.Forms.AutoScaleMode]::Dpi
   $form.StartPosition = [System.Windows.Forms.FormStartPosition]::CenterScreen
   $form.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::FixedDialog
   $form.MaximizeBox = $false
   $form.MinimizeBox = $false
   $form.ShowInTaskbar = $true
-  $form.TopMost = $true
-  $form.BackColor = [System.Drawing.Color]::FromArgb(249, 247, 242)
+  $form.TopMost = $false
+  $form.BackColor = [System.Drawing.Color]::FromArgb(250, 251, 253)
   Set-DreamSkinFormIcon -Form $form -Context $Context
   return $form
 }
@@ -67,8 +69,8 @@ function New-DreamSkinLaunchForm {
 function New-DreamSkinBrandMark {
   param([Parameter(Mandatory)]$Context)
   $mark = New-Object System.Windows.Forms.PictureBox
-  $mark.Location = New-Object System.Drawing.Point(28, 24)
-  $mark.Size = New-Object System.Drawing.Size(52, 52)
+  $mark.Location = New-Object System.Drawing.Point(32, 30)
+  $mark.Size = New-Object System.Drawing.Size(42, 42)
   $mark.SizeMode = [System.Windows.Forms.PictureBoxSizeMode]::Zoom
   if (Test-Path -LiteralPath $Context.LauncherIcon) {
     try {
@@ -84,31 +86,33 @@ function Show-DreamSkinRestartDialog {
   param([Parameter(Mandatory)]$Context)
   $form = New-DreamSkinLaunchForm -Context $Context -Height 282
   $form.Controls.Add((New-DreamSkinBrandMark -Context $Context))
-  $form.Controls.Add((New-DreamSkinLabel -Text '重新启动并加载主题？' -Left 96 -Top 26 -Width 330 -Height 32 -Size 15 -Style Bold))
-  $form.Controls.Add((New-DreamSkinLabel -Text "Codex 正在运行。$($Context.ThemeName) 需要重新启动 Codex，才能安全加载主题系统。" -Left 96 -Top 60 -Width 330 -Height 48 -Size 9.5 -Color ([System.Drawing.Color]::FromArgb(96, 99, 103))))
+  $form.Controls.Add((New-DreamSkinLabel -Text '准备更新并重新启动' -Left 88 -Top 28 -Width 400 -Height 32 -Size 16 -Style Bold))
+  $form.Controls.Add((New-DreamSkinLabel -Text "Codex 正在运行。先检查更新，准备好后重新打开。" -Left 88 -Top 66 -Width 400 -Height 42 -Size 9.5 -Color ([System.Drawing.Color]::FromArgb(100, 116, 139))))
 
   $notice = New-Object System.Windows.Forms.Panel
-  $notice.Location = New-Object System.Drawing.Point(28, 124)
-  $notice.Size = New-Object System.Drawing.Size(404, 66)
-  $notice.BackColor = [System.Drawing.Color]::FromArgb(243, 237, 225)
-  $notice.BorderStyle = [System.Windows.Forms.BorderStyle]::FixedSingle
-  $notice.Controls.Add((New-DreamSkinLabel -Text '请先保存未发送的内容' -Left 16 -Top 10 -Width 360 -Height 22 -Size 10 -Style Bold -Color ([System.Drawing.Color]::FromArgb(102, 79, 42))))
-  $notice.Controls.Add((New-DreamSkinLabel -Text '确认后将关闭当前 Codex，并自动重新打开。' -Left 16 -Top 34 -Width 360 -Height 20 -Size 9 -Color ([System.Drawing.Color]::FromArgb(118, 101, 76))))
+  $notice.Location = New-Object System.Drawing.Point(32, 124)
+  $notice.Size = New-Object System.Drawing.Size(456, 66)
+  $notice.BackColor = [System.Drawing.Color]::FromArgb(238, 244, 246)
+  $notice.Controls.Add((New-DreamSkinLabel -Text '请先保存未发送的内容' -Left 16 -Top 10 -Width 424 -Height 22 -Size 10 -Style Bold))
+  $notice.Controls.Add((New-DreamSkinLabel -Text '确认后将关闭当前 Codex，并自动重新打开。' -Left 16 -Top 34 -Width 424 -Height 20 -Size 9 -Color ([System.Drawing.Color]::FromArgb(100, 116, 139))))
   $form.Controls.Add($notice)
 
   $cancel = New-Object System.Windows.Forms.Button
   $cancel.Text = '取消'
-  $cancel.Location = New-Object System.Drawing.Point(204, 214)
+  $cancel.Location = New-Object System.Drawing.Point(252, 216)
   $cancel.Size = New-Object System.Drawing.Size(88, 36)
   $cancel.Font = New-Object System.Drawing.Font('Microsoft YaHei UI', 9.5)
+  $cancel.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+  $cancel.FlatAppearance.BorderColor = [System.Drawing.Color]::FromArgb(203, 213, 225)
+  $cancel.BackColor = [System.Drawing.Color]::White
   $cancel.DialogResult = [System.Windows.Forms.DialogResult]::Cancel
 
   $confirm = New-Object System.Windows.Forms.Button
   $confirm.Text = '关闭并重新启动'
-  $confirm.Location = New-Object System.Drawing.Point(300, 214)
-  $confirm.Size = New-Object System.Drawing.Size(132, 36)
+  $confirm.Location = New-Object System.Drawing.Point(352, 216)
+  $confirm.Size = New-Object System.Drawing.Size(136, 36)
   $confirm.Font = New-Object System.Drawing.Font('Microsoft YaHei UI', 9.5, [System.Drawing.FontStyle]::Bold)
-  $confirm.BackColor = [System.Drawing.Color]::FromArgb(66, 105, 96)
+  $confirm.BackColor = [System.Drawing.Color]::FromArgb(15, 118, 110)
   $confirm.ForeColor = [System.Drawing.Color]::White
   $confirm.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
   $confirm.FlatAppearance.BorderSize = 0
@@ -127,25 +131,43 @@ function Show-DreamSkinRestartDialog {
 
 function New-DreamSkinProgressWindow {
   param([Parameter(Mandatory)]$Context)
-  $form = New-DreamSkinLaunchForm -Context $Context -Height 206
+  $form = New-DreamSkinLaunchForm -Context $Context -Height 296
+  $form.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::None
+  $form.Add_Paint({
+    $border = New-Object Drawing.Pen([Drawing.Color]::FromArgb(215, 223, 231))
+    try { $_.Graphics.DrawRectangle($border, 0, 0, ($this.ClientSize.Width - 1), ($this.ClientSize.Height - 1)) } finally { $border.Dispose() }
+  })
   $form.ControlBox = $false
   $form.Controls.Add((New-DreamSkinBrandMark -Context $Context))
-  $title = New-DreamSkinLabel -Text "正在启动 $($Context.ThemeName)" -Left 96 -Top 28 -Width 330 -Height 30 -Size 15 -Style Bold
-  $status = New-DreamSkinLabel -Text '正在准备主题运行环境…' -Left 96 -Top 64 -Width 330 -Height 24 -Size 9.5 -Color ([System.Drawing.Color]::FromArgb(96, 99, 103))
-  $percent = New-DreamSkinLabel -Text '4%' -Left 374 -Top 94 -Width 58 -Height 20 -Size 9 -Style Bold -Color ([System.Drawing.Color]::FromArgb(66, 105, 96))
+  $title = New-DreamSkinLabel -Text "$($Context.ThemeName) · Codex" -Left 88 -Top 28 -Width 390 -Height 30 -Size 17 -Style Bold
+  $subtitle = New-DreamSkinLabel -Text '主题启动器' -Left 88 -Top 62 -Width 390 -Height 22 -Size 9 -Color ([System.Drawing.Color]::FromArgb(100, 116, 139))
+  $form.Controls.Add($subtitle)
+  $status = New-DreamSkinLabel -Text '正在准备启动…' -Left 32 -Top 113 -Width 390 -Height 28 -Size 11
+  $percent = New-DreamSkinLabel -Text '0%' -Left 426 -Top 113 -Width 62 -Height 28 -Size 12 -Style Bold -Color ([System.Drawing.Color]::FromArgb(15, 118, 110))
   $percent.TextAlign = [System.Drawing.ContentAlignment]::MiddleRight
 
   $progressTrack = New-Object System.Windows.Forms.Panel
-  $progressTrack.Location = New-Object System.Drawing.Point(28, 118)
-  $progressTrack.Size = New-Object System.Drawing.Size(404, 8)
-  $progressTrack.BackColor = [System.Drawing.Color]::FromArgb(224, 222, 216)
+  $progressTrack.Location = New-Object System.Drawing.Point(32, 151)
+  $progressTrack.Size = New-Object System.Drawing.Size(456, 5)
+  $progressTrack.BackColor = [System.Drawing.Color]::FromArgb(226, 232, 240)
   $progressFill = New-Object System.Windows.Forms.Panel
   $progressFill.Location = New-Object System.Drawing.Point(0, 0)
-  $progressFill.Size = New-Object System.Drawing.Size(16, 8)
-  $progressFill.BackColor = [System.Drawing.Color]::FromArgb(66, 105, 96)
+  $progressFill.Size = New-Object System.Drawing.Size(1, 5)
+  $progressFill.BackColor = [System.Drawing.Color]::FromArgb(15, 118, 110)
   $progressTrack.Controls.Add($progressFill)
 
-  $hint = New-DreamSkinLabel -Text '请稍候，启动期间无需再次操作。' -Left 28 -Top 144 -Width 404 -Height 22 -Size 8.8 -Color ([System.Drawing.Color]::FromArgb(125, 127, 130))
+  $steps = @()
+  $index = 0
+  foreach ($text in @('01  更新代码', '02  准备环境', '03  启动 Codex', '04  加载主题')) {
+    $step = New-DreamSkinLabel -Text $text -Left (32 + 116 * $index) -Top 180 -Width 108 -Height 24 -Size 8.5 -Color ([System.Drawing.Color]::FromArgb(148, 163, 184))
+    $form.Controls.Add($step)
+    $steps += $step
+    $index++
+  }
+  $hint = New-DreamSkinLabel -Text '完成后自动进入 Codex' -Left 32 -Top 242 -Width 330 -Height 22 -Size 9 -Color ([System.Drawing.Color]::FromArgb(100, 116, 139))
+  $elapsed = New-DreamSkinLabel -Text '0 秒' -Left 382 -Top 242 -Width 106 -Height 22 -Size 9 -Color ([System.Drawing.Color]::FromArgb(100, 116, 139))
+  $elapsed.TextAlign = [System.Drawing.ContentAlignment]::MiddleRight
+  $form.Controls.Add($elapsed)
   $form.Controls.Add($title)
   $form.Controls.Add($status)
   $form.Controls.Add($percent)
@@ -160,8 +182,11 @@ function New-DreamSkinProgressWindow {
     Percent = $percent
     ProgressTrack = $progressTrack
     ProgressFill = $progressFill
-    ProgressValue = 4
+    ProgressValue = 0
     Hint = $hint
+    Steps = $steps
+    Elapsed = $elapsed
+    Clock = [Diagnostics.Stopwatch]::StartNew()
   }
 }
 
@@ -173,14 +198,19 @@ function Set-DreamSkinProgressStatus {
     [int]$Percent = -1
   )
   if (-not [string]::IsNullOrWhiteSpace($Title)) { $Window.Title.Text = $Title }
-  $Window.Status.Text = $Status
+  if ($Window.Status.Text -ne $Status) { $Window.Status.Text = $Status }
   if ($Percent -ge 0) {
     $nextValue = [Math]::Min(100, [Math]::Max([int]$Window.ProgressValue, $Percent))
     $Window.ProgressValue = $nextValue
     $fillWidth = [Math]::Round($Window.ProgressTrack.ClientSize.Width * ($nextValue / 100.0))
     $Window.ProgressFill.Width = [Math]::Max(1, $fillWidth)
     $Window.Percent.Text = "$nextValue%"
+    $stage = if ($nextValue -lt 14) { 0 } elseif ($nextValue -lt 35) { 1 } elseif ($nextValue -lt 75) { 2 } else { 3 }
+    for ($i = 0; $i -lt $Window.Steps.Count; $i++) {
+      $Window.Steps[$i].ForeColor = if ($i -le $stage) { [Drawing.Color]::FromArgb(15, 118, 110) } else { [Drawing.Color]::FromArgb(148, 163, 184) }
+    }
   }
+  $Window.Elapsed.Text = "$([int]$Window.Clock.Elapsed.TotalSeconds) 秒"
   [System.Windows.Forms.Application]::DoEvents()
 }
 
@@ -198,7 +228,7 @@ function Complete-DreamSkinProgressWindow {
   $Window.Percent.Text = '100%'
   $Window.Hint.Text = '正在切换到 Codex 窗口…'
   [System.Windows.Forms.Application]::DoEvents()
-  Start-Sleep -Milliseconds 850
+  Start-Sleep -Milliseconds 160
   $Window.Form.Close()
   $Window.Form.Dispose()
 }
@@ -215,17 +245,31 @@ function Show-DreamSkinFailureDialog {
     [Parameter(Mandatory)]$Context,
     [Parameter(Mandatory)][string]$Message
   )
-  $form = New-DreamSkinLaunchForm -Context $Context -Height 292
+  $form = New-DreamSkinLaunchForm -Context $Context -Height 360
   $form.Controls.Add((New-DreamSkinBrandMark -Context $Context))
-  $form.Controls.Add((New-DreamSkinLabel -Text "$($Context.ThemeName) 启动失败" -Left 96 -Top 28 -Width 330 -Height 30 -Size 15 -Style Bold -Color ([System.Drawing.Color]::FromArgb(160, 57, 57))))
-  $form.Controls.Add((New-DreamSkinLabel -Text $Message -Left 28 -Top 96 -Width 404 -Height 76 -Size 9.2 -Color ([System.Drawing.Color]::FromArgb(74, 78, 83))))
-  $form.Controls.Add((New-DreamSkinLabel -Text "诊断日志：$($Context.DesktopLog)" -Left 28 -Top 180 -Width 404 -Height 32 -Size 8.3 -Color ([System.Drawing.Color]::FromArgb(120, 122, 126))))
+  $form.Controls.Add((New-DreamSkinLabel -Text '启动未能完成' -Left 88 -Top 32 -Width 400 -Height 32 -Size 16 -Style Bold -Color ([System.Drawing.Color]::FromArgb(185, 59, 59))))
+  $details = New-Object System.Windows.Forms.TextBox
+  $details.Location = New-Object System.Drawing.Point(32, 100)
+  $details.Size = New-Object System.Drawing.Size(456, 140)
+  $details.Multiline = $true
+  $details.ReadOnly = $true
+  $details.ScrollBars = [System.Windows.Forms.ScrollBars]::Vertical
+  $details.BackColor = [System.Drawing.Color]::White
+  $details.ForeColor = [System.Drawing.Color]::FromArgb(51, 65, 85)
+  $details.Font = New-Object System.Drawing.Font('Microsoft YaHei UI', 9.5)
+  $details.Text = $Message
+  $form.Controls.Add($details)
+  $form.Controls.Add((New-DreamSkinLabel -Text "诊断日志：$($Context.DesktopLog)" -Left 32 -Top 252 -Width 456 -Height 36 -Size 8.3 -Color ([System.Drawing.Color]::FromArgb(100, 116, 139))))
 
   $close = New-Object System.Windows.Forms.Button
   $close.Text = '关闭'
-  $close.Location = New-Object System.Drawing.Point(344, 228)
+  $close.Location = New-Object System.Drawing.Point(400, 300)
   $close.Size = New-Object System.Drawing.Size(88, 36)
   $close.Font = New-Object System.Drawing.Font('Microsoft YaHei UI', 9.5)
+  $close.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+  $close.FlatAppearance.BorderSize = 0
+  $close.BackColor = [System.Drawing.Color]::FromArgb(15, 118, 110)
+  $close.ForeColor = [System.Drawing.Color]::White
   $close.DialogResult = [System.Windows.Forms.DialogResult]::OK
   $form.AcceptButton = $close
   $form.CancelButton = $close

@@ -47,6 +47,14 @@ logs failures to `project-update.log`. Update occupies 2–26%, shutdown/cleanup
 Setup persists the source checkout path in the shortcut. Standalone Skill
 launchers without a checkout retain the direct-start workflow.
 
+After a successful setup, cache the Git revision and the installed Skill file
+inventory (relative names, sizes and UTC modification ticks). Keep this cache
+outside the installed Skill. Always pull first; only skip full setup when both
+match. Missing/corrupt cache or changed/missing installation files must run
+setup again. Metadata enumeration must not hash or decode full media files.
+The progress UI shows elapsed time and milestone labels, never advances progress
+on a timer, and minimizes its completion delay after successful verification.
+
 `launch.ps1` owns the canonical launch stages. Each event has:
 
 ```text
