@@ -132,6 +132,34 @@ function Show-DreamSkinRestartDialog {
 function New-DreamSkinProgressWindow {
   param([Parameter(Mandatory)]$Context)
   $form = New-DreamSkinLaunchForm -Context $Context -Height 296
+  $backgroundPath = Join-Path $PSScriptRoot 'launcher-background.png'
+  if (Test-Path -LiteralPath $backgroundPath) {
+    $source = $null
+    $canvas = $null
+    $graphics = $null
+    $wash = $null
+    try {
+      # Decode once into a window-sized static bitmap; never animate the artwork.
+      $source = [Drawing.Image]::FromFile($backgroundPath)
+      $canvas = New-Object Drawing.Bitmap(520, 296)
+      $graphics = [Drawing.Graphics]::FromImage($canvas)
+      $graphics.InterpolationMode = [Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
+      $graphics.DrawImage($source, 0, 0, 520, 296)
+      $wash = New-Object Drawing.SolidBrush([Drawing.Color]::FromArgb(90, 250, 251, 253))
+      $graphics.FillRectangle($wash, 0, 0, 520, 296)
+      $form.BackgroundImage = $canvas
+      $form.BackgroundImageLayout = [Windows.Forms.ImageLayout]::Stretch
+      $form.Add_Disposed({ if ($this.BackgroundImage) { $this.BackgroundImage.Dispose() } })
+      $canvas = $null
+    } catch {
+      # A missing or unreadable cosmetic asset must never prevent startup.
+    } finally {
+      if ($source) { $source.Dispose() }
+      if ($wash) { $wash.Dispose() }
+      if ($graphics) { $graphics.Dispose() }
+      if ($canvas) { $canvas.Dispose() }
+    }
+  }
   $form.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::None
   $form.Add_Paint({
     $border = New-Object Drawing.Pen([Drawing.Color]::FromArgb(215, 223, 231))
@@ -189,7 +217,7 @@ function New-DreamSkinProgressWindow {
   $steps = @()
   $index = 0
   foreach ($text in @('01  更新代码', '02  准备环境', '03  启动 Codex', '04  加载主题')) {
-    $step = New-DreamSkinLabel -Text $text -Left (32 + 116 * $index) -Top 180 -Width 108 -Height 24 -Size 8.5 -Color ([System.Drawing.Color]::FromArgb(148, 163, 184))
+    $step = New-DreamSkinLabel -Text $text -Left (32 + 116 * $index) -Top 180 -Width 108 -Height 24 -Size 8.5 -Color ([System.Drawing.Color]::FromArgb(100, 116, 139))
     $form.Controls.Add($step)
     $steps += $step
     $index++
@@ -259,7 +287,7 @@ function Set-DreamSkinProgressStatus {
     $Window.Percent.Text = "$nextValue%"
     $stage = if ($nextValue -lt 14) { 0 } elseif ($nextValue -lt 35) { 1 } elseif ($nextValue -lt 75) { 2 } else { 3 }
     for ($i = 0; $i -lt $Window.Steps.Count; $i++) {
-      $Window.Steps[$i].ForeColor = if ($i -le $stage) { [Drawing.Color]::FromArgb(15, 118, 110) } else { [Drawing.Color]::FromArgb(148, 163, 184) }
+      $Window.Steps[$i].ForeColor = if ($i -le $stage) { [Drawing.Color]::FromArgb(15, 118, 110) } else { [Drawing.Color]::FromArgb(100, 116, 139) }
     }
   }
   $Window.Elapsed.Text = "$([int]$Window.Clock.Elapsed.TotalSeconds) 秒"
