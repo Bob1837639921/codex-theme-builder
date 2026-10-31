@@ -25,6 +25,7 @@
   --theme-conversation-code-ink: #dff5ff;
   --theme-conversation-muted-ink: #a9cad9;
   --theme-message-action-ink: #cceefa;
+  --theme-message-action-hover-surface: rgb(117 203 234 / 16%);
   --theme-conversation-activity-ink: #b9deed;
   --theme-conversation-activity-highlight: #f2fbff;
   --theme-conversation-activity-icon: #9fe7ff;
@@ -696,8 +697,8 @@ html.codex-dream-skin main.dream-conversation-shell .sticky.bottom-0 [class~="bg
 :root.codex-dream-skin main.dream-conversation-shell .dream-message-action-row,
 :root.codex-dream-skin main.dream-conversation-shell .dream-message-action-row
   :is(button, span, time, svg) {
-  color: #cceefa !important;
-  -webkit-text-fill-color: #cceefa !important;
+  color: var(--theme-message-action-ink, #cceefa) !important;
+  -webkit-text-fill-color: currentColor !important;
   opacity: 1 !important;
 }
 
@@ -707,7 +708,7 @@ html.codex-dream-skin main.dream-conversation-shell .sticky.bottom-0 [class~="bg
 }
 
 :root.codex-dream-skin main.dream-conversation-shell .dream-message-action-row button:is(:hover, :focus-visible, [data-state="open"]) {
-  background: rgb(117 203 234 / 16%) !important;
+  background: var(--theme-message-action-hover-surface, rgb(117 203 234 / 16%)) !important;
   border-color: rgb(117 203 234 / 20%) !important;
 }
 

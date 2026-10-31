@@ -2,6 +2,15 @@
 
 ## Required paint tokens
 
+Message-action and message-editor compatibility is shared. A theme that sets
+`color-scheme: dark` inherits readable copy/edit/rate/read-aloud controls and
+editor/cancel/submit surfaces automatically. Do not copy compatibility selectors
+into each dark theme. Shared defaults have zero specificity; intentionally
+customized themes override only `--theme-message-action-*` and
+`--theme-message-editor-*` variables in their normal theme root. Specify submit
+surface and foreground together. The neutral template leaves these optional
+tokens unset so its light defaults cannot mask the shared dark palette.
+
 Every generated theme defines `--theme-toolbar-ink`, `--theme-app-menu-ink`,
 the dark-caption palette (`--theme-dark-caption-start`,
 `--theme-dark-caption-mid`, `--theme-dark-caption-end`), `--theme-conversation-code-ink`,

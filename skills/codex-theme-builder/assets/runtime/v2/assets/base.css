@@ -172,6 +172,37 @@ html:root.codex-dream-skin main.dream-conversation-shell .dream-file-changes-sum
   -webkit-text-fill-color: color-mix(in srgb, var(--dream-ink) 50%, #dc3545) !important;
 }
 
+/* Zero-specificity defaults: theme-local tokens always win, including themes
+   generated from the neutral template. Keep contrast fixes in this shared layer. */
+:where(html.codex-dream-skin) {
+  --theme-message-action-ink: var(--theme-conversation-muted-ink, var(--dream-ink));
+  --theme-message-action-hover-ink: var(--theme-panel-text, var(--dream-ink));
+  --theme-message-action-hover-surface: color-mix(in srgb, var(--dream-accent) 16%, transparent);
+  --theme-message-editor-ink: var(--theme-panel-text, var(--dream-ink));
+  --theme-message-editor-muted: var(--theme-muted-text, var(--dream-muted, #60717c));
+  --theme-message-editor-accent: var(--dream-accent);
+  --theme-message-editor-surface: var(--theme-solid-panel, #f5f2e9);
+  --theme-message-editor-border: var(--theme-border, rgb(72 93 82 / 20%));
+  --theme-message-editor-secondary-surface: color-mix(in srgb, var(--dream-accent) 12%, transparent);
+  --theme-message-editor-primary-surface: var(--dream-accent);
+  --theme-message-editor-primary-ink: var(--theme-primary-text, #ffffff);
+  --theme-message-editor-shadow: 0 10px 28px rgb(0 0 0 / 12%);
+}
+
+:where(html.codex-dream-skin[data-dream-color-scheme="dark"]) {
+  --theme-message-action-ink: #cceefa;
+  --theme-message-action-hover-ink: #edf8ff;
+  --theme-message-action-hover-surface: rgb(186 225 244 / 14%);
+  --theme-message-editor-ink: #e6f2f8;
+  --theme-message-editor-muted: #a6bdcb;
+  --theme-message-editor-accent: #8ed5e8;
+  --theme-message-editor-surface: #102433;
+  --theme-message-editor-border: rgb(162 211 232 / 28%);
+  --theme-message-editor-secondary-surface: #213d4e;
+  --theme-message-editor-primary-surface: #8ed5e8;
+  --theme-message-editor-primary-ink: #082331;
+}
+
 html.codex-dream-skin [role="dialog"] {
   color: var(--dream-ink) !important;
   background-color: var(--dream-surface) !important;
@@ -469,17 +500,21 @@ html.codex-dream-skin main.dream-conversation-shell .dream-message-editor {
    use rate/read-aloud/overflow actions. Each control must be readable without
    relying on discovering a multi-button row. Preserve native hover visibility. */
 html.codex-dream-skin main.dream-conversation-shell
-  :is(.dream-message-action, .turn-action-controls button),
-html.codex-dream-skin main.dream-conversation-shell
-  :is(.dream-message-action, .turn-action-controls button) :is(span, svg) {
+  :is(.dream-message-action, .turn-action-controls button) {
   color: var(--theme-message-action-ink, var(--theme-conversation-muted-ink, var(--theme-muted-text, var(--dream-ink)))) !important;
   -webkit-text-fill-color: currentColor !important;
 }
 
 html.codex-dream-skin main.dream-conversation-shell
+  :is(.dream-message-action, .turn-action-controls button) :is(span, svg) {
+  color: inherit !important;
+  -webkit-text-fill-color: currentColor !important;
+}
+
+html.codex-dream-skin main.dream-conversation-shell
   :is(.dream-message-action, .turn-action-controls button):is(:hover, :focus-visible, [data-state="open"]) {
-  color: var(--theme-conversation-text-ink, var(--theme-panel-text, var(--dream-ink))) !important;
-  background-color: color-mix(in srgb, var(--dream-accent) 16%, transparent) !important;
+  color: var(--theme-message-action-hover-ink) !important;
+  background-color: var(--theme-message-action-hover-surface) !important;
 }
 
 html.codex-dream-skin main.dream-conversation-shell

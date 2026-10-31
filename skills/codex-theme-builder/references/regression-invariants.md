@@ -151,6 +151,11 @@ artwork, motion, or theme identity.
 
 ## Message controls
 
+- Shared light/dark control defaults use `:where(...)` specificity, so a normal
+  theme-root custom property wins without `!important`. New dark themes must
+  inherit readable defaults without preset-specific patches. Verify automatic
+  dark colors, custom overrides, light-theme isolation and native-mode cleanup.
+
 - Style individual message actions and native `turn-action-controls` buttons,
   including standalone copy/edit controls. Do not require two buttons before
   providing contrast, and preserve native hover visibility and disabled state.

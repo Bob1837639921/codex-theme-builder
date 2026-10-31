@@ -2,6 +2,26 @@
 
 Each theme is a self-contained directory. The runtime reads no theme asset outside that directory.
 
+## Shared message-control compatibility
+
+Declare `color-scheme: dark` in a dark theme's root. The shared runtime then
+provides default copy/edit/rating/read-aloud controls and message editor colors.
+Compatibility selectors stay in the shared runtime, not in individual themes.
+
+Custom themes can override any of these optional root properties with normal
+CSS declarations; no `!important` is needed:
+
+| Surface | Optional customization |
+| --- | --- |
+| Message actions | `--theme-message-action-ink`, `--theme-message-action-hover-ink`, `--theme-message-action-hover-surface` |
+| Edit area | `--theme-message-editor-ink`, `--theme-message-editor-muted`, `--theme-message-editor-accent`, `--theme-message-editor-surface`, `--theme-message-editor-border` |
+| Cancel button | `--theme-message-editor-secondary-surface` |
+| Submit button | `--theme-message-editor-primary-surface` and `--theme-message-editor-primary-ink` together |
+
+Unset properties inherit shared light/dark defaults. Keep bright submit surfaces
+paired with dark text and dark submit surfaces paired with light text. Original
+Codex mode does not activate any of these themed rules.
+
 ## Required files
 
 ```text

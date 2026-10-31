@@ -94,6 +94,11 @@
 
 ## Static checks
 
+- In a verified themed renderer, evaluate
+  `assets/runtime/v2/tests/fixtures/shared-message-controls.js`. It uses a
+  temporary isolated frame to verify shared dark defaults, custom palette and
+  icon inheritance, light-theme isolation and native cleanup, then removes it.
+
 - Untouched source/master artwork exists outside the distributable theme directory, and every changed delivery image was encoded directly from that source or a verified lossless working master.
 - No approved existing theme asset was batch-recompressed without an explicit request or a documented measured defect.
 - Manifest parses and uses schema version 1.
