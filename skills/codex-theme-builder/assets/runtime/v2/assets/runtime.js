@@ -15,7 +15,7 @@
   const STORAGE_KEY = "codex-dream-theme-active";
   const MOTION_STORAGE_KEY = "codex-dream-motion-level";
   const MOTION_LEVELS = ["off", "low", "high"];
-  const RUNTIME_VERSION = "2.5.20-stable-theme-markers";
+  const RUNTIME_VERSION = "2.5.21-native-sidebar-recovery";
   const THEME_SEARCH_THRESHOLD = 6;
   const MUTATION_COALESCE_MS = 180;
   const VIDEO_BINDING_NAME = "__CODEX_DREAM_SKIN_VIDEO__";
@@ -1980,6 +1980,9 @@
   const mutationRemovedSwitcher = (mutation) => [...mutation.removedNodes].some((node) =>
     node?.nodeType === Node.ELEMENT_NODE &&
     (node.id === SWITCHER_ID || node.querySelector?.(`#${SWITCHER_ID}`)));
+  const mutationMountedSidebar = (mutation) => [...mutation.addedNodes].some((node) =>
+    node?.nodeType === Node.ELEMENT_NODE &&
+    (node.matches?.('aside.app-shell-left-panel') || node.querySelector?.('aside.app-shell-left-panel')));
   const requestDetailScansFor = (mutations) => {
     if (!mutations.length) return false;
     let requested = false;
@@ -2077,7 +2080,7 @@
   });
   const observer = new MutationObserver((mutations) => {
     if (activeTheme.id === "native") {
-      if (mutations.some(mutationRemovedSwitcher)) ensure();
+      if (mutations.some(mutationRemovedSwitcher) || mutations.some(mutationMountedSidebar)) ensure();
       return;
     }
     // Filter before subtree discovery: editor input and theme-owned updates

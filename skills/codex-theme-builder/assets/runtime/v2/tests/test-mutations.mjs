@@ -10,7 +10,7 @@ function harness() {
  const counts={queries:0,composers:0,scheduled:0}; let callback;
  const context={Node:{ELEMENT_NODE:1},activeTheme:{id:'test'}, root:{classList:{contains:()=>true}},themeSuspendedForNativeSurface:false,themeCatalog:[{},{}],SWITCHER_ID:'switcher',detailState:{},
   document:{querySelector:()=>{counts.queries++;return null},getElementById:()=>{counts.queries++;return null}},
-  mutationIsRuntimeOwned:m=>m.owned,mutationIsComposerTyping:m=>m.typing,mutationRemovedSwitcher:m=>m.switcher,
+  mutationIsRuntimeOwned:m=>m.owned,mutationIsComposerTyping:m=>m.typing,mutationRemovedSwitcher:m=>m.switcher,mutationMountedSidebar:m=>m.mountedSidebar,ensure:()=>counts.scheduled++,
   mutationNeedsFullEnsure:m=>m.structural,invalidateConversationDetails:()=>{},markCompatibleComposersIn:()=>counts.composers++,scheduleEnsure:()=>counts.scheduled++,
   MutationObserver:class {constructor(fn){callback=fn}}};
  vm.runInNewContext(detailCode+observerCode,context);
@@ -45,6 +45,15 @@ for(const flag of ['owned','typing']) {
  const h=harness();h.run([]);assert.deepEqual(h.counts,{queries:0,composers:0,scheduled:0});
 }
 console.log('PASS: 8 mutation scenarios; 1000 editor + 1000 theme-only batches perform zero document queries, composer scans, or ensure scheduling.');
+{
+ const h=harness();h.context.activeTheme.id='native';
+ for(let i=0;i<1000;i++)h.run([mutation()]);
+ assert.equal(h.counts.scheduled,0,'native routine updates stay idle');
+ h.run([mutation({mountedSidebar:true})]);
+ assert.equal(h.counts.scheduled,1,'login or sidebar expansion restores native switcher');
+ h.run([mutation({switcher:true})]);
+ assert.equal(h.counts.scheduled,2,'native removed switcher still recovers');
+}
 const injector = fs.readFileSync(path.resolve(path.dirname(runtimePath), '../scripts/injector.mjs'), 'utf8');
 const predicate = injector.match(/\.filter\(\(button\) => (!button\.closest\('\[aria-hidden="true"\]\.invisible'\))\)/)?.[1];
 assert.ok(predicate, 'toolbar verifier excludes only native hidden measurement replicas');

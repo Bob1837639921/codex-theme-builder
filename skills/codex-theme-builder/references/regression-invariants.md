@@ -2,6 +2,11 @@
 
 ## Mutation fast path and toolbar verification
 
+- Native mode must restore the switcher when a new sidebar mounts after login
+  or expansion, even if removal happened earlier while signed out. Detect added
+  sidebar nodes or ancestors containing them; ordinary native updates must
+  continue to perform zero theme scans. Removal-only recovery is insufficient.
+
 - Message-action discovery must finish all ancestor geometry reads before
   adding any button/row classes. Cache measurements for shared rows within
   the pass. Interleaved writes/reads force repeated style/layout recalculation
