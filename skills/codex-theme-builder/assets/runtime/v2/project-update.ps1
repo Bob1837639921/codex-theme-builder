@@ -72,8 +72,12 @@ function Update-DreamSkinProject {
     $top = Invoke-DreamSkinUpdateCommand @invoke -Arguments @('-C', $repo, 'rev-parse', '--show-toplevel') -Status '正在检查主题项目…' -Percent 2
     if ([IO.Path]::GetFullPath($top).TrimEnd('\') -ine $repo) { throw '配置的主题目录不是 Git 仓库根目录。' }
     $dirty = Invoke-DreamSkinUpdateCommand @invoke -Arguments @('-C', $repo, 'status', '--porcelain', '--untracked-files=no') -Status '正在检查本地改动…' -Percent 4
-    if ($dirty) { throw "主题项目有未提交改动，请先提交或处理后再启动。不会覆盖本地修改。`r`n$dirty" }
-    [void](Invoke-DreamSkinUpdateCommand @invoke -Arguments @('-C', $repo, '-c', 'credential.interactive=never', 'pull', '--ff-only') -Status '正在拉取最新主题代码…' -Percent 8)
+    if ($dirty) {
+      Add-Content -LiteralPath $LogPath -Encoding UTF8 -Value "Local changes detected; skipped pull and will validate/install local source.`r`n$dirty"
+      if ($ProgressCallback) { & $ProgressCallback 8 '有本地改动，跳过拉取，使用本地代码启动…' }
+    } else {
+      [void](Invoke-DreamSkinUpdateCommand @invoke -Arguments @('-C', $repo, '-c', 'credential.interactive=never', 'pull', '--ff-only') -Status '正在拉取最新主题代码…' -Percent 8)
+    }
     $revision = Invoke-DreamSkinUpdateCommand @invoke -Arguments @('-C', $repo, 'rev-parse', 'HEAD') -Status '正在检查已安装版本…' -Percent 14
     $skillPath = Join-Path ([IO.Path]::GetFullPath($DestinationRoot)) 'codex-theme-builder'
     $cacheDirectory = Join-Path $env:LOCALAPPDATA 'CodexDreamSkinV2\install-cache'
@@ -83,7 +87,7 @@ function Update-DreamSkinProject {
     $inventory = Get-DreamSkinInstallInventory -SkillPath $skillPath
     $cached = $null
     try { $cached = Get-Content -LiteralPath $cachePath -Raw -ErrorAction Stop | ConvertFrom-Json } catch {}
-    if ($inventory -and $cached -and $cached.revision -eq $revision -and $cached.inventory -eq $inventory) {
+    if (-not $dirty -and $inventory -and $cached -and $cached.revision -eq $revision -and $cached.inventory -eq $inventory) {
       Add-Content -LiteralPath $LogPath -Encoding UTF8 -Value "Installed revision $revision unchanged; skipped validation and reinstall."
       if ($ProgressCallback) { & $ProgressCallback 26 '已是最新版本，直接启动…' }
       return
@@ -93,11 +97,14 @@ function Update-DreamSkinProject {
       -Arguments @('-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', (Join-Path $repo 'scripts\setup-windows.ps1'), '-DestinationRoot', $DestinationRoot, '-ThemeId', $ThemeId, '-LauncherName', $ThemeName) `
       -Status '正在校验主题并更新本机配置…' -Percent 16)
     $inventory = Get-DreamSkinInstallInventory -SkillPath $skillPath
-    if ($inventory) {
+    if ($inventory -and -not $dirty) {
       New-Item -ItemType Directory -Force -Path $cacheDirectory | Out-Null
       @{revision=$revision;inventory=$inventory} | ConvertTo-Json | Set-Content -LiteralPath $cachePath -Encoding UTF8
     }
-    if ($ProgressCallback) { & $ProgressCallback 26 '主题代码和配置已更新，正在准备启动…' }
+    if ($ProgressCallback) {
+      $readyStatus = if ($dirty) { '本地代码已校验并配置，正在准备启动…' } else { '主题代码和配置已更新，正在准备启动…' }
+      & $ProgressCallback 26 $readyStatus
+    }
   } finally {
     if ($held) { $mutex.ReleaseMutex() }
     $mutex.Dispose()

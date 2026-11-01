@@ -66,10 +66,20 @@ if (@(Get-Content (Join-Path $destination 'setup-count.txt')).Count -ne 4 -or
 }
 $head = Test-Git $checkout @('rev-parse', 'HEAD')
 [IO.File]::WriteAllText((Join-Path $checkout 'payload.txt'), 'local work')
-$rejected = $false
-try { Update-DreamSkinProject @options } catch { $rejected = $true }
-if (-not $rejected -or [IO.File]::ReadAllText((Join-Path $checkout 'payload.txt')) -ne 'local work') { throw 'Dirty checkout was not protected.' }
+[IO.File]::WriteAllText((Join-Path $seed 'payload.txt'), 'new upstream while dirty')
+Commit-Fixture $seed
+[void](Test-Git $seed @('push'))
+Update-DreamSkinProject @options
+if ((Test-Git $checkout @('rev-parse', 'HEAD')) -ne $head -or
+    [IO.File]::ReadAllText((Join-Path $checkout 'payload.txt')) -ne 'local work' -or
+    [IO.File]::ReadAllText((Join-Path $destination 'codex-theme-builder\runtime.txt')) -ne 'local work' -or
+    $events[$events.Count-1] -ne 26) { throw 'Dirty checkout must skip pull, preserve local source and install it to launch-ready.' }
+[IO.File]::WriteAllText((Join-Path $checkout 'payload.txt'), 'more local work')
+Update-DreamSkinProject @options
+if ([IO.File]::ReadAllText((Join-Path $destination 'codex-theme-builder\runtime.txt')) -ne 'more local work') { throw 'Dirty source must not reuse the HEAD-only installation cache.' }
 [void](Test-Git $checkout @('restore', 'payload.txt'))
+Update-DreamSkinProject @options
+if ([IO.File]::ReadAllText((Join-Path $destination 'codex-theme-builder\runtime.txt')) -ne 'new upstream while dirty') { throw 'Clean checkout must resume pull and replace the local installation.' }
 [IO.File]::WriteAllText((Join-Path $checkout 'payload.txt'), 'local commit')
 Commit-Fixture $checkout
 $localHead = Test-Git $checkout @('rev-parse', 'HEAD')

@@ -6,6 +6,27 @@ $ErrorActionPreference = 'Stop'
 function Initialize-DreamSkinLaunchUi {
   Add-Type -AssemblyName System.Windows.Forms
   Add-Type -AssemblyName System.Drawing
+  if (-not ('DreamSkin.Launcher.BufferedPanel' -as [type])) {
+    Add-Type -ReferencedAssemblies System.Windows.Forms,System.Drawing -TypeDefinition @'
+using System.Windows.Forms;
+namespace DreamSkin.Launcher {
+  public class BufferedPanel : Panel {
+    public BufferedPanel() {
+      SetStyle(ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint |
+        ControlStyles.OptimizedDoubleBuffer | ControlStyles.ResizeRedraw, true);
+    }
+  }
+  public class BufferedForm : Form {
+    public BufferedForm() { DoubleBuffered = true; }
+  }
+  public class BufferedLabel : Label {
+    public BufferedLabel() {
+      SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer, true);
+    }
+  }
+}
+'@
+  }
   [System.Windows.Forms.Application]::EnableVisualStyles()
 }
 
@@ -34,7 +55,7 @@ function New-DreamSkinLabel {
     [System.Drawing.FontStyle]$Style = [System.Drawing.FontStyle]::Regular,
     [System.Drawing.Color]$Color = [System.Drawing.Color]::FromArgb(30, 41, 59)
   )
-  $label = New-Object System.Windows.Forms.Label
+  $label = New-Object DreamSkin.Launcher.BufferedLabel
   $label.Text = $Text
   $label.Location = New-Object System.Drawing.Point($Left, $Top)
   $label.Size = New-Object System.Drawing.Size($Width, $Height)
@@ -51,7 +72,7 @@ function New-DreamSkinLaunchForm {
     [int]$Height = 270
   )
   Initialize-DreamSkinLaunchUi
-  $form = New-Object System.Windows.Forms.Form
+  $form = New-Object DreamSkin.Launcher.BufferedForm
   $form.Text = "Codex $($Context.ThemeName)"
   $form.ClientSize = New-Object System.Drawing.Size(520, $Height)
   $form.AutoScaleMode = [System.Windows.Forms.AutoScaleMode]::Dpi
@@ -193,7 +214,7 @@ function New-DreamSkinProgressWindow {
     Clock = [Diagnostics.Stopwatch]::StartNew()
   }
   $progressFill.Tag = $motion
-  $nodes = New-Object System.Windows.Forms.Panel
+  $nodes = New-Object DreamSkin.Launcher.BufferedPanel
   $nodes.Location = New-Object Drawing.Point(32, 140)
   $nodes.Size = New-Object Drawing.Size(456, 26)
   $nodes.BackColor = [Drawing.Color]::Transparent
@@ -279,11 +300,11 @@ function New-DreamSkinProgressWindow {
       $t = [Math]::Min(1.0, [Math]::Max(0.0, ($motion.Clock.Elapsed.TotalMilliseconds - $motion.StartedAt) / 260.0))
       $eased = 1 - [Math]::Pow(1 - $t, 3)
       $progressFill.Width = [int][Math]::Round($motion.FromWidth + ($motion.TargetWidth - $motion.FromWidth) * $eased)
-      $progressFill.Invalidate()
       $motion.DisplayWidth = $progressFill.Width
       $nodes.Invalidate()
     }
-    $elapsed.Text = "$([int]$motion.Clock.Elapsed.TotalSeconds) 秒"
+    $elapsedText = "$([int][Math]::Floor($motion.Clock.Elapsed.TotalSeconds)) 秒"
+    if ($elapsed.Text -ne $elapsedText) { $elapsed.Text = $elapsedText }
   }.GetNewClosure())
   $form.Add_Disposed({ $animationTimer.Stop(); $animationTimer.Dispose(); $progressFill.Dispose(); $progressTrack.Dispose() }.GetNewClosure())
   $animationTimer.Start()
@@ -300,7 +321,7 @@ function New-DreamSkinProgressWindow {
     Hint = $hint
     Steps = $steps
     Elapsed = $elapsed
-    Clock = [Diagnostics.Stopwatch]::StartNew()
+    Clock = $motion.Clock
     Animation = $motion
     AnimationTimer = $animationTimer
     StageNodes = $nodes
@@ -314,7 +335,7 @@ function Set-DreamSkinProgressStatus {
     [string]$Title = '',
     [int]$Percent = -1
   )
-  if (-not [string]::IsNullOrWhiteSpace($Title)) { $Window.Title.Text = $Title }
+  if (-not [string]::IsNullOrWhiteSpace($Title) -and $Window.Title.Text -ne $Title) { $Window.Title.Text = $Title }
   if ($Window.Status.Text -ne $Status) { $Window.Status.Text = $Status }
   if ($Percent -ge 0 -and $Percent -ne $Window.ProgressValue) {
     $nextValue = [Math]::Min(100, [Math]::Max([int]$Window.ProgressValue, $Percent))
@@ -335,7 +356,8 @@ function Set-DreamSkinProgressStatus {
       $Window.Steps[$i].ForeColor = if ($i -le $stage) { [Drawing.Color]::FromArgb(15, 118, 110) } else { [Drawing.Color]::FromArgb(100, 116, 139) }
     }
   }
-  $Window.Elapsed.Text = "$([int]$Window.Clock.Elapsed.TotalSeconds) 秒"
+  $elapsedText = "$([int][Math]::Floor($Window.Clock.Elapsed.TotalSeconds)) 秒"
+  if ($Window.Elapsed.Text -ne $elapsedText) { $Window.Elapsed.Text = $elapsedText }
   [System.Windows.Forms.Application]::DoEvents()
 }
 

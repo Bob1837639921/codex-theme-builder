@@ -44,6 +44,11 @@ module reports status through callbacks, pumps no UI itself, runs child tools
 without console windows, drains both output streams, enforces timeouts, and
 logs failures to `project-update.log`. Update occupies 2–26%, shutdown/cleanup
 28–32%, and runtime stages map to 35–96%; the UI alone completes 100%.
+Tracked local changes skip pull, with a progress-window explanation, and
+continue validation/setup from local source. Never require a commit to launch,
+stash changes, or overwrite source. Dirty checkouts bypass both reading and
+writing the revision-only installation cache, so local edits cannot be missed
+or cached as a clean revision. Resume pull and normal caching once clean.
 Setup persists the source checkout path in the shortcut. Standalone Skill
 launchers without a checkout retain the direct-start workflow.
 
