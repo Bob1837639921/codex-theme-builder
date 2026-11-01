@@ -82,6 +82,16 @@ Rules:
 
 ## Error ownership
 
+Persistent Windows asset services are created hidden through
+`Start-DreamSkinDetachedInjector` in `common-windows.ps1`. Windows process
+creation through CIM separates their lifetime from terminal/agent process jobs;
+ordinary `Start-Process` during a hot preview can leave the asset service subject
+to command cleanup. The injector writes its own timestamped output/error logs,
+so no parent-owned redirected pipe is retained. Record the actual Node PID,
+start time, path and browser identity exactly as before. A service must still
+exit when its original browser identity ends; detaching must never permit
+reconnection to an unrelated application.
+
 - A low-level function throws a precise error and does not display UI.
 - `launch.ps1` releases its operation lock in `finally`.
 - `desktop-launch.ps1` owns the user-facing failure boundary and desktop log.

@@ -15,7 +15,7 @@
   const STORAGE_KEY = "codex-dream-theme-active";
   const MOTION_STORAGE_KEY = "codex-dream-motion-level";
   const MOTION_LEVELS = ["off", "low", "high"];
-  const RUNTIME_VERSION = "2.5.18-shared-dark-controls";
+  const RUNTIME_VERSION = "2.5.20-stable-theme-markers";
   const THEME_SEARCH_THRESHOLD = 6;
   const MUTATION_COALESCE_MS = 180;
   const VIDEO_BINDING_NAME = "__CODEX_DREAM_SKIN_VIDEO__";
@@ -140,7 +140,7 @@
     const shell = locateNativeShellMain();
     if (!shell) return null;
     document.querySelectorAll('main.main-surface').forEach((node) => {
-      if (node !== shell) node.classList.remove('dream-home-shell', 'dream-conversation-shell');
+      if (node !== shell && (node.classList.contains('dream-home-shell') || node.classList.contains('dream-conversation-shell'))) node.classList.remove('dream-home-shell', 'dream-conversation-shell');
     });
     if (!shell.classList.contains("main-surface")) {
       shell.classList.add("main-surface");
@@ -196,7 +196,7 @@
       remember("box-shadow", "dreamComposerFadeBoxShadow", "dreamComposerFadeBoxShadowPriority");
       node.dataset.dreamComposerFadeInline = "true";
     }
-    node.classList.add("dream-composer-native-fade");
+    if (!node.classList.contains("dream-composer-native-fade")) node.classList.add("dream-composer-native-fade");
     node.style.setProperty("background-color", "transparent", "important");
     node.style.setProperty("background-image", "none", "important");
     node.style.setProperty("box-shadow", "none", "important");
@@ -546,7 +546,7 @@
     detailState.stepGuideSurfaces.forEach((node) => {
       if (!nextStepGuideSurfaces.has(node)) node.classList.remove("dream-step-guide-surface");
     });
-    nextStepGuideSurfaces.forEach((node) => node.classList.add("dream-step-guide-surface"));
+    nextStepGuideSurfaces.forEach((node) => { if (!node.classList.contains("dream-step-guide-surface")) node.classList.add("dream-step-guide-surface"); });
     detailState.stepGuideSurfaces = nextStepGuideSurfaces;
 
     const detailsRoot = document.querySelector("main.dream-conversation-shell");
@@ -566,7 +566,7 @@
       detailState.turnDurationControls.forEach((node) => {
         if (!nextTurnDurationControls.has(node)) node.classList.remove("dream-turn-duration");
       });
-      nextTurnDurationControls.forEach((node) => node.classList.add("dream-turn-duration"));
+      nextTurnDurationControls.forEach((node) => { if (!node.classList.contains("dream-turn-duration")) node.classList.add("dream-turn-duration"); });
       detailState.turnDurationControls = nextTurnDurationControls;
 
       /* Lifecycle copy such as stopped-turn notices, model changes, and the
@@ -600,7 +600,7 @@
       detailState.conversationStatusLines.forEach((node) => {
         if (!nextConversationStatusLines.has(node)) node.classList.remove("dream-conversation-status-line");
       });
-      nextConversationStatusLines.forEach((node) => node.classList.add("dream-conversation-status-line"));
+      nextConversationStatusLines.forEach((node) => { if (!node.classList.contains("dream-conversation-status-line")) node.classList.add("dream-conversation-status-line"); });
       detailState.conversationStatusLines = nextConversationStatusLines;
 
       const messageEditorInput = document.querySelector('[role="textbox"]:is([aria-label="编辑消息"], [aria-label="Edit message"])');
@@ -611,7 +611,7 @@
       document.querySelectorAll(".dream-message-editor").forEach((node) => {
         if (node !== messageEditor) node.classList.remove("dream-message-editor");
       });
-      messageEditor?.classList.add("dream-message-editor");
+      if (messageEditor && !messageEditor.classList.contains("dream-message-editor")) messageEditor.classList.add("dream-message-editor");
       detailState.messageEditor = messageEditor;
 
       const diffHeaders = [...document.getElementsByClassName("group/turn-diff-header")];
@@ -619,7 +619,7 @@
       document.querySelectorAll(".dream-file-changes-summary").forEach((node) => {
         if (!diffCards.has(node)) node.classList.remove("dream-file-changes-summary");
       });
-      diffCards.forEach((node) => node.classList.add("dream-file-changes-summary"));
+      diffCards.forEach((node) => { if (!node.classList.contains("dream-file-changes-summary")) node.classList.add("dream-file-changes-summary"); });
 
       /* Diff-card actions use the native light primary-soft button token even
          when the surrounding card is a dark theme. Mark only the localized
@@ -632,7 +632,7 @@
           const action = /^(?:撤销|undo)$/i.test(label) ? "undo" : /^(?:审核|审查|review)$/i.test(label) ? "review" : "";
           if (!action) return;
           nextDiffActionControls.add(button);
-          button.classList.add("dream-diff-action", `dream-diff-action-${action}`);
+          if (!button.classList.contains(`dream-diff-action-${action}`)) button.classList.add("dream-diff-action", `dream-diff-action-${action}`);
         });
       });
       detailState.diffActionControls.forEach((node) => {
@@ -649,19 +649,36 @@
       const nextMessageActionControls = new Set(conversationShell ? [...conversationShell.querySelectorAll("button")].filter((button) =>
         messageActionPattern.test(normalizeProjectText(button.getAttribute("aria-label") || button.title || button.textContent))) : []);
       const nextMessageActionRows = new Set();
+      // Measure every candidate before changing any classes. Interleaving each
+      // button/row write with the next rect read forces a full style/layout
+      // flush per control when a long conversation mounts.
+      const messageActionRowMeasurements = new Map();
       nextMessageActionControls.forEach((button) => {
-        button.classList.add("dream-message-action");
+        const nativeRow = button.closest('.turn-action-controls');
+        if (nativeRow && conversationShell.contains(nativeRow)) {
+          // Current native toolbars already provide a semantic row. Prefer
+          // their inner action group (when present) without measuring layout.
+          const parent = button.parentElement;
+          nextMessageActionRows.add(parent === nativeRow || parent?.classList.contains('contents') ? nativeRow : parent);
+          return;
+        }
         let row = button.parentElement;
         for (let depth = 0; row && row !== conversationShell && depth < 5; depth += 1, row = row.parentElement) {
-          const rect = row.getBoundingClientRect();
-          const matches = [...row.querySelectorAll("button")].filter((candidate) => nextMessageActionControls.has(candidate)).length;
+          if (!messageActionRowMeasurements.has(row)) {
+            messageActionRowMeasurements.set(row, {
+              rect: row.getBoundingClientRect(),
+              matches: [...row.querySelectorAll("button")].filter((candidate) => nextMessageActionControls.has(candidate)).length,
+            });
+          }
+          const { rect, matches } = messageActionRowMeasurements.get(row);
           if (matches >= 2 && rect.width <= 760 && rect.height <= 56) {
-            row.classList.add("dream-message-action-row");
             nextMessageActionRows.add(row);
             break;
           }
         }
       });
+      nextMessageActionControls.forEach((button) => { if (!button.classList.contains("dream-message-action")) button.classList.add("dream-message-action"); });
+      nextMessageActionRows.forEach((row) => { if (!row.classList.contains("dream-message-action-row")) row.classList.add("dream-message-action-row"); });
       detailState.messageActionControls.forEach((node) => {
         if (!nextMessageActionControls.has(node)) node.classList.remove("dream-message-action");
       });
@@ -681,7 +698,7 @@
       document.querySelectorAll(".dream-queued-message-list").forEach((node) => {
         if (node !== queuedMessageList) node.classList.remove("dream-queued-message-list");
       });
-      queuedMessageList?.classList.add("dream-queued-message-list");
+      if (queuedMessageList && !queuedMessageList.classList.contains("dream-queued-message-list")) queuedMessageList.classList.add("dream-queued-message-list");
       detailState.queuedMessageList = queuedMessageList;
     }
 
@@ -750,13 +767,13 @@
         const cachedTitle = (detailState.selectedLabel?.textContent || "").trim();
         const taskHeaderText = (locateNativeShellHeader(locateNativeShellMain())?.textContent || "").trim();
         const nativeCurrentRow = sidebar.querySelector(
-          '[aria-current="page"].sidebar-item, [aria-selected="true"].sidebar-item'
+          '[data-app-action-sidebar-thread-selected="true"], [aria-current="page"].sidebar-item, [aria-selected="true"].sidebar-item'
         );
         const cachedSelectionIsCurrent = selected?.isConnected && sidebar.contains(selected) &&
           (!nativeCurrentRow || nativeCurrentRow === selected) &&
           (!cachedTitle || !taskHeaderText || taskHeaderText === cachedTitle);
         if (!cachedSelectionIsCurrent) {
-        const matchingTitleLabel = taskHeaderText ? [...sidebar.querySelectorAll("span, p, div")].filter((node) => {
+        const matchingTitleLabel = !nativeCurrentRow && taskHeaderText ? [...sidebar.querySelectorAll("span, p, div")].filter((node) => {
           if (node.querySelector("button") || node.children.length > 0) return false;
           const text = (node.textContent || "").trim();
           const rect = node.getBoundingClientRect();
@@ -912,19 +929,19 @@
 
   const renderSwitcherSelection = () => {
     const motionControl = document.querySelector(`#${SWITCHER_ID} .dream-motion-control`);
-    if (motionControl) motionControl.hidden = activeTheme.id === "native";
+    if (motionControl && motionControl.hidden !== (activeTheme.id === "native")) motionControl.hidden = activeTheme.id === "native";
     const switcher = document.getElementById(SWITCHER_ID);
     switcher?.querySelectorAll("[data-dream-theme-id]").forEach((card) => {
       const selected = card.dataset.dreamThemeId === activeTheme.id;
       card.classList.toggle("is-selected", selected);
-      card.setAttribute("aria-pressed", String(selected));
+      if (card.getAttribute("aria-pressed") !== String(selected)) card.setAttribute("aria-pressed", String(selected));
       const current = card.querySelector(".dream-theme-current");
-      if (current) current.hidden = !selected;
+      if (current && current.hidden !== !selected) current.hidden = !selected;
     });
     switcher?.querySelectorAll("[data-dream-motion-level]").forEach((button) => {
       const selected = button.dataset.dreamMotionLevel === activeMotionLevel;
       button.classList.toggle("is-selected", selected);
-      button.setAttribute("aria-pressed", String(selected));
+      if (button.getAttribute("aria-pressed") !== String(selected)) button.setAttribute("aria-pressed", String(selected));
     });
   };
 
@@ -983,7 +1000,7 @@
     activeBackgroundVideoElement = null;
     document.querySelectorAll("main.dream-video-covering").forEach((node) =>
       node.classList.remove("dream-video-covering"));
-    document.documentElement?.classList.remove("dream-video-covering");
+    if (document.documentElement?.classList.contains("dream-video-covering")) document.documentElement.classList.remove("dream-video-covering");
     if (releaseUrl) releaseBackgroundVideoUrls();
   };
 
@@ -1330,7 +1347,7 @@
     style.textContent = compileNativeComposerSelectors(theme.cssText);
     style.dataset.dreamVersion = RUNTIME_VERSION;
     style.dataset.dreamThemeId = theme.id;
-    root.classList.add("codex-dream-skin");
+    if (!root.classList.contains("codex-dream-skin")) root.classList.add("codex-dream-skin");
     root.classList.add("dream-native-surface");
     root.dataset.dreamColorScheme = getComputedStyle(root).colorScheme.split(" ")[0] === "dark" ? "dark" : "light";
     root.classList.toggle("dream-video-window-canvas", theme.windowVideoCanvas === true);
@@ -1640,7 +1657,7 @@
       themeSuspendedForNativeSurface = false;
       syncMotionLayer(urlsFor(activeTheme));
     }
-    root.classList.add("codex-dream-skin");
+    if (!root.classList.contains("codex-dream-skin")) root.classList.add("codex-dream-skin");
     let style = document.getElementById(STYLE_ID);
     if (!style) {
       style = document.createElement("style");
@@ -1686,7 +1703,8 @@
     syncMarker("nativeHomeSuggestions", nativeHomeSuggestions, "dream-native-home-suggestions");
     const conversation = !home ? (threadTimeline?.closest('[role="main"]') ?? routeSurface) : null;
     syncMarker("conversation", conversation, "dream-conversation");
-    root.dataset.dreamRoute = home ? "home" : "conversation";
+    const route = home ? "home" : "conversation";
+    if (root.dataset.dreamRoute !== route) root.dataset.dreamRoute = route;
 
     /* Codex owns the quick-jump navigation and its scroll behavior. Discover it
        through the language-independent native list marker so localized aria

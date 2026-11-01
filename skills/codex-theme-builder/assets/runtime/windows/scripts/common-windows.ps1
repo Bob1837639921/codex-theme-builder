@@ -1,5 +1,24 @@
 ﻿. (Join-Path $PSScriptRoot 'config-utf8.ps1')
 
+function Start-DreamSkinDetachedInjector {
+  param(
+    [Parameter(Mandatory)][string]$NodePath,
+    [Parameter(Mandatory)][string]$InjectorPath,
+    [Parameter(Mandatory)][string[]]$Arguments,
+    [Parameter(Mandatory)][string]$LogDirectory
+  )
+  # Outlive the invoking terminal/agent job, including cancelled hot previews.
+  $command = @($NodePath, $InjectorPath) + $Arguments + @('--log-directory', $LogDirectory)
+  $commandLine = ($command | ForEach-Object { ConvertTo-DreamSkinProcessArgument -Value $_ }) -join ' '
+  $startup = New-CimInstance -ClassName Win32_ProcessStartup -ClientOnly -Property @{ ShowWindow = [uint16]0 }
+  $created = Invoke-CimMethod -ClassName Win32_Process -MethodName Create -Arguments @{
+    CommandLine = $commandLine
+    ProcessStartupInformation = $startup
+  } -ErrorAction Stop
+  if ($created.ReturnValue -ne 0) { throw "Cannot start detached theme service (Windows error $($created.ReturnValue))." }
+  return Get-Process -Id $created.ProcessId -ErrorAction Stop
+}
+
 function Enter-DreamSkinOperationLock {
   $sid = [System.Security.Principal.WindowsIdentity]::GetCurrent().User.Value
   $mutex = [System.Threading.Mutex]::new($false, "Local\CodexDreamSkin.$sid.Operation")

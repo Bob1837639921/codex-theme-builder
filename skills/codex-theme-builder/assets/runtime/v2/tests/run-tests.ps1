@@ -596,7 +596,8 @@ if ($baseCss -match ':has\(' -or
     $injectorText -notmatch 'background-attachment:scroll!important' -or
     $injectorText -notmatch '\.composer-surface-chrome\{backdrop-filter:none!important' -or
     $injectorText -notmatch 'contain:strict;will-change:opacity' -or
-    $runtimeJs -notmatch 'root\.dataset\.dreamRoute\s*=\s*home\s*\?\s*"home"\s*:\s*"conversation"' -or
+    $runtimeJs -notmatch 'const route = home \? "home" : "conversation"' -or
+    $runtimeJs -notmatch 'if \(root\.dataset\.dreamRoute !== route\) root\.dataset\.dreamRoute = route' -or
     $runtimeJs -notmatch 'dream-composer-host') {
   throw 'The runtime performance guard must avoid dynamic :has selectors, editor blur repaint, fixed backgrounds, and main-thread video composition.'
 }
@@ -824,8 +825,12 @@ Write-Host 'PASS: light/dark Markdown code-block reading contrast and transcript
 if ($LASTEXITCODE -ne 0) { throw 'Mutation fast-path behavior checks failed.' }
 & $node.Path (Join-Path $PSScriptRoot 'test-hot-update.mjs')
 if ($LASTEXITCODE -ne 0) { throw 'Persistent hot-update asset behavior checks failed.' }
+& $node.Path (Join-Path $PSScriptRoot 'test-message-action-layout.mjs')
+if ($LASTEXITCODE -ne 0) { throw 'Message-action layout batching checks failed.' }
 & powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'test-injector-identity.ps1')
 if ($LASTEXITCODE -ne 0) { throw 'Recorded injector process identity checks failed.' }
+& powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'test-detached-injector.ps1') -NodePath $node.Path
+if ($LASTEXITCODE -ne 0) { throw 'Persistent injector lifetime checks failed.' }
 & powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'test-port-allocation.ps1')
 if ($LASTEXITCODE -ne 0) { throw 'Loopback port allocation checks failed.' }
 & powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'test-startup-retry.ps1') -NodePath $node.Path

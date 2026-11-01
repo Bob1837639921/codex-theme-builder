@@ -53,14 +53,13 @@ if (-not $serviceReady) {
       throw 'Cannot upgrade an injector whose recorded process identity does not match.'
     }
     $watchArguments = @(
-      (ConvertTo-DreamSkinProcessArgument -Value $injector), '--watch',
+      '--watch',
       '--port', "$($state.port)", '--browser-id', "$($state.browserId)",
-      '--theme-dir', (ConvertTo-DreamSkinProcessArgument -Value $theme)
+      '--theme-dir', $theme
     )
     $stateRoot = Split-Path -Parent $statePath
-    $daemon = Start-Process -FilePath $node -ArgumentList $watchArguments -WindowStyle Hidden -PassThru `
-      -RedirectStandardOutput (Join-Path $stateRoot 'injector.log') `
-      -RedirectStandardError (Join-Path $stateRoot 'injector-error.log')
+    $daemon = Start-DreamSkinDetachedInjector -NodePath $node -InjectorPath $injector `
+      -Arguments $watchArguments -LogDirectory $stateRoot
     $state.injectorPid = $daemon.Id
     $state.injectorStartedAt = Get-DreamSkinProcessStartedAt -ProcessId $daemon.Id
     $state.injectorPath = $injector

@@ -179,11 +179,6 @@ try {
   }
 
   Report-DreamSkinLaunchStage -Stage PrepareInjector
-  $args = @(
-    (ConvertTo-DreamSkinProcessArgument -Value $injector), '--watch',
-    '--port', "$port", '--browser-id', $identity.BrowserId,
-    '--theme-dir', (ConvertTo-DreamSkinProcessArgument -Value $Theme)
-  )
   if ($ForegroundInjector) {
     Exit-DreamSkinOperationLock -Mutex $lock
     $lock = $null
@@ -192,10 +187,10 @@ try {
   }
 
   Report-DreamSkinLaunchStage -Stage StartInjector
-  $stdout = Join-Path $stateRoot 'injector.log'
   $stderr = Join-Path $stateRoot 'injector-error.log'
-  $daemon = Start-Process -FilePath $node.Path -ArgumentList $args -WindowStyle Hidden -PassThru `
-    -RedirectStandardOutput $stdout -RedirectStandardError $stderr
+  $daemon = Start-DreamSkinDetachedInjector -NodePath $node.Path -InjectorPath $injector `
+    -Arguments @('--watch', '--port', "$port", '--browser-id', $identity.BrowserId, '--theme-dir', $Theme) `
+    -LogDirectory $stateRoot
   Start-Sleep -Milliseconds 600
   if ($daemon.HasExited) { throw "主题注入程序在启动过程中意外退出。错误日志：$stderr" }
   $startedAt = Get-DreamSkinProcessStartedAt -ProcessId $daemon.Id

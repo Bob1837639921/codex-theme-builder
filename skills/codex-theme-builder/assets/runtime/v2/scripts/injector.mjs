@@ -1,11 +1,13 @@
 import fs from "node:fs/promises";
+import { appendFileSync, mkdirSync, writeFileSync } from "node:fs";
+import { format } from "node:util";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
 import { fileURLToPath } from "node:url";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, "..");
-const SKIN_VERSION = "2.5.18-shared-dark-controls";
+const SKIN_VERSION = "2.5.20-stable-theme-markers";
 const MAX_ART_BYTES = 8 * 1024 * 1024;
 const MAX_VIDEO_BYTES = 8 * 1024 * 1024;
 const DIRECT_EVALUATE_LIMIT = 8 * 1024 * 1024;
@@ -157,6 +159,7 @@ function parseArgs(argv) {
     selectTheme: null,
     motionLevel: null,
     reload: false,
+    logDirectory: null,
     hoverSelectedThread: false,
     browserId: null,
     themeDir: path.resolve(root, "themes", "diagnostic"),
@@ -180,6 +183,7 @@ function parseArgs(argv) {
     else if (arg === "--select-theme") options.selectTheme = argv[++i];
     else if (arg === "--motion-level") options.motionLevel = argv[++i];
     else if (arg === "--reload") options.reload = true;
+    else if (arg === "--log-directory") options.logDirectory = path.resolve(argv[++i]);
     else if (arg === "--hover-selected-thread") options.hoverSelectedThread = true;
     else if (arg === "--self-test") options.mode = "self-test";
     else if (arg === "--check-payload") options.mode = "check-payload";
@@ -1549,6 +1553,17 @@ async function runWatch(options) {
 }
 
 const options = parseArgs(process.argv.slice(2));
+if (options.logDirectory) {
+  if (options.mode !== 'watch') throw new Error('File logging is only supported for the persistent service');
+  mkdirSync(options.logDirectory, { recursive: true });
+  for (const [method, filename] of [['log', 'injector.log'], ['error', 'injector-error.log']]) {
+    const destination = path.join(options.logDirectory, filename);
+    writeFileSync(destination, '');
+    console[method] = (...args) => appendFileSync(destination, `${new Date().toISOString()} ${format(...args)}\n`);
+  }
+  process.on('uncaughtExceptionMonitor', (error) => console.error(error.stack || error));
+  process.on('exit', (code) => console.log(`[dream-skin] service exited (${code})`));
+}
 if (options.mode === "self-test") {
   const valid = validatedDebuggerUrl({ webSocketDebuggerUrl: `ws://127.0.0.1:${options.port}/devtools/page/test` }, options.port);
   const browserId = browserIdFromVersion({

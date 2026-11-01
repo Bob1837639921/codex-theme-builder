@@ -2,6 +2,19 @@
 
 ## Mutation fast path and toolbar verification
 
+- Message-action discovery must finish all ancestor geometry reads before
+  adding any button/row classes. Cache measurements for shared rows within
+  the pass. Interleaved writes/reads force repeated style/layout recalculation
+  when long conversations mount; verify real chat switches, not only idle scans.
+- Prefer the current native `.turn-action-controls` structure without geometry
+  reads. Reconciliation must not rewrite unchanged root, route, marker,
+  switcher accessibility or visibility attributes: these mutations also wake
+  native application observers. Verify with `fixtures/runtime-idle-writes.js`.
+- Persistent Windows injectors must outlive hot-preview terminal/agent jobs.
+  Start hidden through the detached process helper and retain timestamped
+  startup/error/exit logs. A stale page service marker does not prove the
+  recorded process is alive. Never restart Codex to repair only its asset service.
+
 - Recognize `用时` and `Worked for` alongside older duration labels. Mark the
   enclosing disclosure button so its arrow inherits the same readable tone;
   ordinary prose beginning with 耗时 must remain untouched.
